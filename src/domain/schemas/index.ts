@@ -1,0 +1,76 @@
+/**
+ * Domain validation schemas entry point
+ * @module domain/schemas
+ */
+
+// Common schemas
+export {
+  boardBasisSchema,
+  cabinClassSchema,
+  dateSchema,
+  isoDateSchema,
+  itineraryIdSchema,
+  itineraryStatusSchema,
+  seatPreferenceSchema,
+  segmentIdSchema,
+  segmentStatusSchema,
+  segmentTypeSchema,
+  timeSchema,
+  transferTypeSchema,
+  travelerIdSchema,
+  travelerTypeSchema,
+  tripTypeSchema,
+  uuidSchema,
+} from './common.schema.js';
+
+// Location schemas
+export {
+  addressSchema,
+  companySchema,
+  coordinatesSchema,
+  locationSchema,
+} from './location.schema.js';
+
+// Money schemas
+export { currencyCodeSchema, moneyInputSchema, moneySchema } from './money.schema.js';
+
+// Traveler schemas
+export {
+  loyaltyProgramSchema,
+  travelPreferencesSchema,
+  travelerInputSchema,
+  travelerSchema,
+  type TravelerCreateInput,
+  type TravelerInput,
+  type TravelerOutput,
+} from './traveler.schema.js';
+
+// Segment schemas
+export {
+  activitySegmentSchema,
+  customSegmentSchema,
+  flightSegmentSchema,
+  hotelSegmentSchema,
+  meetingSegmentSchema,
+  segmentSchema,
+  transferSegmentSchema,
+  type ActivitySegmentInput,
+  type CustomSegmentInput,
+  type FlightSegmentInput,
+  type HotelSegmentInput,
+  type MeetingSegmentInput,
+  type SegmentInput,
+  type SegmentOutput,
+  type TransferSegmentInput,
+} from './segment.schema.js';
+
+// Itinerary schemas
+export {
+  itineraryCreateSchema,
+  itinerarySchema,
+  itineraryUpdateSchema,
+  type ItineraryCreateInput,
+  type ItineraryInput,
+  type ItineraryOutput,
+  type ItineraryUpdateInput,
+} from './itinerary.schema.js';
