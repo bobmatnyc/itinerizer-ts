@@ -4,7 +4,7 @@
 
 import { mkdir, rm } from 'node:fs/promises';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createItineraryId, generateTravelerId } from '../../src/domain/types/branded.js';
+import { generateItineraryId, generateTravelerId } from '../../src/domain/types/branded.js';
 import { ItineraryStatus, TravelerType } from '../../src/domain/types/common.js';
 import type { Traveler } from '../../src/domain/types/traveler.js';
 import { ItineraryService } from '../../src/services/itinerary.service.js';
@@ -124,7 +124,7 @@ describe('ItineraryService', () => {
     });
 
     it('should return NOT_FOUND for non-existent itinerary', async () => {
-      const fakeId = createItineraryId('12345678-1234-1234-1234-123456789012');
+      const fakeId = generateItineraryId();
       const result = await service.get(fakeId);
 
       expect(result.success).toBe(false);
@@ -182,7 +182,7 @@ describe('ItineraryService', () => {
     });
 
     it('should return NOT_FOUND for non-existent itinerary', async () => {
-      const fakeId = createItineraryId('12345678-1234-1234-1234-123456789012');
+      const fakeId = generateItineraryId();
       const result = await service.update(fakeId, {
         title: 'Should Fail',
       });
@@ -214,7 +214,7 @@ describe('ItineraryService', () => {
     });
 
     it('should return NOT_FOUND for non-existent itinerary', async () => {
-      const fakeId = createItineraryId('12345678-1234-1234-1234-123456789012');
+      const fakeId = generateItineraryId();
       const result = await service.delete(fakeId);
 
       expect(result.success).toBe(false);

@@ -87,10 +87,9 @@ export class JsonItineraryStorage implements ItineraryStorage {
       // Ensure directory exists
       await mkdir(dirname(this.getPath(itinerary.id)), { recursive: true });
 
-      // Update version and timestamps
+      // Update timestamp (version is managed by service layer)
       const updatedItinerary: Itinerary = {
         ...itinerary,
-        version: itinerary.version + 1,
         updatedAt: new Date(),
       };
 

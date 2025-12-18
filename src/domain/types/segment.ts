@@ -43,6 +43,10 @@ interface BaseSegment {
   metadata: Record<string, unknown>;
   /** Segment IDs this segment depends on */
   dependsOn?: SegmentId[];
+  /** True if segment was auto-generated to fill geographic gap, not from source document */
+  inferred?: boolean;
+  /** Explanation of why segment was inferred (e.g., "Geographic gap between JFK and Manhattan Grand") */
+  inferredReason?: string;
 }
 
 /**

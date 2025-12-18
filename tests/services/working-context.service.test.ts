@@ -2,7 +2,8 @@
  * Tests for WorkingContextService
  */
 
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { generateItineraryId } from '../../src/domain/types/branded.js';
 import { ItineraryService } from '../../src/services/itinerary.service.js';
@@ -87,7 +88,7 @@ describe('WorkingContextService', () => {
     });
 
     it('should return error for other storage errors', async () => {
-      // Create an invalid scenario by corrupting the storage
+      // Create an itinerary and set it as working
       const createResult = await itineraryService.create({
         title: 'Test Trip',
         startDate: new Date('2025-06-01'),
@@ -99,15 +100,16 @@ describe('WorkingContextService', () => {
 
       await workingContextService.setWorkingItinerary(createResult.value.id);
 
-      // Delete the itinerary storage directory to cause a read error
-      await rm(testDataDir, { recursive: true });
+      // Corrupt the file to cause a validation error (not NOT_FOUND)
+      const filePath = join(testDataDir, `${createResult.value.id}.json`);
+      await writeFile(filePath, '{ "invalid": "data" }', 'utf-8');
 
       const result = await workingContextService.getWorkingItinerary();
 
       expect(result.success).toBe(false);
       if (result.success) return;
 
-      expect(result.error.code).toBe('READ_ERROR');
+      expect(result.error.code).toBe('VALIDATION_ERROR');
     });
   });
 

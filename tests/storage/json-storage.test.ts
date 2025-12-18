@@ -97,7 +97,7 @@ describe('JsonItineraryStorage', () => {
       expect(loaded.id).toBe(itinerary.id);
       expect(loaded.title).toBe(itinerary.title);
       expect(loaded.status).toBe(itinerary.status);
-      expect(loaded.version).toBe(2); // Version incremented
+      expect(loaded.version).toBe(1); // Version preserved (managed by service layer)
     });
 
     it('should preserve Date objects through serialization', async () => {
@@ -120,7 +120,7 @@ describe('JsonItineraryStorage', () => {
       expect(loaded.travelers[0]?.dateOfBirth).toBeInstanceOf(Date);
     });
 
-    it('should increment version on save', async () => {
+    it('should preserve version (version managed by service layer)', async () => {
       await storage.initialize();
       const itinerary = createTestItinerary();
 
@@ -129,12 +129,16 @@ describe('JsonItineraryStorage', () => {
 
       if (!save1.success) return;
 
+      // Storage should preserve version, not increment it
+      expect(save1.value.version).toBe(1);
+
       const save2 = await storage.save(save1.value);
       expect(save2.success).toBe(true);
 
       if (!save2.success) return;
 
-      expect(save2.value.version).toBe(3); // 1 -> 2 -> 3
+      // Version still 1 - service layer is responsible for incrementing
+      expect(save2.value.version).toBe(1);
     });
 
     it('should update updatedAt timestamp on save', async () => {

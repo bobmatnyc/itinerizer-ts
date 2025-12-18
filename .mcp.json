@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "mcp-skillset": {
+      "type": "stdio",
+      "command": "mcp-skillset",
+      "args": [
+        "mcp"
+      ],
+      "env": {}
+    },
+    "mcp-browser": {
+      "type": "stdio",
+      "command": "mcp-browser",
+      "args": [
+        "mcp"
+      ],
+      "env": {}
+    }
+  }
+}

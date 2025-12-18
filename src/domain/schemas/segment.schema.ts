@@ -33,8 +33,8 @@ const baseSegmentFields = {
   startDatetime: dateSchema,
   /** End date and time */
   endDatetime: dateSchema,
-  /** IDs of travelers for this segment */
-  travelerIds: z.array(travelerIdSchema).min(1, 'At least one traveler required'),
+  /** IDs of travelers for this segment (empty = all travelers on itinerary) */
+  travelerIds: z.array(travelerIdSchema).default([]),
   /** Confirmation or reference number */
   confirmationNumber: z.string().optional(),
   /** Booking reference */
@@ -55,6 +55,10 @@ const baseSegmentFields = {
   metadata: z.record(z.unknown()).default({}),
   /** Segment IDs this segment depends on */
   dependsOn: z.array(segmentIdSchema).optional(),
+  /** True if segment was auto-generated to fill geographic gap, not from source document */
+  inferred: z.boolean().optional(),
+  /** Explanation of why segment was inferred (e.g., "Geographic gap between JFK and Manhattan Grand") */
+  inferredReason: z.string().optional(),
 } as const;
 
 // ===========================

@@ -44,7 +44,7 @@ export const itinerarySchema = z
     /** Destination locations */
     destinations: z.array(locationSchema).default([]),
     /** Travelers on this itinerary */
-    travelers: z.array(travelerSchema).min(1, 'At least one traveler required'),
+    travelers: z.array(travelerSchema).default([]),
     /** Primary traveler ID */
     primaryTravelerId: travelerIdSchema.optional(),
     /** User who created the itinerary */

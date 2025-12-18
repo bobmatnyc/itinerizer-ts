@@ -1,8 +1,10 @@
 import { Command } from 'commander';
 import { demoCommand } from './cli/commands/demo.command.js';
 import { doctorCommand } from './cli/commands/doctor.command.js';
+import { importCommand } from './cli/commands/import.command.js';
 import { itineraryCommand } from './cli/commands/itinerary.command.js';
 import { setupCommand } from './cli/commands/setup.command.js';
+import { viewCommand, viewersCommand, viewAllCommand } from './cli/commands/view.command.js';
 import { VERSION } from './utils/version.js';
 
 /**
@@ -22,6 +24,10 @@ program.addCommand(setupCommand());
 program.addCommand(doctorCommand());
 program.addCommand(demoCommand());
 program.addCommand(itineraryCommand());
+program.addCommand(importCommand());
+program.addCommand(viewCommand());
+program.addCommand(viewersCommand());
+program.addCommand(viewAllCommand());
 
 /**
  * Parse command line arguments and execute

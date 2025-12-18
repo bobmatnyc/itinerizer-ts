@@ -152,6 +152,14 @@ export class ConfigStorage {
   }
 
   /**
+   * Clear the in-memory config cache
+   * Useful for test isolation
+   */
+  clearCache(): void {
+    this.config = null;
+  }
+
+  /**
    * Get the current working itinerary ID
    */
   async getWorkingItineraryId(): Promise<ItineraryId | undefined> {

@@ -1,0 +1,258 @@
+{
+  "entries": [
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:07:43.396Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:09:06.659Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:09:36.155Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:10:23.063Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:11:03.058Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 12877,
+      "outputTokens": 2441,
+      "costUSD": 0.0062705,
+      "timestamp": "2025-12-18T02:11:41.432Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:21:00.148Z",
+      "sourceFile": "data/imports/10 Day African Safari South Africa pdf.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:22:09.850Z",
+      "sourceFile": "data/imports/10 Day African Safari South Africa pdf.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 7206,
+      "outputTokens": 2652,
+      "costUSD": 0.0051164999999999995,
+      "timestamp": "2025-12-18T02:22:54.214Z",
+      "sourceFile": "data/imports/10 Day African Safari South Africa pdf.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:23:42.155Z",
+      "sourceFile": "data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 11065,
+      "outputTokens": 3972,
+      "costUSD": 0.00773125,
+      "timestamp": "2025-12-18T02:24:44.745Z",
+      "sourceFile": "data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 12877,
+      "outputTokens": 2772,
+      "costUSD": 0.00668425,
+      "timestamp": "2025-12-18T02:37:22.668Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:40:52.284Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 13224,
+      "outputTokens": 2746,
+      "costUSD": 0.0067385,
+      "timestamp": "2025-12-18T02:41:45.473Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T02:48:25.566Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 13248,
+      "outputTokens": 2695,
+      "costUSD": 0.006680749999999999,
+      "timestamp": "2025-12-18T03:02:10.021Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 13248,
+      "outputTokens": 2707,
+      "costUSD": 0.00669575,
+      "timestamp": "2025-12-18T03:03:26.682Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:16:54.719Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Family African Safari Adventure - 15 Days .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:19:20.586Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Family African Safari Adventure - 15 Days .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:40:56.348Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:41:37.499Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:42:13.645Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:43:38.825Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:45:11.378Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T03:46:14.227Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 7330,
+      "outputTokens": 942,
+      "costUSD": 0.0030099999999999997,
+      "timestamp": "2025-12-18T03:46:39.506Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Spring Break in Oahu.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 7330,
+      "outputTokens": 1261,
+      "costUSD": 0.00340875,
+      "timestamp": "2025-12-18T03:48:23.207Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Spring Break in Oahu.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 7330,
+      "outputTokens": 1235,
+      "costUSD": 0.00337625,
+      "timestamp": "2025-12-18T03:49:18.120Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Spring Break in Oahu.pdf",
+      "success": true
+    }
+  ],
+  "totalCostUSD": 0.0557125,
+  "lastUpdated": "2025-12-18T03:49:18.120Z"
+}

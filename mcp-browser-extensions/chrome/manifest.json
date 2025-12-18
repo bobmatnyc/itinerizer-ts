@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "MCP Browser",
+  "version": "2.2.51",
+  "description": "Browser control and console log capture for AI coding assistants. Connects one tab to one MCP server.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "scripting",
+    "alarms",
+    "webNavigation",
+    "notifications"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "http://localhost/*",
+    "ws://localhost/*",
+    "http://127.0.0.1/*",
+    "ws://127.0.0.1/*",
+    "ws://[::1]/*"
+  ],
+  "background": {
+    "service_worker": "background-enhanced.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "Readability.js",
+        "content.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup-enhanced.html",
+    "default_icon": {
+      "16": "icons/icon16-outline.png",
+      "32": "icons/icon32-outline.png",
+      "48": "icons/icon48-outline.png",
+      "128": "icons/icon128-outline.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16-outline.png",
+    "32": "icons/icon32-outline.png",
+    "48": "icons/icon48-outline.png",
+    "128": "icons/icon128-outline.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "build-info.json"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 
 import { mkdir, rm } from 'node:fs/promises';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createItineraryId, generateSegmentId } from '../../src/domain/types/branded.js';
+import { generateItineraryId, generateSegmentId } from '../../src/domain/types/branded.js';
 import { SegmentStatus, SegmentType } from '../../src/domain/types/common.js';
 import type { Segment } from '../../src/domain/types/segment.js';
 import { ItineraryService } from '../../src/services/itinerary.service.js';
@@ -348,8 +348,9 @@ describe('SegmentService', () => {
       if (!deleteResult.success) return;
 
       // Check that second segment no longer has dependency
+      // (dependsOn is removed entirely when empty, not set to [])
       const remainingSegment = deleteResult.value.segments[0];
-      expect(remainingSegment?.dependsOn).toEqual([]);
+      expect(remainingSegment?.dependsOn).toBeUndefined();
     });
   });
 

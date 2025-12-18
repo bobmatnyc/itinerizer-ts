@@ -78,6 +78,27 @@ export class ItineraryService {
   }
 
   /**
+   * Save a fully-parsed imported itinerary
+   * Used for LLM imports where the full itinerary structure is already populated
+   * @param itinerary - Complete itinerary from import process
+   * @returns Result with saved itinerary or storage error
+   */
+  async saveImported(
+    itinerary: Itinerary
+  ): Promise<Result<Itinerary, StorageError>> {
+    // Generate new ID if not present (shouldn't happen, but safety check)
+    const toSave: Itinerary = {
+      ...itinerary,
+      id: itinerary.id || generateItineraryId(),
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    return this.storage.save(toSave);
+  }
+
+  /**
    * Get an itinerary by ID
    * @param id - Itinerary ID to load
    * @returns Result with itinerary or storage error

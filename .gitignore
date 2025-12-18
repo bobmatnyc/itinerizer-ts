@@ -14,6 +14,9 @@ coverage/
 .env.local
 .env.*.local
 
+# Application config (contains API keys)
+.itinerizer/
+
 # Operating System
 .DS_Store
 Thumbs.db

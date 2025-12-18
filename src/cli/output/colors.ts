@@ -9,6 +9,14 @@ import pc from 'picocolors';
  * Color utility functions for consistent CLI output
  */
 export const colors = {
+  // Basic colors
+  green: pc.green,
+  red: pc.red,
+  yellow: pc.yellow,
+  blue: pc.blue,
+  cyan: pc.cyan,
+  magenta: pc.magenta,
+  // Semantic colors
   success: pc.green,
   error: pc.red,
   warning: pc.yellow,

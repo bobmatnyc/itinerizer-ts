@@ -1,0 +1,104 @@
+{
+  "id": "c167af72-98b7-455d-ae90-ac401c5dc521",
+  "version": 8,
+  "createdAt": "2025-12-18T01:01:50.678Z",
+  "updatedAt": "2025-12-18T01:01:50.681Z",
+  "title": "Business Trip to NYC",
+  "description": "Annual tech conference and client meetings",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-21T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [
+    {
+      "id": "40ee1237-cd8a-4609-b27e-a1a373621833",
+      "type": "ADULT",
+      "firstName": "John",
+      "lastName": "Traveler",
+      "email": "john@example.com",
+      "loyaltyPrograms": [],
+      "specialRequests": [],
+      "metadata": {}
+    }
+  ],
+  "segments": [
+    {
+      "id": "32170767-45b3-4049-9d30-bada5d079137",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T12:00:00.000Z",
+      "endDatetime": "2025-03-15T16:00:00.000Z",
+      "travelerIds": [
+        "40ee1237-cd8a-4609-b27e-a1a373621833"
+      ],
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "UA123",
+      "origin": {
+        "name": "San Francisco International",
+        "code": "SFO"
+      },
+      "destination": {
+        "name": "John F. Kennedy International",
+        "code": "JFK"
+      },
+      "cabinClass": "BUSINESS"
+    },
+    {
+      "id": "620249a6-850c-43e8-9810-adf2ab14a764",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T19:00:00.000Z",
+      "endDatetime": "2025-03-20T15:00:00.000Z",
+      "travelerIds": [
+        "40ee1237-cd8a-4609-b27e-a1a373621833"
+      ],
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "The Manhattan Grand"
+      },
+      "location": {
+        "name": "Manhattan, New York",
+        "code": "NYC"
+      },
+      "checkInDate": "2025-03-15T00:00:00.000Z",
+      "checkOutDate": "2025-03-20T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Executive Suite",
+      "roomCount": 1,
+      "amenities": [
+        "WiFi",
+        "Gym",
+        "Room Service"
+      ]
+    },
+    {
+      "type": "MEETING",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-16T13:00:00.000Z",
+      "endDatetime": "2025-03-16T21:00:00.000Z",
+      "travelerIds": [
+        "40ee1237-cd8a-4609-b27e-a1a373621833"
+      ],
+      "title": "Tech Conference Day 1",
+      "location": {
+        "name": "Jacob Javits Center",
+        "code": "NYC"
+      },
+      "attendees": [
+        "Sarah Developer",
+        "Mike Engineer"
+      ],
+      "agenda": "Keynotes, workshops, and networking",
+      "metadata": {},
+      "id": "f1bf614c-104f-4879-9d8c-eb5454d2e9ce"
+    }
+  ],
+  "tripType": "BUSINESS",
+  "tags": [],
+  "metadata": {}
+}

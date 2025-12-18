@@ -1,0 +1,86 @@
+{
+  "id": "dbaf0348-82f0-4ce7-8ae7-70a7340e9d21",
+  "version": 1,
+  "createdAt": "2025-12-18T03:46:39.507Z",
+  "updatedAt": "2025-12-18T03:46:39.507Z",
+  "title": "Spring Break in Oahu",
+  "description": "A family adventure in Oahu, Hawaii featuring a luxurious stay at the Four Seasons Resort, with activities like ziplining, snorkeling, and cultural experiences.",
+  "status": "DRAFT",
+  "startDate": "2026-04-03T00:00:00.000Z",
+  "endDate": "2026-04-10T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "Four Seasons Resort Oahu at Ko Olina"
+    },
+    {
+      "name": "Oahu"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "f3b9d01b-7234-4bf9-9603-e415458d3570",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-04-03T15:00:00.000Z",
+      "endDatetime": "2026-04-10T11:00:00.000Z",
+      "travelerIds": [],
+      "notes": "Oceanfront rooms, suites, and studios with amenities like a spa, golf, and family-friendly activities.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Four Seasons Resort Oahu at Ko Olina"
+      },
+      "location": {
+        "name": "92-1001 Olani St"
+      },
+      "checkInDate": "2026-04-03T00:00:00.000Z",
+      "checkOutDate": "2026-04-10T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Oceanfront Room, Ocean View One-Bedroom Suite, Ocean Front Studio Suite Double Accessible, Oceanfront Studio Suite King",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "ae5e5498-0111-47de-a050-bc3318a3df55",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-04-04T09:00:00.000Z",
+      "endDatetime": "2026-04-09T19:00:00.000Z",
+      "travelerIds": [],
+      "notes": "Activities and experiences highlighting the natural beauty and cultural heritage of Hawaii.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Experiences & Activities at Four Seasons Resort Oahu",
+      "description": "Guests can explore the island with guided hikes, ziplining, horseback riding, and the Pearl Harbor Warbird flight. Water activities include paddleboarding, snorkeling, catamaran sails, and private yacht excursions. Cultural immersion includes lei making, hula, weaving, and stargazing.",
+      "location": {
+        "name": "Four Seasons Resort Oahu at Ko Olina"
+      }
+    },
+    {
+      "id": "3312d81d-04bd-4382-89dd-d71439b9c44f",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-04-10T10:00:00.000Z",
+      "endDatetime": "2026-04-10T10:30:00.000Z",
+      "travelerIds": [],
+      "notes": "Transfer from Four Seasons Resort Oahu at Ko Olina to airport.",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "SHUTTLE",
+      "pickupLocation": {
+        "name": "Four Seasons Resort Oahu at Ko Olina"
+      },
+      "dropoffLocation": {
+        "name": "Honolulu International Airport"
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "family",
+    "adventure",
+    "luxury",
+    "beach",
+    "cultural"
+  ],
+  "metadata": {}
+}

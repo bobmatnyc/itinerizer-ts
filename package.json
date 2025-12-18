@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "dev:viewer": "npm run build && node dist/index.js view-all --open",
     "start": "node dist/index.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -18,18 +19,27 @@
     "typecheck": "tsc --noEmit",
     "version:bump": "node scripts/bump-version.js"
   },
-  "keywords": ["cli", "itinerary", "travel", "typescript"],
+  "keywords": [
+    "cli",
+    "itinerary",
+    "travel",
+    "typescript"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@clack/prompts": "^0.9.0",
     "commander": "^12.1.0",
+    "openai": "^6.14.0",
+    "pdf-parse": "^1.1.1",
     "picocolors": "^1.1.1",
+    "yaml": "^2.8.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^22.10.2",
+    "@types/pdf-parse": "^1.1.5",
     "@vitest/coverage-v8": "^2.1.8",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",

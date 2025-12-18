@@ -59,17 +59,20 @@ export function createStorageError(
  * @param code - The error code
  * @param message - Human-readable error message
  * @param field - The field that failed validation
+ * @param details - Optional additional error details
  * @returns A ValidationError instance
  */
 export function createValidationError(
   code: ValidationError['code'],
   message: string,
-  field?: string
+  field?: string,
+  details?: Record<string, unknown>
 ): ValidationError {
   return {
     code,
     message,
     ...(field && { field }),
+    ...(details && { details }),
   };
 }
 
