@@ -4,7 +4,14 @@
  * Initializes core services with Vercel-compatible configuration:
  * - Uses Blob storage when BLOB_READ_WRITE_TOKEN is set
  * - Skips filesystem-dependent services on Vercel
+ * - Uses dynamic imports for optional services to avoid loading modules
+ *   with dependencies that fail on Vercel serverless
  * - Initializes optional services only when API keys are configured
+ *
+ * Architecture:
+ * - Top-level imports: Only core services (ItineraryService, SegmentService, etc.)
+ * - Dynamic imports: All optional services (DocumentImportService, TravelAgentService, etc.)
+ * - Type-only imports: Types for optional services (don't trigger module loading)
  *
  * @module hooks.server
  */
@@ -16,14 +23,16 @@ import { ItineraryService } from '../../src/services/itinerary.service.js';
 import { ItineraryCollectionService } from '../../src/services/itinerary-collection.service.js';
 import { SegmentService } from '../../src/services/segment.service.js';
 import { DependencyService } from '../../src/services/dependency.service.js';
-import { DocumentImportService } from '../../src/services/document-import.service.js';
+
+// Type-only imports for optional services (don't load modules)
+import type { DocumentImportService } from '../../src/services/document-import.service.js';
 import type { ImportConfig } from '../../src/domain/types/import.js';
-import { TravelAgentService } from '../../src/services/travel-agent.service.js';
+import type { TravelAgentService } from '../../src/services/travel-agent.service.js';
 import type { TravelAgentConfig } from '../../src/services/travel-agent.service.js';
-import { TravelAgentFacade } from '../../src/services/travel-agent-facade.service.js';
-import { TripDesignerService } from '../../src/services/trip-designer/trip-designer.service.js';
+import type { TravelAgentFacade } from '../../src/services/travel-agent-facade.service.js';
+import type { TripDesignerService } from '../../src/services/trip-designer/trip-designer.service.js';
 import type { TripDesignerConfig } from '../../src/domain/types/trip-designer.js';
-import { KnowledgeService } from '../../src/services/knowledge.service.js';
+import type { KnowledgeService } from '../../src/services/knowledge.service.js';
 import type { KnowledgeConfig } from '../../src/services/knowledge.service.js';
 
 /**
@@ -80,17 +89,21 @@ async function initializeServices(): Promise<Services> {
 		console.log('✅ Core services initialized');
 
 		// OPTIONAL SERVICES - Only initialize if API keys are configured
+		// Uses dynamic imports to avoid loading modules on Vercel
 
 		// Import service - requires OPENROUTER_API_KEY
 		let importService: DocumentImportService | null = null;
 		const importApiKey = process.env.OPENROUTER_API_KEY;
 
 		if (importApiKey) {
+			const { DocumentImportService: ImportServiceClass } = await import(
+				'../../src/services/document-import.service.js'
+			);
 			const importConfig: ImportConfig = {
 				apiKey: importApiKey,
 				costTrackingEnabled: false, // Disable for Vercel (no filesystem)
 			};
-			importService = new DocumentImportService(importConfig, itineraryService);
+			importService = new ImportServiceClass(importConfig, itineraryService);
 			console.log('✅ Import service initialized');
 		} else {
 			console.log('⚠️  Import service disabled (no OPENROUTER_API_KEY)');
@@ -101,17 +114,24 @@ async function initializeServices(): Promise<Services> {
 		const serpApiKey = process.env.SERPAPI_KEY;
 
 		if (serpApiKey) {
+			const { TravelAgentService: TravelAgentServiceClass } = await import(
+				'../../src/services/travel-agent.service.js'
+			);
 			const travelAgentConfig: TravelAgentConfig = {
 				apiKey: serpApiKey,
 			};
-			travelAgentService = new TravelAgentService(travelAgentConfig);
+			travelAgentService = new TravelAgentServiceClass(travelAgentConfig);
 			console.log('✅ Travel Agent service initialized');
 		} else {
 			console.log('⚠️  Travel Agent service disabled (no SERPAPI_KEY)');
 		}
 
 		// Travel Agent Facade - always available (wraps review/continuity services)
-		const travelAgentFacade = new TravelAgentFacade(itineraryService, travelAgentService);
+		// Dynamic import to avoid loading module on Vercel
+		const { TravelAgentFacade: TravelAgentFacadeClass } = await import(
+			'../../src/services/travel-agent-facade.service.js'
+		);
+		const travelAgentFacade = new TravelAgentFacadeClass(itineraryService, travelAgentService);
 		console.log('✅ Travel Agent Facade initialized');
 
 		// Trip Designer service - requires OPENROUTER_API_KEY
@@ -119,10 +139,13 @@ async function initializeServices(): Promise<Services> {
 		const tripDesignerApiKey = process.env.OPENROUTER_API_KEY;
 
 		if (tripDesignerApiKey) {
+			const { TripDesignerService: TripDesignerServiceClass } = await import(
+				'../../src/services/trip-designer/trip-designer.service.js'
+			);
 			const tripDesignerConfig: TripDesignerConfig = {
 				apiKey: tripDesignerApiKey,
 			};
-			tripDesignerService = new TripDesignerService(
+			tripDesignerService = new TripDesignerServiceClass(
 				tripDesignerConfig,
 				undefined, // Use default in-memory session storage
 				{
@@ -142,16 +165,19 @@ async function initializeServices(): Promise<Services> {
 
 		if (!isVercel && process.env.OPENROUTER_API_KEY) {
 			try {
-				// Import filesystem-dependent services only when not on Vercel
+				// Dynamic imports for filesystem-dependent services only when not on Vercel
 				const { VectraStorage } = await import('../../src/storage/vectra-storage.js');
 				const { EmbeddingService } = await import('../../src/services/embedding.service.js');
+				const { KnowledgeService: KnowledgeServiceClass } = await import(
+					'../../src/services/knowledge.service.js'
+				);
 
 				const vectorStorage = new VectraStorage('./data/vectra');
 				const embeddingService = new EmbeddingService({
 					apiKey: process.env.OPENROUTER_API_KEY,
 				});
 
-				knowledgeService = new KnowledgeService(vectorStorage, embeddingService);
+				knowledgeService = new KnowledgeServiceClass(vectorStorage, embeddingService);
 				await knowledgeService.initialize();
 				console.log('✅ Knowledge service initialized');
 			} catch (error) {
