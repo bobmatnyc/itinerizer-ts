@@ -13,6 +13,8 @@ import { DEFAULT_IMPORT_MODEL, MODEL_PRICING } from '../domain/types/import.js';
 import type { Itinerary } from '../domain/types/itinerary.js';
 import { generateItineraryId, generateSegmentId } from '../domain/types/branded.js';
 import { itinerarySchema } from '../domain/schemas/itinerary.schema.js';
+import { AVAILABLE_MODELS } from './model-selector.service.js';
+import { normalizeImportData } from './schema-normalizer.service.js';
 
 /**
  * LLM response with parsed itinerary
@@ -61,6 +63,10 @@ export class LLMService {
   ): Promise<Result<LLMParseResult, StorageError | ValidationError>> {
     const selectedModel = model ?? this.config.defaultModel ?? DEFAULT_IMPORT_MODEL;
 
+    // Get model-specific maxTokens
+    const modelConfig = AVAILABLE_MODELS.find((m) => m.name === selectedModel);
+    const maxTokens = this.config.maxTokens ?? modelConfig?.maxTokens ?? 8192;
+
     const systemPrompt = this.buildSystemPrompt();
     const userPrompt = this.buildUserPrompt(markdown);
 
@@ -73,12 +79,13 @@ export class LLMService {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        max_tokens: this.config.maxTokens ?? 4096,
+        max_tokens: maxTokens,
         temperature: this.config.temperature ?? 0.1,
         response_format: { type: 'json_object' },
       });
 
       const content = response.choices[0]?.message?.content;
+      const finishReason = response.choices[0]?.finish_reason;
 
       if (!content) {
         return err(
@@ -86,6 +93,28 @@ export class LLMService {
             model: selectedModel,
           })
         );
+      }
+
+      // Check if response was truncated due to token limit
+      if (finishReason === 'length') {
+        return err(
+          createStorageError('READ_ERROR', 'LLM response truncated due to token limit', {
+            model: selectedModel,
+            hint: 'The itinerary is too complex. Try increasing maxTokens in config or use a model with larger output capacity.',
+            maxTokens,
+          })
+        );
+      }
+
+      // Debug: Log response preview if DEBUG env var is set
+      if (process.env.DEBUG) {
+        console.error('\n[DEBUG] LLM Response Preview (first 1000 chars):');
+        console.error(content.slice(0, 1000));
+        console.error('\n[DEBUG] Response length:', content.length);
+        // Save full response to file for inspection
+        const fs = await import('node:fs/promises');
+        await fs.writeFile('/tmp/llm_response.json', content, 'utf-8');
+        console.error('[DEBUG] Full response saved to /tmp/llm_response.json');
       }
 
       // Calculate usage
@@ -99,19 +128,37 @@ export class LLMService {
       let parsedJson: unknown;
       try {
         parsedJson = JSON.parse(content);
-      } catch {
+      } catch (parseError) {
+        // Enhanced error with preview of invalid content
+        const preview = content.slice(0, 500);
         return err(
-          createValidationError('INVALID_DATA', 'LLM returned invalid JSON', 'response')
+          createValidationError('INVALID_DATA', 'LLM returned invalid JSON', 'response', {
+            parseError: parseError instanceof Error ? parseError.message : String(parseError),
+            contentPreview: preview,
+            contentLength: content.length,
+          })
         );
       }
 
       // Ensure required fields with defaults
-      const jsonWithDefaults = this.addDefaults(parsedJson);
+      const jsonWithDefaults = this.addDefaults(parsedJson, selectedModel);
+
+      // Normalize data to handle LLM output variations (BEFORE validation)
+      const normalizedData = normalizeImportData(jsonWithDefaults);
 
       // Validate against schema
-      const validationResult = itinerarySchema.safeParse(jsonWithDefaults);
+      const validationResult = itinerarySchema.safeParse(normalizedData);
 
       if (!validationResult.success) {
+        // Debug: Log first few validation errors
+        if (process.env.DEBUG) {
+          console.error('\n[DEBUG] Schema Validation Errors:');
+          for (const error of validationResult.error.errors.slice(0, 10)) {
+            console.error(`  - ${error.path.join('.')}: ${error.message}`);
+          }
+          console.error(`[DEBUG] Total errors: ${validationResult.error.errors.length}`);
+        }
+
         return err(
           createValidationError('INVALID_DATA', 'LLM response failed schema validation', 'response', {
             errors: validationResult.error.errors,
@@ -180,7 +227,8 @@ Your job is to:
 3. Extract and BULLET POINT the key details
 4. Infer missing information from context
 5. Extract overall trip METADATA
-6. **ENSURE GEOGRAPHIC CONTINUITY** - detect and fill transportation gaps
+6. **SEARCH for MISSING TRANSPORTATION** in the source document
+7. **INCLUDE ALL FOUND TRANSPORTATION** as proper segments
 
 ## Output Format
 {
@@ -267,11 +315,15 @@ Your job is to:
    - Generate relevant tags (luxury, adventure, beach, cultural, etc.)
    - Create meaningful description summarizing the trip
 
-5. **Geographic Continuity** (IMPORTANT):
-   After parsing, check for missing transportation between segments:
-   - Flight lands at airport → Hotel in city = ADD TRANSFER segment with inferred=true
-   - Hotel in City A → Next segment in City B = ADD TRANSFER or FLIGHT with inferred=true
-   - Mark any auto-added segments with: "inferred": true, "inferredReason": "Geographic gap between [A] and [B]"
+5. **Extract ALL Transportation from Source**:
+   CAREFULLY search the source document for ANY transportation mentioned but not yet parsed:
+   - Look for airline names (United, Delta, American, etc.)
+   - Look for flight numbers (UA123, DL456, etc.)
+   - Look for car rental mentions (Hertz, Enterprise, Avis)
+   - Look for shuttle services, taxi mentions, transfers
+   - Look for train/ferry/bus mentions
+   - Check headers, fine print, and confirmation numbers
+   - If found, add as proper FLIGHT or TRANSFER segments
 
 6. Return ONLY valid JSON, no explanation`;
   }
@@ -292,7 +344,7 @@ Remember: Return ONLY valid JSON matching the schema, no explanation.`;
   /**
    * Add default values for required fields
    */
-  private addDefaults(parsed: unknown): Record<string, unknown> {
+  private addDefaults(parsed: unknown, selectedModel?: string): Record<string, unknown> {
     const json = parsed as Record<string, unknown>;
 
     // Ensure ID is generated
@@ -342,6 +394,20 @@ Remember: Return ONLY valid JSON matching the schema, no explanation.`;
         const seg = segment as Record<string, unknown>;
         if (!seg.id) seg.id = generateSegmentId();
         if (!seg.metadata) seg.metadata = {};
+
+        // Set source to 'import' for all segments parsed from documents
+        if (!seg.source) {
+          seg.source = 'import';
+        }
+
+        // Set source details if not present
+        if (!seg.sourceDetails && seg.source === 'import') {
+          seg.sourceDetails = {
+            model: selectedModel,
+            timestamp: new Date().toISOString(),
+          };
+        }
+
         // Always reset travelerIds to empty array - LLM can't know valid UUIDs
         // Travelers are linked later by the user
         seg.travelerIds = [];

@@ -19,7 +19,7 @@ export interface LoyaltyProgram {
 }
 
 /**
- * Travel preferences
+ * Travel preferences (per-traveler)
  */
 export interface TravelPreferences {
   /** Preferred seat position on flights */
@@ -30,6 +30,33 @@ export interface TravelPreferences {
   hotelChainPreference?: string[];
   /** Accessibility requirements */
   accessibility?: string[];
+}
+
+/**
+ * Trip-level traveler preferences (stored on Itinerary)
+ * These are preferences that apply to the entire trip planning experience
+ */
+export interface TripTravelerPreferences {
+  /** Travel style */
+  travelStyle?: 'luxury' | 'moderate' | 'budget' | 'backpacker';
+  /** Trip pacing preference */
+  pace?: 'packed' | 'balanced' | 'leisurely';
+  /** Areas of interest */
+  interests?: string[]; // e.g., ['food', 'history', 'nature', 'nightlife']
+  /** Budget flexibility (1-5 scale, 1 = very strict, 5 = very flexible) */
+  budgetFlexibility?: number;
+  /** Dietary restrictions for all travelers */
+  dietaryRestrictions?: string;
+  /** Mobility restrictions or accessibility needs */
+  mobilityRestrictions?: string;
+  /** Origin location - where they're traveling from */
+  origin?: string;
+  /** Accommodation preferences */
+  accommodationPreference?: string; // 'hotel', 'resort', 'airbnb', 'hostel', 'boutique'
+  /** Activity preferences */
+  activityPreferences?: string[]; // e.g., ['museums', 'hiking', 'beaches']
+  /** Things to avoid */
+  avoidances?: string[];
 }
 
 /**

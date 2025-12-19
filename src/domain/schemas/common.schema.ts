@@ -105,7 +105,18 @@ export const cabinClassSchema = z.enum(['ECONOMY', 'PREMIUM_ECONOMY', 'BUSINESS'
 /**
  * Transfer type enum schema
  */
-export const transferTypeSchema = z.enum(['TAXI', 'SHUTTLE', 'PRIVATE', 'PUBLIC', 'RIDE_SHARE']);
+export const transferTypeSchema = z.enum([
+  'TAXI',
+  'SHUTTLE',
+  'PRIVATE',
+  'PUBLIC',
+  'RIDE_SHARE',
+  'RENTAL_CAR',
+  'RAIL',
+  'FERRY',
+  'WALKING',
+  'OTHER',
+]);
 
 /**
  * Board basis enum schema

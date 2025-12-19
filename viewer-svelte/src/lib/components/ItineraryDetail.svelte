@@ -1,0 +1,402 @@
+<script lang="ts">
+  import type { Itinerary, Segment } from '$lib/types';
+  import SegmentCard from './SegmentCard.svelte';
+  import SegmentEditor from './SegmentEditor.svelte';
+  import AddSegmentModal from './AddSegmentModal.svelte';
+  import { updateSegment, deleteSegment, addSegment } from '$lib/stores/itineraries';
+
+  let {
+    itinerary,
+    onEditManually,
+    onEditWithPrompt,
+    onDelete
+  }: {
+    itinerary: Itinerary;
+    onEditManually?: (itinerary: Itinerary) => void;
+    onEditWithPrompt?: (itinerary: Itinerary) => void;
+    onDelete?: (itinerary: Itinerary) => void;
+  } = $props();
+
+  let showDeleteConfirm = $state(false);
+  let editMode = $state(false);
+  let editingSegmentId = $state<string | null>(null);
+  let showAddSegmentModal = $state(false);
+
+  function handleEditManually() {
+    if (onEditManually) {
+      onEditManually(itinerary);
+    } else {
+      // Default behavior: enter edit mode
+      editMode = true;
+    }
+  }
+
+  function handleEditWithPrompt() {
+    onEditWithPrompt?.(itinerary);
+  }
+
+  function handleExitEditMode() {
+    editMode = false;
+    editingSegmentId = null;
+  }
+
+  function handleEditSegment(segmentId: string) {
+    editingSegmentId = segmentId;
+  }
+
+  async function handleSaveSegment(segmentData: Partial<Segment>) {
+    try {
+      await updateSegment(itinerary.id, segmentData.id!, segmentData);
+      editingSegmentId = null;
+    } catch (error) {
+      console.error('Failed to save segment:', error);
+      alert('Failed to save segment. Please try again.');
+    }
+  }
+
+  function handleCancelEdit() {
+    editingSegmentId = null;
+  }
+
+  async function handleDeleteSegment(segmentId: string) {
+    try {
+      await deleteSegment(itinerary.id, segmentId);
+    } catch (error) {
+      console.error('Failed to delete segment:', error);
+      alert('Failed to delete segment. Please try again.');
+    }
+  }
+
+  async function handleAddSegment(segmentData: Partial<Segment>) {
+    await addSegment(itinerary.id, segmentData);
+  }
+
+  function handleDeleteClick() {
+    showDeleteConfirm = true;
+  }
+
+  function handleConfirmDelete() {
+    onDelete?.(itinerary);
+    showDeleteConfirm = false;
+  }
+
+  function handleCancelDelete() {
+    showDeleteConfirm = false;
+  }
+
+  // Format date range
+  function formatDateRange(): string {
+    if (!itinerary.startDate) return '';
+    const start = new Date(itinerary.startDate);
+    const end = itinerary.endDate ? new Date(itinerary.endDate) : null;
+
+    if (end) {
+      return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+    }
+    return start.toLocaleDateString();
+  }
+
+  // Get destinations string
+  function getDestinationsString(): string {
+    if (!itinerary.destinations || itinerary.destinations.length === 0) {
+      return '';
+    }
+    return itinerary.destinations.map((d) => d.city || d.name).join(', ');
+  }
+
+  // Group segments by date
+  interface SegmentsByDay {
+    date: string;
+    dateDisplay: string;
+    segments: Segment[];
+  }
+
+  let segmentsByDay = $derived.by(() => {
+    const grouped = new Map<string, Segment[]>();
+
+    // Guard against missing segments
+    if (!itinerary?.segments) {
+      return [];
+    }
+
+    // Group segments by date (YYYY-MM-DD)
+    itinerary.segments.forEach((segment) => {
+      const date = new Date(segment.startDatetime);
+      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      if (!grouped.has(dateKey)) {
+        grouped.set(dateKey, []);
+      }
+      grouped.get(dateKey)!.push(segment);
+    });
+
+    // Convert to array and sort by date
+    const result: SegmentsByDay[] = Array.from(grouped.entries())
+      .map(([dateKey, segments]) => {
+        const date = new Date(dateKey);
+        const dateDisplay = date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+        });
+
+        return {
+          date: dateKey,
+          dateDisplay,
+          segments: segments.sort(
+            (a, b) =>
+              new Date(a.startDatetime).getTime() - new Date(b.startDatetime).getTime()
+          ),
+        };
+      })
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return result;
+  });
+</script>
+
+<div class="h-full overflow-y-auto">
+  <!-- Header -->
+  <div class="bg-minimal-card p-6">
+    <h2 class="text-2xl font-semibold text-minimal-text mb-4">
+      {itinerary.title}
+    </h2>
+
+    <!-- Button Controls -->
+    <div class="button-group mb-4">
+      {#if onEditManually}
+        <button
+          class="minimal-button"
+          onclick={handleEditManually}
+          type="button"
+        >
+          Edit Manually
+        </button>
+      {/if}
+      {#if onEditWithPrompt}
+        <button
+          class="minimal-button"
+          onclick={handleEditWithPrompt}
+          type="button"
+        >
+          Edit with AI
+        </button>
+      {/if}
+      {#if onDelete}
+        <button
+          class="minimal-button delete-button"
+          onclick={handleDeleteClick}
+          type="button"
+        >
+          Delete
+        </button>
+      {/if}
+    </div>
+
+    {#if formatDateRange()}
+      <p class="text-minimal-text-muted text-sm mb-4">
+        {formatDateRange()}
+      </p>
+    {/if}
+
+    {#if itinerary.description}
+      <p class="text-minimal-text-muted text-sm mb-4">
+        {itinerary.description}
+      </p>
+    {/if}
+
+    <div class="flex items-center gap-3 text-sm text-minimal-text-muted">
+      {#if getDestinationsString()}
+        <span>{getDestinationsString()}</span>
+      {/if}
+
+      {#if itinerary.tripType}
+        <span class="minimal-badge">
+          {itinerary.tripType.toLowerCase()}
+        </span>
+      {/if}
+    </div>
+  </div>
+
+  <!-- Segments grouped by day -->
+  <div class="p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-sm font-semibold text-minimal-text-muted">
+        {itinerary.segments?.length ?? 0} SEGMENT{(itinerary.segments?.length ?? 0) !== 1 ? 'S' : ''}
+      </h3>
+      {#if editMode}
+        <div class="flex gap-2">
+          <button
+            class="minimal-button"
+            onclick={() => showAddSegmentModal = true}
+            type="button"
+          >
+            Add Segment
+          </button>
+          <button
+            class="minimal-button primary"
+            onclick={handleExitEditMode}
+            type="button"
+          >
+            Done Editing
+          </button>
+        </div>
+      {/if}
+    </div>
+
+    <div class="space-y-6">
+      {#each segmentsByDay as day (day.date)}
+        <div>
+          <!-- Day header -->
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-lg">📅</span>
+            <h4 class="text-sm font-semibold text-minimal-text">
+              {day.dateDisplay}
+            </h4>
+          </div>
+
+          <!-- Segments for this day -->
+          <div class="space-y-3 pl-7">
+            {#each day.segments as segment (segment.id)}
+              {#if editMode && editingSegmentId === segment.id}
+                <!-- Editing mode -->
+                <SegmentEditor
+                  {segment}
+                  onSave={handleSaveSegment}
+                  onCancel={handleCancelEdit}
+                  onDelete={() => handleDeleteSegment(segment.id)}
+                />
+              {:else}
+                <!-- Display mode -->
+                <SegmentCard
+                  {segment}
+                  {editMode}
+                  onEdit={editMode ? () => handleEditSegment(segment.id) : undefined}
+                  onDelete={editMode ? () => handleDeleteSegment(segment.id) : undefined}
+                />
+              {/if}
+            {/each}
+          </div>
+        </div>
+      {/each}
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+{#if showDeleteConfirm}
+  <div class="modal-overlay" onclick={handleCancelDelete}>
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <div class="modal-content" onclick={(e) => e.stopPropagation()}>
+      <h3 class="modal-title">Delete Itinerary</h3>
+      <p class="modal-message">
+        Are you sure you want to delete this itinerary? This cannot be undone.
+      </p>
+      <div class="modal-buttons">
+        <button
+          class="minimal-button"
+          onclick={handleCancelDelete}
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="minimal-button delete-button-confirm"
+          onclick={handleConfirmDelete}
+          type="button"
+        >
+          Confirm Delete
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<style>
+  .button-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .delete-button {
+    color: #dc2626;
+    border-color: #fecaca;
+  }
+
+  .delete-button:hover:not(:disabled) {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+
+  .modal-message {
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .modal-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .delete-button-confirm {
+    background-color: #dc2626;
+    color: white;
+    border-color: #dc2626;
+  }
+
+  .delete-button-confirm:hover:not(:disabled) {
+    background-color: #b91c1c;
+    border-color: #b91c1c;
+  }
+
+  .minimal-button.primary {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+  }
+
+  .minimal-button.primary:hover:not(:disabled) {
+    background-color: #2563eb;
+    border-color: #2563eb;
+  }
+</style>
+
+<!-- Add Segment Modal -->
+<AddSegmentModal
+  bind:open={showAddSegmentModal}
+  itineraryId={itinerary.id}
+  onSegmentAdded={handleAddSegment}
+/>

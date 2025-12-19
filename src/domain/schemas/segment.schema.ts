@@ -17,6 +17,36 @@ import { companySchema, locationSchema } from './location.schema.js';
 import { moneySchema } from './money.schema.js';
 
 // ===========================
+// Source tracking schemas
+// ===========================
+
+/**
+ * Segment source schema
+ */
+const segmentSourceSchema = z.enum(['import', 'user', 'agent']);
+
+/**
+ * Agent mode schema
+ */
+const agentModeSchema = z.enum(['dream', 'plan', 'book']);
+
+/**
+ * Segment source details schema
+ */
+const segmentSourceDetailsSchema = z.object({
+  /** LLM model used if agent-generated */
+  model: z.string().optional(),
+  /** SerpAPI search query if used for plausibility check */
+  searchQuery: z.string().optional(),
+  /** Confidence score (0-1) for agent-generated segments */
+  confidence: z.number().min(0).max(1).optional(),
+  /** Agent mode used when generating segment */
+  mode: agentModeSchema.optional(),
+  /** Timestamp when segment was generated/imported */
+  timestamp: dateSchema.optional(),
+}).optional();
+
+// ===========================
 // Base segment schema
 // ===========================
 
@@ -35,6 +65,10 @@ const baseSegmentFields = {
   endDatetime: dateSchema,
   /** IDs of travelers for this segment (empty = all travelers on itinerary) */
   travelerIds: z.array(travelerIdSchema).default([]),
+  /** Source of segment - where it came from (defaults to 'import') */
+  source: segmentSourceSchema.optional().default('import'),
+  /** Additional details about the source (optional) */
+  sourceDetails: segmentSourceDetailsSchema,
   /** Confirmation or reference number */
   confirmationNumber: z.string().optional(),
   /** Booking reference */

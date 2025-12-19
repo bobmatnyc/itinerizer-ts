@@ -40,10 +40,11 @@ export const addressSchema = z.object({
 export const locationSchema = z.object({
   /** Location name */
   name: z.string().min(1, 'Name is required'),
-  /** IATA airport or city code (3 letters) */
+  /** IATA airport or city code (normalized to 3 letters by schema-normalizer) */
   code: z
     .string()
-    .length(3, 'Code must be 3 letters')
+    .min(1, 'Code must not be empty')
+    .max(3, 'Code must be 3 letters or less')
     .transform((val) => val.toUpperCase())
     .optional(),
   /** Physical address */

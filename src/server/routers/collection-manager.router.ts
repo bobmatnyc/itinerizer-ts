@@ -1,0 +1,190 @@
+/**
+ * Itinerary Collection Manager Router
+ * Manages the collection of itineraries (CRUD on itinerary entities)
+ * @module server/routers/collection-manager
+ */
+
+import { Router, type Request, type Response } from 'express';
+import type { ItineraryCollectionService } from '../../services/itinerary-collection.service.js';
+import type { ItineraryService } from '../../services/itinerary.service.js';
+import type { ItineraryId } from '../../domain/types/branded.js';
+
+export function createCollectionManagerRouter(
+  collectionService: ItineraryCollectionService,
+  itineraryService?: ItineraryService
+): Router {
+  const router = Router();
+
+  /**
+   * GET /api/v1/itineraries
+   * List all itineraries (summaries)
+   */
+  router.get('/', async (_req: Request, res: Response) => {
+    try {
+      const result = await collectionService.listItineraries();
+
+      if (!result.success) {
+        return res.status(500).json({
+          error: 'Failed to list itineraries',
+          message: result.error.message,
+        });
+      }
+
+      res.json(result.value);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  /**
+   * POST /api/v1/itineraries
+   * Create blank itinerary
+   * Body: { title, description?, startDate, endDate, draft? }
+   */
+  router.post('/', async (req: Request, res: Response) => {
+    try {
+      const { title, description, startDate, endDate, draft } = req.body;
+
+      if (!title || !startDate || !endDate) {
+        return res.status(400).json({
+          error: 'Missing required fields',
+          message: 'title, startDate, and endDate are required',
+        });
+      }
+
+      const result = await collectionService.createItinerary({
+        title,
+        description: description || '',
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        draft: draft === true, // Only save to disk if not a draft
+      });
+
+      if (!result.success) {
+        return res.status(500).json({
+          error: 'Failed to create itinerary',
+          message: result.error.message,
+        });
+      }
+
+      res.status(201).json({
+        ...result.value,
+        isDraft: draft === true,
+      });
+    } catch (error) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  /**
+   * GET /api/v1/itineraries/:id
+   * Get full itinerary with segments
+   */
+  router.get('/:id', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as ItineraryId;
+      if (!id) {
+        return res.status(400).json({ error: 'Missing ID parameter' });
+      }
+
+      // Use itineraryService for full itinerary (with segments)
+      // Fall back to collectionService summary if itineraryService not available
+      if (itineraryService) {
+        const result = await itineraryService.getItinerary(id);
+        if (!result.success) {
+          return res.status(404).json({
+            error: 'Itinerary not found',
+            message: result.error.message,
+          });
+        }
+        return res.json(result.value);
+      }
+
+      // Fallback to summary (no segments)
+      const result = await collectionService.getItinerarySummary(id);
+      if (!result.success) {
+        return res.status(404).json({
+          error: 'Itinerary not found',
+          message: result.error.message,
+        });
+      }
+
+      res.json(result.value);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  /**
+   * PATCH /api/v1/itineraries/:id
+   * Update itinerary metadata (title, description, dates, status, tags)
+   */
+  router.patch('/:id', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as ItineraryId;
+      const { title, description, startDate, endDate, status, tripType, tags } = req.body;
+
+      const updates: Parameters<typeof collectionService.updateMetadata>[1] = {};
+
+      if (title !== undefined) updates.title = title;
+      if (description !== undefined) updates.description = description;
+      if (startDate !== undefined) updates.startDate = new Date(startDate);
+      if (endDate !== undefined) updates.endDate = new Date(endDate);
+      if (status !== undefined) updates.status = status;
+      if (tripType !== undefined) updates.tripType = tripType;
+      if (tags !== undefined) updates.tags = tags;
+
+      const result = await collectionService.updateMetadata(id, updates);
+
+      if (!result.success) {
+        return res.status(404).json({
+          error: 'Failed to update itinerary',
+          message: result.error.message,
+        });
+      }
+
+      res.json(result.value);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  /**
+   * DELETE /api/v1/itineraries/:id
+   * Delete itinerary
+   */
+  router.delete('/:id', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as ItineraryId;
+      const result = await collectionService.deleteItinerary(id);
+
+      if (!result.success) {
+        return res.status(404).json({
+          error: 'Itinerary not found',
+          message: result.error.message,
+        });
+      }
+
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
+
+  return router;
+}

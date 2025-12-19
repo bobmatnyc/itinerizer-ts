@@ -10,3 +10,7 @@ export * from './location.js';
 export * from './traveler.js';
 export * from './segment.js';
 export * from './itinerary.js';
+export * from './agent.js';
+export * from './trip-taxonomy.js';
+export * from './trip-designer.js';
+export * from './knowledge.js';

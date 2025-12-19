@@ -24,6 +24,8 @@ export enum GapType {
   DOMESTIC_GAP = 'DOMESTIC_GAP',
   /** Different countries (needs international flight) */
   INTERNATIONAL_GAP = 'INTERNATIONAL_GAP',
+  /** Overnight gap (no direct transfer needed - travelers likely at hotel) */
+  OVERNIGHT_GAP = 'OVERNIGHT_GAP',
   /** Unknown gap type (insufficient location data) */
   UNKNOWN = 'UNKNOWN',
 }
@@ -50,6 +52,8 @@ export interface LocationGap {
   description: string;
   /** Suggested segment type to fill gap */
   suggestedType: 'FLIGHT' | 'TRANSFER';
+  /** Confidence score (0-100) for gap-filling recommendation */
+  confidence: number;
 }
 
 /**
@@ -120,6 +124,157 @@ export class SegmentContinuityService {
   }
 
   /**
+   * Check if a segment is a transfer-type segment that connects two locations
+   * @param segment - Segment to check
+   * @returns True if segment is a transfer, flight, or other connecting segment
+   */
+  private isTransferSegment(segment: Segment): boolean {
+    // FLIGHT and TRANSFER segments explicitly connect two locations
+    if (segment.type === 'FLIGHT' || segment.type === 'TRANSFER') {
+      return true;
+    }
+
+    // Check if segment has both origin/destination or pickup/dropoff
+    const startLocation = this.getStartLocation(segment);
+    const endLocation = this.getEndLocation(segment);
+
+    // If start and end locations are different, it's a connecting segment
+    if (startLocation && endLocation && !this.isSameLocation(startLocation, endLocation)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if a segment involves an airport (for travel day detection)
+   * @param segment - Segment to check
+   * @returns True if segment involves airport pickup or dropoff
+   */
+  private isAirportSegment(segment: Segment): boolean {
+    if (segment.type === 'FLIGHT') {
+      return true;
+    }
+
+    if (segment.type === 'TRANSFER') {
+      const transfer = segment as TransferSegment;
+      const pickupIsAirport = transfer.pickupLocation?.type === 'AIRPORT' || transfer.pickupLocation?.code;
+      const dropoffIsAirport = transfer.dropoffLocation?.type === 'AIRPORT' || transfer.dropoffLocation?.code;
+      return pickupIsAirport || dropoffIsAirport;
+    }
+
+    return false;
+  }
+
+  /**
+   * Calculate confidence score for gap-filling recommendation
+   * @param gap - Gap information
+   * @param prevSegment - Segment before gap
+   * @param nextSegment - Segment after gap
+   * @returns Confidence score (0-100)
+   */
+  private calculateGapConfidence(
+    gapType: GapType,
+    prevSegment: Segment,
+    nextSegment: Segment
+  ): number {
+    const prevIsAirport = this.isAirportSegment(prevSegment);
+    const nextIsAirport = this.isAirportSegment(nextSegment);
+    const prevIsHotel = prevSegment.type === 'HOTEL';
+    const nextIsHotel = nextSegment.type === 'HOTEL';
+
+    // HIGH confidence (90%+): Airport-to-airport international/domestic gaps
+    // These are clear flights needed (e.g., JFK → MXP)
+    if (prevIsAirport && nextIsAirport) {
+      if (gapType === GapType.INTERNATIONAL_GAP || gapType === GapType.DOMESTIC_GAP) {
+        return 95; // Airport → Airport across cities/countries (definite flight)
+      }
+    }
+
+    // HIGH confidence (90%+): Airport transfers are obvious and necessary
+    if (prevIsAirport && (nextIsHotel || nextSegment.type === 'ACTIVITY')) {
+      return 95; // Flight arrival -> Hotel/Activity (obvious transfer needed)
+    }
+    if (nextIsAirport && (prevIsHotel || prevSegment.type === 'ACTIVITY')) {
+      return 95; // Hotel/Activity -> Flight departure (obvious transfer needed)
+    }
+
+    // HIGH confidence (90%+): Hotel-to-hotel transitions across cities/countries
+    // These are clear travel days requiring flights or long-distance transfers
+    if (prevIsHotel && nextIsHotel) {
+      if (gapType === GapType.INTERNATIONAL_GAP || gapType === GapType.DOMESTIC_GAP) {
+        return 90; // Hotel checkout -> Hotel checkin in different city (clear travel day)
+      }
+    }
+
+    // MEDIUM-HIGH confidence (85%): Hotel transitions with activities
+    if (prevIsHotel && !nextIsHotel && !nextIsAirport) {
+      return 85; // Hotel checkout -> Activity (likely needs transfer)
+    }
+    if (nextIsHotel && !prevIsHotel && !prevIsAirport) {
+      return 85; // Activity -> Hotel checkin (likely needs transfer)
+    }
+
+    // MEDIUM confidence (80%): Same-city activity-to-activity
+    if (gapType === GapType.LOCAL_TRANSFER) {
+      return 80; // Same city, different locations (reasonable transfer)
+    }
+
+    // LOW confidence (60%): Cross-city gaps between activities
+    if (gapType === GapType.DOMESTIC_GAP || gapType === GapType.INTERNATIONAL_GAP) {
+      return 60; // May need flight but could be handled differently
+    }
+
+    // VERY LOW confidence: Unknown or overnight gaps
+    return 50;
+  }
+
+  /**
+   * Check if the time gap between two segments represents an overnight gap
+   * Overnight gaps should not create direct transfers (e.g., no taxi from dinner to next-day lunch)
+   * @param segment1EndTime - End time of first segment
+   * @param segment2StartTime - Start time of second segment
+   * @returns True if gap is overnight (evening activity to next-day morning/afternoon activity)
+   */
+  private isOvernightGap(segment1EndTime: Date, segment2StartTime: Date): boolean {
+    // Calculate time difference in hours
+    const hoursDiff = (segment2StartTime.getTime() - segment1EndTime.getTime()) / (1000 * 60 * 60);
+
+    // Same day but unusually long gap (>8 hours)
+    // This catches edge cases like all-day gaps on same day
+    if (hoursDiff > 8) {
+      return true;
+    }
+
+    // Check calendar day boundary
+    const date1 = segment1EndTime.toDateString();
+    const date2 = segment2StartTime.toDateString();
+
+    if (date1 !== date2) {
+      // Different days - check if it's a reasonable overnight scenario
+      // This specifically targets evening->morning patterns
+      const endHour = segment1EndTime.getHours();
+      const startHour = segment2StartTime.getHours();
+
+      // Evening activity (after 6PM) ending, morning/midday activity (before 3PM) starting
+      // Examples:
+      // - Dinner at 9PM -> Lunch at 12PM next day (YES - overnight)
+      // - Hotel checkout at 11AM -> Hotel checkin at 3PM next day (NO - travel day)
+      if (endHour >= 18 && startHour <= 15) {
+        return true;
+      }
+
+      // Very late evening (after 9PM) to any time next day before afternoon
+      // This is clearly overnight
+      if (endHour >= 21 && startHour <= 14) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Detect geographic gaps between consecutive segments
    * @param segments - Array of segments in chronological order
    * @returns Array of detected gaps
@@ -135,6 +290,22 @@ export class SegmentContinuityService {
         continue;
       }
 
+      // Check for overnight gaps BEFORE location checking
+      // Overnight gaps should not create direct transfers between activities
+      // BUT hotel-to-hotel transitions and travel days should still create gaps
+      const isHotelTransition =
+        currentSegment.type === 'HOTEL' || nextSegment.type === 'HOTEL';
+
+      const isAirportTransition =
+        this.isAirportSegment(currentSegment) || this.isAirportSegment(nextSegment);
+
+      // Skip overnight gaps for non-travel segments
+      // (e.g., dinner to next-day lunch = no direct transfer needed)
+      if (!isHotelTransition && !isAirportTransition && this.isOvernightGap(currentSegment.endDatetime, nextSegment.startDatetime)) {
+        // Skip overnight gaps between activities - travelers are likely at hotel
+        continue;
+      }
+
       const endLocation = this.getEndLocation(currentSegment);
       const startLocation = this.getStartLocation(nextSegment);
 
@@ -147,19 +318,46 @@ export class SegmentContinuityService {
       const locationsDiffer = !this.isSameLocation(endLocation, startLocation);
 
       if (locationsDiffer) {
+        // Skip if the current segment is already a transfer that drops off at the next segment's start
+        // This prevents creating consecutive transfers
+        if (this.isTransferSegment(currentSegment)) {
+          const currentSegmentEnd = this.getEndLocation(currentSegment);
+
+          // If current transfer drops off at (or near) next segment's start, no gap
+          if (currentSegmentEnd && this.isSameLocation(currentSegmentEnd, startLocation)) {
+            continue; // Transfer already connects to next segment
+          }
+        }
+
+        // Also skip if the next segment is a transfer that picks up from current segment's end
+        if (this.isTransferSegment(nextSegment)) {
+          const nextSegmentStart = this.getStartLocation(nextSegment);
+
+          // If next transfer picks up from current segment's end, no gap
+          if (nextSegmentStart && this.isSameLocation(endLocation, nextSegmentStart)) {
+            continue; // Transfer already handles this transition
+          }
+        }
+
         const gapType = this.classifyGap(endLocation, startLocation);
-        const gap: LocationGap = {
-          beforeIndex: i,
-          afterIndex: i + 1,
-          beforeSegment: currentSegment,
-          afterSegment: nextSegment,
-          endLocation,
-          startLocation,
-          gapType,
-          description: this.describeGap(endLocation, startLocation, gapType),
-          suggestedType: this.suggestSegmentType(gapType),
-        };
-        gaps.push(gap);
+        const confidence = this.calculateGapConfidence(gapType, currentSegment, nextSegment);
+
+        // Only create gap if confidence >= 80%
+        if (confidence >= 80) {
+          const gap: LocationGap = {
+            beforeIndex: i,
+            afterIndex: i + 1,
+            beforeSegment: currentSegment,
+            afterSegment: nextSegment,
+            endLocation,
+            startLocation,
+            gapType,
+            description: this.describeGap(endLocation, startLocation, gapType),
+            suggestedType: this.suggestSegmentType(gapType),
+            confidence,
+          };
+          gaps.push(gap);
+        }
       }
     }
 
@@ -177,8 +375,23 @@ export class SegmentContinuityService {
     const endCountry = endLoc.address?.country || this.inferCountryFromCode(endLoc.code);
     const startCountry = startLoc.address?.country || this.inferCountryFromCode(startLoc.code);
 
-    // If we can't determine countries, return UNKNOWN
+    // Check cities regardless of country info
+    const endCity = this.normalizeCity(
+      endLoc.city || endLoc.address?.city || endLoc.name
+    );
+    const startCity = this.normalizeCity(
+      startLoc.city || startLoc.address?.city || startLoc.name
+    );
+
+    // If both have the same city, it's a local transfer (even without country info)
+    if (endCity && startCity && endCity === startCity) {
+      return GapType.LOCAL_TRANSFER;
+    }
+
+    // If we can't determine countries but have different cities, return UNKNOWN
     if (!endCountry || !startCountry) {
+      // If we have city info and they're different, it could be domestic or international
+      // Return UNKNOWN to be safe
       return GapType.UNKNOWN;
     }
 
@@ -187,11 +400,7 @@ export class SegmentContinuityService {
       return GapType.INTERNATIONAL_GAP;
     }
 
-    // Same country, check cities
-    const endCity = this.normalizeCity(endLoc.address?.city || endLoc.name);
-    const startCity = this.normalizeCity(startLoc.address?.city || startLoc.name);
-
-    // Different cities in same country = domestic gap
+    // Same country, different cities = domestic gap
     if (endCity !== startCity) {
       return GapType.DOMESTIC_GAP;
     }
@@ -209,7 +418,25 @@ export class SegmentContinuityService {
   private isSameLocation(loc1: Location, loc2: Location): boolean {
     // Check airport codes first (most reliable for airports)
     if (loc1.code && loc2.code) {
-      return loc1.code.toUpperCase() === loc2.code.toUpperCase();
+      // If both have codes and they differ, definitely different locations
+      if (loc1.code.toUpperCase() !== loc2.code.toUpperCase()) {
+        return false;
+      }
+      // Same code = same location
+      return true;
+    }
+
+    // If one has a code and the other doesn't, continue to name-based matching
+    // (don't immediately reject - one might just have incomplete data)
+
+    // Check coordinate proximity if both locations have coordinates
+    if (this.areCoordinatesClose(loc1, loc2)) {
+      return true;
+    }
+
+    // Check if location A's address matches location B's name (hotel name vs address)
+    if (this.isAddressMatch(loc1, loc2)) {
+      return true;
     }
 
     // Check location names (normalized)
@@ -220,27 +447,6 @@ export class SegmentContinuityService {
       return true;
     }
 
-    // If one has a code and the other doesn't, they're different locations
-    // (e.g., JFK Airport vs. Manhattan Hotel - both in NYC but different places)
-    if ((loc1.code && !loc2.code) || (!loc1.code && loc2.code)) {
-      return false;
-    }
-
-    // Check for address vs venue name match (e.g., "123 Main St" vs "Grand Hotel")
-    // If both are in the same city/area and one could be an address, they might be same place
-    if (this.looksLikeAddress(loc1.name) || this.looksLikeAddress(loc2.name)) {
-      // Same city suggests same area - consider as same location to avoid false positives
-      const city1 = loc1.address?.city || this.extractCityFromName(loc1.name);
-      const city2 = loc2.address?.city || this.extractCityFromName(loc2.name);
-      if (city1 && city2 && this.normalizeCity(city1) === this.normalizeCity(city2)) {
-        return true;
-      }
-      // If one location name contains key venue identifier from the other
-      if (this.shareSignificantWords(name1, name2)) {
-        return true;
-      }
-    }
-
     // Check if one name contains the other (e.g., "Four Seasons" in "Four Seasons Resort Oahu")
     if (name1.length > 5 && name2.length > 5) {
       if (name1.includes(name2) || name2.includes(name1)) {
@@ -248,91 +454,194 @@ export class SegmentContinuityService {
       }
     }
 
-    // Only treat as same location if names are very similar despite normalization
-    // City/country match alone is not sufficient - that just means same city
+    // Check for fuzzy word similarity (e.g., "King George Hotel" ~ "George Hotel")
+    if (this.haveSimilarWords(name1, name2)) {
+      return true;
+    }
+
+    // Default to different locations - safer than false positives
     return false;
   }
 
   /**
-   * Check if a string looks like a street address
+   * Check if two locations have coordinates that are very close (within ~100 meters)
+   * @param loc1 - First location
+   * @param loc2 - Second location
+   * @returns True if coordinates are within proximity threshold
    */
-  private looksLikeAddress(name: string): boolean {
-    // Street address patterns: numbers at start, "St", "Ave", "Blvd", etc.
-    const addressPattern = /^\d+[\-\s]|(?:st|ave|blvd|rd|dr|ln|way|street|avenue|boulevard|road|drive|lane)\b/i;
-    return addressPattern.test(name);
+  private areCoordinatesClose(loc1: Location, loc2: Location): boolean {
+    const coords1 = loc1.coordinates;
+    const coords2 = loc2.coordinates;
+
+    if (!coords1 || !coords2) {
+      return false;
+    }
+
+    const lat1 = coords1.latitude;
+    const lon1 = coords1.longitude;
+    const lat2 = coords2.latitude;
+    const lon2 = coords2.longitude;
+
+    // Haversine formula for distance between two coordinates
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c; // Distance in meters
+
+    // Consider same location if within 100 meters
+    return distance <= 100;
   }
 
   /**
-   * Extract city name from a location name if embedded
+   * Check if one location's address field matches the other location's name
+   * This handles cases like "King George Hotel" vs "3 Vasileos Georgiou A' St"
+   * @param loc1 - First location
+   * @param loc2 - Second location
+   * @returns True if address field of one matches name of other
    */
-  private extractCityFromName(name: string): string | null {
-    // Look for common patterns like "Hotel at/in/near City" or "City Hotel"
-    const patterns = [
-      /at\s+(.+)$/i,
-      /in\s+(.+)$/i,
-      /,\s*(.+)$/,
-    ];
-    for (const pattern of patterns) {
-      const match = name.match(pattern);
-      if (match && match[1]) {
-        return match[1].trim();
+  private isAddressMatch(loc1: Location, loc2: Location): boolean {
+    // Check if loc1's street address matches loc2's name
+    if (loc1.address?.street) {
+      const address1 = this.normalizeLocationName(loc1.address.street);
+      const name2 = this.normalizeLocationName(loc2.name);
+      if (address1 === name2) {
+        return true;
       }
     }
-    return null;
+
+    // Check if loc2's street address matches loc1's name
+    if (loc2.address?.street) {
+      const address2 = this.normalizeLocationName(loc2.address.street);
+      const name1 = this.normalizeLocationName(loc1.name);
+      if (address2 === name1) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
-   * Check if two names share significant words (venue identifiers)
+   * Check if two normalized names have significant word overlap using fuzzy matching
+   * @param name1 - First normalized name
+   * @param name2 - Second normalized name
+   * @returns True if >70% of significant words overlap
    */
-  private shareSignificantWords(name1: string, name2: string): boolean {
+  private haveSimilarWords(name1: string, name2: string): boolean {
     const stopWords = new Set([
       'the', 'at', 'in', 'on', 'of', 'and', 'a', 'an', 'to', 'for',
       'resort', 'hotel', 'inn', 'suites', 'lodge', 'airport', 'international',
       'st', 'ave', 'blvd', 'rd', 'street', 'avenue', 'boulevard', 'road',
-      'drive', 'lane', 'way', 'place', 'hi', 'ca', 'ny', 'tx', 'fl', // US state abbrevs
+      'drive', 'lane', 'way', 'place', 'collection', 'luxury',
     ]);
 
-    const words1 = name1.split(/[\s,]+/).filter(w => w.length > 2 && !stopWords.has(w));
-    const words2 = name2.split(/[\s,]+/).filter(w => w.length > 2 && !stopWords.has(w));
+    // Extract significant words (length > 2, not stop words)
+    const words1 = name1
+      .split(/[\s,]+/)
+      .filter(w => w.length > 2 && !stopWords.has(w));
+    const words2 = name2
+      .split(/[\s,]+/)
+      .filter(w => w.length > 2 && !stopWords.has(w));
 
-    // Check if any significant word from name1 is in name2 or vice versa
-    for (const word of words1) {
-      if (words2.some(w2 => w2.includes(word) || word.includes(w2))) {
-        return true;
+    if (words1.length === 0 || words2.length === 0) {
+      return false;
+    }
+
+    // Count matching words (using fuzzy matching)
+    let matchCount = 0;
+    for (const word1 of words1) {
+      for (const word2 of words2) {
+        if (this.areWordsSimilar(word1, word2)) {
+          matchCount++;
+          break; // Only count each word1 once
+        }
       }
     }
 
-    // Also check for location patterns like "Ko Olina" that might span two words
-    const locationPattern1 = this.extractLocationPattern(name1);
-    const locationPattern2 = this.extractLocationPattern(name2);
-    if (locationPattern1 && locationPattern2) {
-      if (locationPattern1 === locationPattern2 ||
-          locationPattern1.includes(locationPattern2) ||
-          locationPattern2.includes(locationPattern1)) {
-        return true;
-      }
-    }
+    // Calculate overlap percentage (based on smaller set)
+    const minWordCount = Math.min(words1.length, words2.length);
+    const overlapPercentage = matchCount / minWordCount;
 
-    return false;
+    // Require >70% overlap
+    return overlapPercentage > 0.7;
   }
 
   /**
-   * Extract location patterns from name (e.g., "Ko Olina", "Kapolei")
+   * Check if two words are similar using Levenshtein distance
+   * @param word1 - First word
+   * @param word2 - Second word
+   * @returns True if words are similar (exact match or edit distance <= 2)
    */
-  private extractLocationPattern(name: string): string | null {
-    // Look for capitalized multi-word patterns that might be place names
-    const patterns = [
-      /(?:in|at|near)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/,
-      /,\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/,
-    ];
-    for (const pattern of patterns) {
-      const match = name.match(pattern);
-      if (match && match[1]) {
-        return match[1].toLowerCase();
+  private areWordsSimilar(word1: string, word2: string): boolean {
+    // Exact match
+    if (word1 === word2) {
+      return true;
+    }
+
+    // One contains the other (e.g., "george" in "georgiou")
+    if (word1.includes(word2) || word2.includes(word1)) {
+      return true;
+    }
+
+    // Use Levenshtein distance for fuzzy matching
+    const distance = this.levenshteinDistance(word1, word2);
+
+    // Allow edit distance of up to 2 for words > 5 chars
+    // (handles typos and minor variations)
+    if (word1.length > 5 || word2.length > 5) {
+      return distance <= 2;
+    }
+
+    // For shorter words, require exact match or edit distance of 1
+    return distance <= 1;
+  }
+
+  /**
+   * Calculate Levenshtein distance between two strings
+   * @param str1 - First string
+   * @param str2 - Second string
+   * @returns Edit distance between strings
+   */
+  private levenshteinDistance(str1: string, str2: string): number {
+    const len1 = str1.length;
+    const len2 = str2.length;
+
+    // Create a 2D array for dynamic programming
+    const matrix: number[][] = Array.from({ length: len1 + 1 }, () =>
+      Array(len2 + 1).fill(0)
+    );
+
+    // Initialize first column and row
+    for (let i = 0; i <= len1; i++) {
+      matrix[i][0] = i;
+    }
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Fill in the rest of the matrix
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1, // Deletion
+          matrix[i][j - 1] + 1, // Insertion
+          matrix[i - 1][j - 1] + cost // Substitution
+        );
       }
     }
-    return null;
+
+    return matrix[len1][len2];
   }
+
 
   /**
    * Normalize location name for comparison
@@ -420,6 +729,8 @@ export class SegmentContinuityService {
         return `Domestic transportation needed from ${endName} to ${startName}`;
       case GapType.INTERNATIONAL_GAP:
         return `International flight needed from ${endName} to ${startName}`;
+      case GapType.OVERNIGHT_GAP:
+        return `Overnight gap between ${endName} and ${startName} (no direct transfer needed)`;
       case GapType.UNKNOWN:
         return `Transportation gap between ${endName} and ${startName}`;
       default:

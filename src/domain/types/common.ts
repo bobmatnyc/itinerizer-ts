@@ -88,6 +88,11 @@ export const TransferType = {
   PRIVATE: 'PRIVATE',
   PUBLIC: 'PUBLIC',
   RIDE_SHARE: 'RIDE_SHARE',
+  RENTAL_CAR: 'RENTAL_CAR',
+  RAIL: 'RAIL',
+  FERRY: 'FERRY',
+  WALKING: 'WALKING',
+  OTHER: 'OTHER',
 } as const;
 
 export type TransferType = (typeof TransferType)[keyof typeof TransferType];

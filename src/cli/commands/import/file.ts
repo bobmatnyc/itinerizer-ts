@@ -147,6 +147,34 @@ export function importFileCommand(): Command {
           }
           console.log();
         }
+
+        // Show source tracking information
+        console.log(colors.heading('Segment Sources'));
+        const sourceBreakdown = parsedItinerary.segments.reduce((acc, seg) => {
+          const source = seg.source || 'unknown';
+          acc[source] = (acc[source] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+
+        for (const [source, count] of Object.entries(sourceBreakdown)) {
+          const icon = source === 'import' ? '📄' : source === 'agent' ? '🤖' : '👤';
+          console.log(`  ${icon} ${source}: ${colors.cyan(count.toString())} segment(s)`);
+        }
+
+        // Show agent-generated segments with mode info
+        const agentSegments = parsedItinerary.segments.filter(s => s.source === 'agent');
+        if (agentSegments.length > 0) {
+          console.log();
+          console.log(colors.dim('  Agent-generated details:'));
+          for (const seg of agentSegments) {
+            const mode = seg.sourceDetails?.mode || 'unknown';
+            const confidence = seg.sourceDetails?.confidence
+              ? `${(seg.sourceDetails.confidence * 100).toFixed(0)}%`
+              : 'N/A';
+            console.log(colors.dim(`    • ${seg.type}: mode=${mode}, confidence=${confidence}`));
+          }
+        }
+        console.log();
       }
 
       if (options.save) {

@@ -172,6 +172,14 @@ export interface StructuredMarkdown {
 }
 
 /**
+ * SerpAPI configuration
+ */
+export interface SerpApiConfig {
+  /** SerpAPI API key */
+  apiKey: string;
+}
+
+/**
  * Import configuration
  */
 export interface ImportConfig {
@@ -187,4 +195,6 @@ export interface ImportConfig {
   costTrackingEnabled?: boolean;
   /** Path for cost log file */
   costLogPath?: string;
+  /** SerpAPI configuration (optional) */
+  serpapi?: SerpApiConfig;
 }

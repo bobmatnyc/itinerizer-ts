@@ -38,6 +38,11 @@ export interface YamlAppConfig {
     /** Path for cost log file */
     logPath?: string;
   };
+  /** SerpAPI configuration */
+  serpapi?: {
+    /** SerpAPI API key */
+    apiKey?: string;
+  };
 }
 
 /**
@@ -180,14 +185,23 @@ export class YamlConfigStorage {
       );
     }
 
-    return ok({
+    const importConfig: ImportConfig = {
       apiKey,
       defaultModel: config.openrouter?.defaultModel ?? DEFAULT_IMPORT_MODEL,
       maxTokens: config.import?.maxTokens ?? 4096,
       temperature: config.import?.temperature ?? 0.1,
       costTrackingEnabled: config.costTracking?.enabled ?? true,
       costLogPath: config.costTracking?.logPath ?? './data/imports/cost-log.json',
-    });
+    };
+
+    // Add SerpAPI config if available
+    if (config.serpapi?.apiKey) {
+      importConfig.serpapi = {
+        apiKey: config.serpapi.apiKey,
+      };
+    }
+
+    return ok(importConfig);
   }
 
   /**

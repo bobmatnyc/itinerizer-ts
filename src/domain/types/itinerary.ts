@@ -8,7 +8,7 @@ import type { ItineraryStatus, TripType } from './common.js';
 import type { Location } from './location.js';
 import type { Money } from './money.js';
 import type { Segment } from './segment.js';
-import type { TravelPreferences, Traveler } from './traveler.js';
+import type { TravelPreferences, Traveler, TripTravelerPreferences } from './traveler.js';
 
 /**
  * Complete itinerary representing a trip
@@ -54,8 +54,10 @@ export interface Itinerary {
   costCenter?: string;
   /** Project code for business trips */
   projectCode?: string;
-  /** Travel preferences */
+  /** Travel preferences (per-traveler preferences - deprecated, kept for backward compatibility) */
   preferences?: TravelPreferences;
+  /** Trip-level traveler preferences (for trip planning) */
+  tripPreferences?: TripTravelerPreferences;
   /** Tags for organization */
   tags: string[];
   /** Additional metadata */
