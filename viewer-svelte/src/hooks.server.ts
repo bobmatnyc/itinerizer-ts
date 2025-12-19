@@ -1,36 +1,51 @@
 /**
- * MINIMAL SvelteKit server hooks - For Vercel deployment debugging
+ * SvelteKit server hooks - Services initialization for Vercel deployment
  *
- * This version has NO imports from parent project to isolate serverless function crashes.
- * All services are mocked inline to satisfy TypeScript requirements.
- *
- * Once /api/health works on Vercel, progressively add imports back to find the culprit.
+ * Initializes core services with Vercel-compatible configuration:
+ * - Uses Blob storage when BLOB_READ_WRITE_TOKEN is set
+ * - Skips filesystem-dependent services on Vercel
+ * - Initializes optional services only when API keys are configured
  *
  * @module hooks.server
  */
 
 import type { Handle } from '@sveltejs/kit';
+import { createItineraryStorage } from '../../src/storage/index.js';
+import type { ItineraryStorage } from '../../src/storage/index.js';
+import { ItineraryService } from '../../src/services/itinerary.service.js';
+import { ItineraryCollectionService } from '../../src/services/itinerary-collection.service.js';
+import { SegmentService } from '../../src/services/segment.service.js';
+import { DependencyService } from '../../src/services/dependency.service.js';
+import { DocumentImportService } from '../../src/services/document-import.service.js';
+import type { ImportConfig } from '../../src/domain/types/import.js';
+import { TravelAgentService } from '../../src/services/travel-agent.service.js';
+import type { TravelAgentConfig } from '../../src/services/travel-agent.service.js';
+import { TravelAgentFacade } from '../../src/services/travel-agent-facade.service.js';
+import { TripDesignerService } from '../../src/services/trip-designer/trip-designer.service.js';
+import type { TripDesignerConfig } from '../../src/domain/types/trip-designer.js';
+import { KnowledgeService } from '../../src/services/knowledge.service.js';
+import type { KnowledgeConfig } from '../../src/services/knowledge.service.js';
 
 /**
- * Minimal services interface - mocked implementations
+ * Services available to all API routes
  */
 interface Services {
-	storage: unknown;
-	itineraryService: unknown;
-	collectionService: unknown;
-	segmentService: unknown;
-	dependencyService: unknown;
-	importService: unknown;
-	travelAgentService: unknown;
-	travelAgentFacade: unknown;
-	tripDesignerService: unknown;
-	knowledgeService: unknown;
+	storage: ItineraryStorage;
+	itineraryService: ItineraryService;
+	collectionService: ItineraryCollectionService;
+	segmentService: SegmentService;
+	dependencyService: DependencyService;
+	importService: DocumentImportService | null;
+	travelAgentService: TravelAgentService | null;
+	travelAgentFacade: TravelAgentFacade;
+	tripDesignerService: TripDesignerService | null;
+	knowledgeService: KnowledgeService | null;
 }
 
 let servicesInstance: Services | null = null;
 
 /**
- * Initialize minimal mock services
+ * Initialize services with Vercel compatibility
  */
 async function initializeServices(): Promise<Services> {
 	if (servicesInstance) {
@@ -38,29 +53,136 @@ async function initializeServices(): Promise<Services> {
 		return servicesInstance;
 	}
 
-	console.log('Initializing minimal mock services...');
-	console.log('Environment:', {
-		isVercel: process.env.VERCEL === '1',
+	const isVercel = process.env.VERCEL === '1';
+	console.log('Initializing services...', {
+		isVercel,
 		hasBlob: !!process.env.BLOB_READ_WRITE_TOKEN,
 		nodeEnv: process.env.NODE_ENV
 	});
 
-	// Create minimal mock services
-	servicesInstance = {
-		storage: null,
-		itineraryService: null,
-		collectionService: null,
-		segmentService: null,
-		dependencyService: null,
-		importService: null,
-		travelAgentService: null,
-		travelAgentFacade: null,
-		tripDesignerService: null,
-		knowledgeService: null
-	};
+	try {
+		// CORE SERVICES - Required for all operations
 
-	console.log('Minimal mock services initialized');
-	return servicesInstance;
+		// Storage - auto-detects Blob vs JSON based on BLOB_READ_WRITE_TOKEN
+		const storage = createItineraryStorage();
+		const initResult = await storage.initialize();
+
+		if (!initResult.success) {
+			throw new Error('Storage initialization failed');
+		}
+		console.log('✅ Storage initialized');
+
+		// Core services
+		const itineraryService = new ItineraryService(storage);
+		const collectionService = new ItineraryCollectionService(storage);
+		const segmentService = new SegmentService(storage);
+		const dependencyService = new DependencyService(storage);
+		console.log('✅ Core services initialized');
+
+		// OPTIONAL SERVICES - Only initialize if API keys are configured
+
+		// Import service - requires OPENROUTER_API_KEY
+		let importService: DocumentImportService | null = null;
+		const importApiKey = process.env.OPENROUTER_API_KEY;
+
+		if (importApiKey) {
+			const importConfig: ImportConfig = {
+				apiKey: importApiKey,
+				costTrackingEnabled: false, // Disable for Vercel (no filesystem)
+			};
+			importService = new DocumentImportService(importConfig, itineraryService);
+			console.log('✅ Import service initialized');
+		} else {
+			console.log('⚠️  Import service disabled (no OPENROUTER_API_KEY)');
+		}
+
+		// Travel Agent service - requires SERPAPI_KEY
+		let travelAgentService: TravelAgentService | null = null;
+		const serpApiKey = process.env.SERPAPI_KEY;
+
+		if (serpApiKey) {
+			const travelAgentConfig: TravelAgentConfig = {
+				apiKey: serpApiKey,
+			};
+			travelAgentService = new TravelAgentService(travelAgentConfig);
+			console.log('✅ Travel Agent service initialized');
+		} else {
+			console.log('⚠️  Travel Agent service disabled (no SERPAPI_KEY)');
+		}
+
+		// Travel Agent Facade - always available (wraps review/continuity services)
+		const travelAgentFacade = new TravelAgentFacade(itineraryService, travelAgentService);
+		console.log('✅ Travel Agent Facade initialized');
+
+		// Trip Designer service - requires OPENROUTER_API_KEY
+		let tripDesignerService: TripDesignerService | null = null;
+		const tripDesignerApiKey = process.env.OPENROUTER_API_KEY;
+
+		if (tripDesignerApiKey) {
+			const tripDesignerConfig: TripDesignerConfig = {
+				apiKey: tripDesignerApiKey,
+			};
+			tripDesignerService = new TripDesignerService(
+				tripDesignerConfig,
+				undefined, // Use default in-memory session storage
+				{
+					itineraryService,
+					segmentService,
+					dependencyService,
+					travelAgentFacade,
+				}
+			);
+			console.log('✅ Trip Designer service initialized');
+		} else {
+			console.log('⚠️  Trip Designer service disabled (no OPENROUTER_API_KEY)');
+		}
+
+		// Knowledge service - requires OPENROUTER_API_KEY and filesystem (skip on Vercel)
+		let knowledgeService: KnowledgeService | null = null;
+
+		if (!isVercel && process.env.OPENROUTER_API_KEY) {
+			try {
+				// Import filesystem-dependent services only when not on Vercel
+				const { VectraStorage } = await import('../../src/storage/vectra-storage.js');
+				const { EmbeddingService } = await import('../../src/services/embedding.service.js');
+
+				const vectorStorage = new VectraStorage('./data/vectra');
+				const embeddingService = new EmbeddingService({
+					apiKey: process.env.OPENROUTER_API_KEY,
+				});
+
+				knowledgeService = new KnowledgeService(vectorStorage, embeddingService);
+				await knowledgeService.initialize();
+				console.log('✅ Knowledge service initialized');
+			} catch (error) {
+				console.warn('⚠️  Knowledge service initialization failed:', error);
+			}
+		} else {
+			console.log('⚠️  Knowledge service disabled (Vercel or no API key)');
+		}
+
+		servicesInstance = {
+			storage,
+			itineraryService,
+			collectionService,
+			segmentService,
+			dependencyService,
+			importService,
+			travelAgentService,
+			travelAgentFacade,
+			tripDesignerService,
+			knowledgeService,
+		};
+
+		console.log('✅ All services initialized successfully');
+		return servicesInstance;
+	} catch (error) {
+		console.error('❌ Service initialization failed:', {
+			message: error instanceof Error ? error.message : String(error),
+			stack: error instanceof Error ? error.stack : undefined
+		});
+		throw error;
+	}
 }
 
 /**
