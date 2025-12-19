@@ -1,5 +1,11 @@
 /**
- * Server entry point for web viewer
+ * Server entry point for CLI-only local development
+ *
+ * NOTE: This Express server is for CLI/local development only.
+ * For production deployments, use the SvelteKit server routes in viewer-svelte/src/routes/api/
+ *
+ * The SvelteKit routes provide the same API endpoints optimized for Vercel deployment.
+ *
  * @module server
  */
 
