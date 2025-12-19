@@ -1,0 +1,19 @@
+# Ignore CLI and test files
+/tests
+/dist
+*.test.ts
+*.spec.ts
+
+# Keep necessary directories for viewer-svelte
+!/src
+!/viewer-svelte
+!/data
+
+# Ignore node_modules (will be installed during build)
+/node_modules
+/viewer-svelte/node_modules
+
+# Ignore development files
+.env
+.env.local
+*.log

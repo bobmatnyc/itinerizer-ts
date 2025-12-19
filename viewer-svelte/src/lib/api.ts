@@ -1,6 +1,8 @@
 import type { Itinerary, ItineraryListItem, ModelConfig, AgentResponse, ChatStreamEvent } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5177';
+// For SvelteKit deployment, use relative URLs (same origin)
+// For standalone Express server, use VITE_API_URL (defaults to localhost:5177)
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // API v1 route constants
 const API_V1 = {

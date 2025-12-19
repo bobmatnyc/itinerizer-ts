@@ -1,36 +1,19 @@
 /**
  * Prompt loader utility for agent prompts
- * Loads prompts from external markdown files organized by agent ID
+ * Uses Vite's ?raw imports for build-time bundling instead of runtime file system access
+ * This ensures prompts are bundled in production builds (SvelteKit, etc.)
  * @module prompts
  */
 
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-/**
- * Load a prompt from markdown file
- * @param agentId - The agent identifier (subdirectory name)
- * @param promptName - The prompt file name (without .md extension)
- * @returns The prompt content as a string
- * @throws Error if prompt file not found
- */
-export function loadPrompt(agentId: string, promptName: string): string {
-  const promptPath = join(__dirname, agentId, `${promptName}.md`);
-  try {
-    return readFileSync(promptPath, 'utf-8');
-  } catch (error) {
-    throw new Error(
-      `Failed to load prompt: ${agentId}/${promptName}.md - ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
-}
+// Import prompts as raw strings using Vite's ?raw feature
+// These are bundled at build time, not loaded from filesystem at runtime
+import tripDesignerSystem from './trip-designer/system.md?raw';
+import tripDesignerCompaction from './trip-designer/compaction.md?raw';
+import tripDesignerProfileExtraction from './trip-designer/profile-extraction.md?raw';
 
 /**
  * Pre-loaded prompts for Trip Designer Agent
- * Uses lazy evaluation (function) to load prompts on first access
+ * Prompts are imported as strings at build time for production compatibility
  */
 export const PROMPTS = {
   tripDesigner: {
@@ -38,19 +21,19 @@ export const PROMPTS = {
      * Main system prompt for Trip Designer Agent
      * Defines personality, rules, capabilities, and conversation flow
      */
-    system: () => loadPrompt('trip-designer', 'system'),
+    system: tripDesignerSystem,
 
     /**
      * Context compaction prompt
      * Used when conversation history needs to be condensed to save tokens
      */
-    compaction: () => loadPrompt('trip-designer', 'compaction'),
+    compaction: tripDesignerCompaction,
 
     /**
      * Profile extraction prompt
      * Extracts structured trip profile from conversation history
      */
-    profileExtraction: () => loadPrompt('trip-designer', 'profile-extraction'),
+    profileExtraction: tripDesignerProfileExtraction,
   },
 };
 
@@ -58,6 +41,6 @@ export const PROMPTS = {
  * Direct access to Trip Designer prompts (backwards compatibility)
  * These are the constants previously exported from services/trip-designer/prompts.ts
  */
-export const TRIP_DESIGNER_SYSTEM_PROMPT = PROMPTS.tripDesigner.system();
-export const COMPACTION_SYSTEM_PROMPT = PROMPTS.tripDesigner.compaction();
-export const PROFILE_EXTRACTION_PROMPT = PROMPTS.tripDesigner.profileExtraction();
+export const TRIP_DESIGNER_SYSTEM_PROMPT = PROMPTS.tripDesigner.system;
+export const COMPACTION_SYSTEM_PROMPT = PROMPTS.tripDesigner.compaction;
+export const PROFILE_EXTRACTION_PROMPT = PROMPTS.tripDesigner.profileExtraction;

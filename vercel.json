@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci && cd viewer-svelte && npm ci",
+  "buildCommand": "cd viewer-svelte && npm run build && cp -r .vercel/output ../.vercel/output"
+}

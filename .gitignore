@@ -131,3 +131,7 @@ wheels/
 
 # Large files
 *.pdf
+
+# Vercel build outputs
+.vercel
+.vercel/
