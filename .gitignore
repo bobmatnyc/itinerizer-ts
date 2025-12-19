@@ -128,3 +128,6 @@ venv/
 virtualenv/
 wheels/
 .claude-mpm/
+
+# Large files
+*.pdf
