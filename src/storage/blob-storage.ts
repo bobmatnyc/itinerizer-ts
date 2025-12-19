@@ -98,6 +98,15 @@ export class BlobItineraryStorage implements ItineraryStorage {
 
       return ok(updatedItinerary);
     } catch (error) {
+      console.error('Blob save failed:', {
+        key,
+        itineraryId: itinerary.id,
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        } : error,
+      });
       return err(
         createStorageError('WRITE_ERROR', `Failed to save itinerary ${itinerary.id} to Blob`, {
           error: error instanceof Error ? error.message : String(error),
