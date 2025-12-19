@@ -93,6 +93,7 @@ export class BlobItineraryStorage implements ItineraryStorage {
       await put(key, data, {
         access: 'public',
         contentType: 'application/json',
+        addRandomSuffix: false, // Allow consistent keys for updates
       });
 
       return ok(updatedItinerary);
