@@ -89,11 +89,23 @@ export class BlobItineraryStorage implements ItineraryStorage {
       const key = this.getKey(itinerary.id);
       const data = this.serialize(updatedItinerary);
 
+      // Delete existing blob if it exists (required for updates)
+      try {
+        const existing = await head(key);
+        if (existing) {
+          await del(existing.url);
+          console.log('Deleted existing blob for update:', key);
+        }
+      } catch (e) {
+        // Blob doesn't exist, that's fine for new creates
+        console.log('No existing blob to delete:', key);
+      }
+
       // Upload to Vercel Blob
       await put(key, data, {
         access: 'public',
         contentType: 'application/json',
-        addRandomSuffix: false, // Allow consistent keys for updates
+        addRandomSuffix: false,
       });
 
       return ok(updatedItinerary);
