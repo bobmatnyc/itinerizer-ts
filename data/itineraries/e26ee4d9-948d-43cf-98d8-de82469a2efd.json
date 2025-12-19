@@ -1,0 +1,85 @@
+{
+  "id": "e26ee4d9-948d-43cf-98d8-de82469a2efd",
+  "version": 1,
+  "createdAt": "2025-12-18T14:23:56.570Z",
+  "updatedAt": "2025-12-18T22:24:31.729Z",
+  "title": "Italy Dreaming",
+  "description": "Immerse yourself in the picturesque Tuscan countryside with a week-long stay at the historic Villa Monastero, exploring the charming town of Sarteano and the surrounding region.",
+  "status": "DRAFT",
+  "startDate": "2026-09-12T00:00:00.000Z",
+  "endDate": "2026-09-19T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "Villa Monastero"
+    },
+    {
+      "name": "Sarteano"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "ec567fbc-4b9e-4016-9573-46df9ba3398d",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-09-12T15:00:00.000Z",
+      "endDatetime": "2026-09-19T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:23:56.562Z"
+      },
+      "notes": "Formerly a 16th century convent, this enchanting villa is bursting with character and has been renovated with every comfort and enjoyment in mind. Relax by the sparkling pool, enjoy an aperitivo under the pergola, and dine al fresco using ingredients from the on-site vegetable garden.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Villa Monastero"
+      },
+      "location": {
+        "name": "Sarteano",
+        "coordinates": {
+          "latitude": 42.989911,
+          "longitude": 11.8687316
+        }
+      },
+      "checkInDate": "2026-09-12T00:00:00.000Z",
+      "checkOutDate": "2026-09-19T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "0d7c68e5-393a-482d-95e4-a2b100864034",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-09-12T09:00:00.000Z",
+      "endDatetime": "2026-09-12T17:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:23:56.562Z"
+      },
+      "notes": "Sarteano is a small, charming town located in the heart of the Tuscan hills, surrounded by vineyards and olive groves.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Welcome to Tuscany",
+      "description": "Explore the charming town of Sarteano, with its picturesque narrow streets, beautiful churches, and impressive 10th-century fortress that offers panoramic views of the surrounding countryside. Enjoy the local cuisine and world-class wines.",
+      "location": {
+        "name": "Sarteano",
+        "coordinates": {
+          "latitude": 42.989911,
+          "longitude": 11.8687316
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "tuscany",
+    "villa",
+    "countryside",
+    "historic"
+  ],
+  "metadata": {}
+}

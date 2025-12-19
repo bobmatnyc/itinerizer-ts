@@ -1,0 +1,651 @@
+{
+  "id": "64c52d2f-c549-4718-bcc4-d262cd5fe108",
+  "version": 7,
+  "createdAt": "2025-12-18T14:21:02.855Z",
+  "updatedAt": "2025-12-19T16:25:49.935Z",
+  "title": "NYC Couple's Trip",
+  "description": "10-day romantic getaway to NYC",
+  "status": "DRAFT",
+  "startDate": "2024-05-31T00:00:00.000Z",
+  "endDate": "2024-06-05T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "John F. Kennedy International Airport"
+    },
+    {
+      "name": "InterContinental New York Barclay"
+    },
+    {
+      "name": "Grand Central Station"
+    },
+    {
+      "name": "Empire State Building"
+    },
+    {
+      "name": "Top of the Rock"
+    },
+    {
+      "name": "Central Park"
+    },
+    {
+      "name": "Metropolitan Museum of Art"
+    },
+    {
+      "name": "9/11 Memorial & Museum"
+    },
+    {
+      "name": "Pier 62"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "660d7458-b3e9-4877-ae2c-51422339c08b",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-01T10:30:00.000Z",
+      "endDatetime": "2023-06-01T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Private transfer from JFK to InterContinental Barclay hotel",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "John F. Kennedy International Airport",
+        "coordinates": {
+          "latitude": 40.6429479,
+          "longitude": -73.7793734
+        }
+      },
+      "dropoffLocation": {
+        "name": "InterContinental New York Barclay",
+        "coordinates": {
+          "latitude": 40.7557523,
+          "longitude": -73.9735123
+        }
+      }
+    },
+    {
+      "id": "f2811aaa-4719-4c1a-bf2e-df58bd511cd1",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-02T13:00:00.000Z",
+      "endDatetime": "2023-06-02T15:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Activate your pass by visiting your first attraction",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "New York Explorer Pass",
+      "description": "Use your New York Explorer Pass to visit top attractions in the city",
+      "location": {
+        "name": "New York Explorer Pass"
+      }
+    },
+    {
+      "id": "b3b7a5dc-afc4-4813-a382-7ce830632039",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-02T15:30:00.000Z",
+      "endDatetime": "2023-06-02T15:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between New York Explorer Pass and Lunch at Grand Central Station",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "New York Explorer Pass"
+      },
+      "dropoffLocation": {
+        "name": "Lunch at Grand Central Station"
+      }
+    },
+    {
+      "id": "1e800840-3ef4-460a-ba92-59c2e8073f94",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-02T16:00:00.000Z",
+      "endDatetime": "2023-06-02T17:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Arrive early as it can get crowded around the lunch hour",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Lunch at Grand Central Station",
+      "description": "Enjoy lunch at one of the many dining options in Grand Central Station",
+      "location": {
+        "name": "Lunch at Grand Central Station"
+      }
+    },
+    {
+      "id": "03982892-bd4d-4650-84fe-bafb65959225",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-02T17:30:00.000Z",
+      "endDatetime": "2023-06-02T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Lunch at Grand Central Station and Panoramic View of New York City",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Lunch at Grand Central Station"
+      },
+      "dropoffLocation": {
+        "name": "Panoramic View of New York City"
+      }
+    },
+    {
+      "id": "ecebc804-3a79-40a6-980b-89ea9a3a3b1a",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-02T17:00:00.000Z",
+      "endDatetime": "2023-06-02T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Use your New York Explorer Pass for skip-the-line access",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Panoramic View of New York City",
+      "description": "Visit the Empire State Building or Top of the Rock for stunning city views",
+      "location": {
+        "name": "Panoramic View of New York City"
+      }
+    },
+    {
+      "id": "dbf1cf7c-ff50-4ae1-91e7-09ebcd47f5da",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-02T19:30:00.000Z",
+      "endDatetime": "2023-06-02T21:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Panoramic View of New York City and Il Melograno",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Panoramic View of New York City"
+      },
+      "dropoffLocation": {
+        "name": "Il Melograno",
+        "coordinates": {
+          "latitude": 41.8591945,
+          "longitude": 12.5536338
+        }
+      }
+    },
+    {
+      "id": "dee85722-936c-4015-83eb-9f57a9b0decf",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-02T22:00:00.000Z",
+      "endDatetime": "2023-06-03T00:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "metadata": {},
+      "type": "CUSTOM",
+      "title": "Il Melograno",
+      "description": "Enjoy authentic Italian cuisine in a casual and unique dining experience",
+      "location": {
+        "name": "Il Melograno",
+        "coordinates": {
+          "latitude": 41.8591945,
+          "longitude": 12.5536338
+        }
+      },
+      "customData": {}
+    },
+    {
+      "id": "98ded2a0-bd2c-424b-bc28-ca2c6a05289a",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-03T10:30:00.000Z",
+      "endDatetime": "2023-06-03T13:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Arrive early to secure a good viewing spot",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "The Today Show",
+      "description": "Attend a taping of the popular morning TV show",
+      "location": {
+        "name": "The Today Show"
+      }
+    },
+    {
+      "id": "137aa1b7-58ad-4690-b131-b2e5c82963e0",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-03T13:30:00.000Z",
+      "endDatetime": "2023-06-03T14:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between The Today Show and Self-Guided Central Park Experience",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "The Today Show"
+      },
+      "dropoffLocation": {
+        "name": "Self-Guided Central Park Experience"
+      }
+    },
+    {
+      "id": "79090b2c-9442-4a70-b24e-828e9f6bef43",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-03T13:00:00.000Z",
+      "endDatetime": "2023-06-03T15:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Check out the zoo, carousel, and other attractions within the park",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Self-Guided Central Park Experience",
+      "description": "Explore the iconic Central Park at your own pace",
+      "location": {
+        "name": "Self-Guided Central Park Experience"
+      }
+    },
+    {
+      "id": "c092ce2f-d4e4-4c10-bedc-6d187a82131c",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-03T15:30:00.000Z",
+      "endDatetime": "2023-06-03T15:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Self-Guided Central Park Experience and Shopping on 5th Avenue",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Self-Guided Central Park Experience"
+      },
+      "dropoffLocation": {
+        "name": "Shopping on 5th Avenue",
+        "coordinates": {
+          "latitude": 45.4044551,
+          "longitude": -75.7271303
+        }
+      }
+    },
+    {
+      "id": "4c9c7ab1-1748-49d8-9d7b-957c5f54a41f",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-03T16:00:00.000Z",
+      "endDatetime": "2023-06-03T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Use your New York Explorer Pass for discounts",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Shopping on 5th Avenue",
+      "description": "Browse the high-end shops and boutiques along the famous 5th Avenue",
+      "location": {
+        "name": "Shopping on 5th Avenue",
+        "coordinates": {
+          "latitude": 45.4044551,
+          "longitude": -75.7271303
+        }
+      }
+    },
+    {
+      "id": "edd9188d-10c8-4fad-9269-8da193c36093",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-03T18:30:00.000Z",
+      "endDatetime": "2023-06-03T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Shopping on 5th Avenue and Visit the Metropolitan Museum of Art",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Shopping on 5th Avenue",
+        "coordinates": {
+          "latitude": 45.4044551,
+          "longitude": -75.7271303
+        }
+      },
+      "dropoffLocation": {
+        "name": "Visit the Metropolitan Museum of Art"
+      }
+    },
+    {
+      "id": "a1ec1f72-9842-4ef4-a957-88ff54a86625",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-03T18:00:00.000Z",
+      "endDatetime": "2023-06-03T20:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Use your New York Explorer Pass for skip-the-line access",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Visit the Metropolitan Museum of Art",
+      "description": "Explore the vast collection of art and artifacts at the Met",
+      "location": {
+        "name": "Visit the Metropolitan Museum of Art"
+      }
+    },
+    {
+      "id": "ff122d95-e772-4335-9c31-7b27a486fc13",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-03T20:30:00.000Z",
+      "endDatetime": "2023-06-03T21:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Visit the Metropolitan Museum of Art and Gabriel Kreuther",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Visit the Metropolitan Museum of Art"
+      },
+      "dropoffLocation": {
+        "name": "Gabriel Kreuther"
+      }
+    },
+    {
+      "id": "a2540b8c-75fd-44ea-aca6-14a39333c731",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-03T22:00:00.000Z",
+      "endDatetime": "2023-06-04T00:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "metadata": {},
+      "type": "CUSTOM",
+      "title": "Gabriel Kreuther",
+      "description": "Dine at this award-winning restaurant serving Alsatian-inspired cuisine",
+      "location": {
+        "name": "Gabriel Kreuther"
+      },
+      "customData": {}
+    },
+    {
+      "id": "b3459a65-e041-4adb-82fc-16db78974996",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-04T17:00:00.000Z",
+      "endDatetime": "2023-06-04T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Use your New York Explorer Pass for skip-the-line access",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Visit the 9/11 Memorial & Museum",
+      "description": "Explore the powerful memorial and museum dedicated to the events of 9/11",
+      "location": {
+        "name": "Visit the 9/11 Memorial & Museum"
+      }
+    },
+    {
+      "id": "98ed6e29-3a55-4484-8c3b-82f40b8041ce",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-04T19:30:00.000Z",
+      "endDatetime": "2023-06-04T20:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Visit the 9/11 Memorial & Museum and Grand Banks",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Visit the 9/11 Memorial & Museum"
+      },
+      "dropoffLocation": {
+        "name": "Grand Banks",
+        "coordinates": {
+          "latitude": 40.7202788,
+          "longitude": -74.0159252
+        }
+      }
+    },
+    {
+      "id": "138c3804-86ba-4f49-ab51-2aba65430554",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-04T21:00:00.000Z",
+      "endDatetime": "2023-06-04T23:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "metadata": {},
+      "type": "CUSTOM",
+      "title": "Grand Banks",
+      "description": "Dine on sustainably harvested oysters and nautical-inspired cocktails aboard a historic schooner",
+      "location": {
+        "name": "Grand Banks",
+        "coordinates": {
+          "latitude": 40.7202788,
+          "longitude": -74.0159252
+        }
+      },
+      "customData": {}
+    },
+    {
+      "id": "cd02096e-0ec1-4069-94cb-acff98f39112",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-05T16:00:00.000Z",
+      "endDatetime": "2023-06-05T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Enjoy the views of the city and Hudson River",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Walk the High Line to Pier 62",
+      "description": "Stroll along the elevated High Line park and continue to Pier 62",
+      "location": {
+        "name": "Walk the High Line to Pier 62"
+      }
+    },
+    {
+      "id": "c54090fb-d87b-44aa-9d01-b2ed14ecc25d",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-06-05T18:30:00.000Z",
+      "endDatetime": "2023-06-05T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:21:02.853Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Walk the High Line to Pier 62 and Day Sail to the Statue of Liberty",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Walk the High Line to Pier 62"
+      },
+      "dropoffLocation": {
+        "name": "Day Sail to the Statue of Liberty"
+      }
+    },
+    {
+      "id": "a7ccb88b-7e22-4e11-90d9-c4a462b157a3",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-05T17:00:00.000Z",
+      "endDatetime": "2023-06-05T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Includes 1 complimentary beverage",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Day Sail to the Statue of Liberty",
+      "description": "Sail aboard the historic Adirondack schooner to see the Statue of Liberty up close",
+      "location": {
+        "name": "Day Sail to the Statue of Liberty"
+      }
+    },
+    {
+      "id": "f93eb39b-79e2-43a9-bef4-c6237cc77192",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-06T16:00:00.000Z",
+      "endDatetime": "2023-06-06T16:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:21:02.846Z"
+      },
+      "notes": "Private transfer from InterContinental Barclay hotel to JFK Airport",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "InterContinental New York Barclay",
+        "coordinates": {
+          "latitude": 40.7557523,
+          "longitude": -73.9735123
+        }
+      },
+      "dropoffLocation": {
+        "name": "John F. Kennedy International Airport",
+        "coordinates": {
+          "latitude": 40.6429479,
+          "longitude": -73.7793734
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "family",
+    "sightseeing",
+    "cultural",
+    "adventure"
+  ],
+  "metadata": {}
+}

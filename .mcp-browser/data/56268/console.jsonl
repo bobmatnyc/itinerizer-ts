@@ -1,0 +1,13 @@
+{"timestamp": "2025-12-19T03:34:32.632000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T03:34:39.764000+00:00", "level": "log", "message": "[MCP Browser] Download border shown", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:17:22.616000+00:00", "level": "log", "message": "[mcp-browser] Console capture initialized", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:17:22.616000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive port connected", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:17:22.618000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive acknowledged", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:17:22.622000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:18:21.165000+00:00", "level": "log", "message": "[mcp-browser] Console capture initialized", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:18:21.165000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive port connected", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:18:21.167000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive acknowledged", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:18:21.173000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T04:38:33.151000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 56268, "url": "https://linear.app/hello-recess/issue/ENG-1259/update-meta-catalog-xml-export", "metadata": {}}
+{"timestamp": "2025-12-19T04:38:42.449000+00:00", "level": "log", "message": "[MCP Browser] Download border shown", "port": 56268, "url": "https://linear.app/hello-recess/issue/ENG-1259/update-meta-catalog-xml-export", "metadata": {}}
+{"timestamp": "2025-12-19T15:42:52.296000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 56268, "url": "http://localhost:5176/", "metadata": {}}

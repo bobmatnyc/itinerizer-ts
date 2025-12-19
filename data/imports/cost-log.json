@@ -251,8 +251,413 @@
       "timestamp": "2025-12-18T03:49:18.120Z",
       "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Spring Break in Oahu.pdf",
       "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:00:23.068Z",
+      "sourceFile": "data/imports/11 Day London, Rome, Amalfi Coast Family.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:01:03.144Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:02:32.493Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:03:11.431Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:04:07.550Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:04:40.732Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:05:42.625Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:06:19.030Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:06:55.856Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:07:56.192Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:08:44.567Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:09:54.072Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:10:55.919Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:11:53.234Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:12:54.896Z",
+      "sourceFile": "data/imports/12 Day Luxury Peru Sample Itinerary.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 13428,
+      "outputTokens": 3594,
+      "costUSD": 0.0078495,
+      "timestamp": "2025-12-18T05:13:33.159Z",
+      "sourceFile": "data/imports/11 Day - Northern Italy and Lakes.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 11108,
+      "outputTokens": 3948,
+      "costUSD": 0.007712,
+      "timestamp": "2025-12-18T05:14:40.989Z",
+      "sourceFile": "data/imports/10 Day- Spain- Seville, Granada, Madrid -Deluxe.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T05:15:16.732Z",
+      "sourceFile": "data/imports/11 Days -Paris, London & Dublin - Couples .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 6041,
+      "outputTokens": 1497,
+      "costUSD": 0.0033815,
+      "timestamp": "2025-12-18T14:09:44.329Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Nicaragua for the Tulcans.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:10:08.922Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Trip to Moab Option 2 .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:10:50.258Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Bhutan Serenity .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:11:29.273Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Aegean Adventure .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:12:11.075Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Italian Stallions.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:12:48.952Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/The Art of Spain.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:13:13.977Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Scottsdale Girls Trip.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:16:11.645Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Trip to Moab Option 2 .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 4497,
+      "outputTokens": 1553,
+      "costUSD": 0.0030654999999999996,
+      "timestamp": "2025-12-18T14:17:10.980Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Trip to Moab Option 2 .pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:17:54.107Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Bhutan Serenity .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:18:37.093Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Aegean Adventure .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:19:15.524Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Italian Stallions.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 2241,
+      "outputTokens": 1052,
+      "costUSD": 0.00187525,
+      "timestamp": "2025-12-18T14:20:29.726Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Tahiti for Irene & Kyler .pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 7656,
+      "outputTokens": 2681,
+      "costUSD": 0.005265249999999999,
+      "timestamp": "2025-12-18T14:21:02.853Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/New York City _ The Big Apple.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T14:22:01.275Z",
+      "sourceFile": "/Users/masa/Projects/itinerizer-ts/data/imports/Gaelic Getaway_ A Journey Through Ireland.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 2906,
+      "outputTokens": 736,
+      "costUSD": 0.0016465,
+      "timestamp": "2025-12-18T14:23:56.568Z",
+      "sourceFile": "data/imports/Italy Dreaming.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 10736,
+      "outputTokens": 2339,
+      "costUSD": 0.00560775,
+      "timestamp": "2025-12-18T14:24:23.305Z",
+      "sourceFile": "data/imports/New York.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 2241,
+      "outputTokens": 1052,
+      "costUSD": 0.00187525,
+      "timestamp": "2025-12-18T14:25:23.600Z",
+      "sourceFile": "data/imports/Tahiti for Irene & Kyler .pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 4271,
+      "outputTokens": 3365,
+      "costUSD": 0.005274,
+      "timestamp": "2025-12-18T17:06:30.222Z",
+      "sourceFile": "data/imports/Norway - Adventure Itinerary, Deluxe, Couples.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T17:07:06.750Z",
+      "sourceFile": "data/imports/Greece Sailing Family Adventure - 15 Days .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 6707,
+      "outputTokens": 3939,
+      "costUSD": 0.0066005,
+      "timestamp": "2025-12-18T17:07:40.330Z",
+      "sourceFile": "data/imports/Own the Road - 8 Day Adventure to Peru .pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T17:08:23.055Z",
+      "sourceFile": "data/imports/Family African Safari Adventure - 15 Days .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T17:08:44.544Z",
+      "sourceFile": "data/imports/7 Day Prague & Vienna - Mother Daughter.pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 5835,
+      "outputTokens": 2308,
+      "costUSD": 0.00434375,
+      "timestamp": "2025-12-18T17:27:32.030Z",
+      "sourceFile": "data/imports/7 Day Prague & Vienna - Mother Daughter.pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "costUSD": 0,
+      "timestamp": "2025-12-18T17:28:06.379Z",
+      "sourceFile": "data/imports/Greece Sailing Family Adventure - 15 Days .pdf",
+      "success": false
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 20181,
+      "outputTokens": 3472,
+      "costUSD": 0.009385250000000001,
+      "timestamp": "2025-12-18T17:29:12.035Z",
+      "sourceFile": "data/imports/Greece Sailing Family Adventure - 15 Days .pdf",
+      "success": true
+    },
+    {
+      "model": "anthropic/claude-3-haiku",
+      "inputTokens": 20181,
+      "outputTokens": 3603,
+      "costUSD": 0.009549,
+      "timestamp": "2025-12-18T19:43:13.765Z",
+      "sourceFile": "./data/imports/Greece Sailing Family Adventure - 15 Days .pdf",
+      "success": true
     }
   ],
-  "totalCostUSD": 0.0557125,
-  "lastUpdated": "2025-12-18T03:49:18.120Z"
+  "totalCostUSD": 0.12914349999999994,
+  "lastUpdated": "2025-12-18T19:43:13.765Z"
 }

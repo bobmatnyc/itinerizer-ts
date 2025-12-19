@@ -1,0 +1,356 @@
+{
+  "id": "f766bf32-c92b-49c8-86d6-7cdbb64c8a7f",
+  "version": 1,
+  "createdAt": "2025-12-18T17:27:32.032Z",
+  "updatedAt": "2025-12-18T22:22:28.706Z",
+  "title": "A Mother-Daughter Christmas Trip to Prague & Vienna",
+  "description": "A 7-day journey exploring the festive Christmas markets and historic sights of Prague and Vienna, including private tours, luxury hotel stays, and seamless transportation.",
+  "status": "DRAFT",
+  "startDate": "2022-12-01T07:30:00.000Z",
+  "endDate": "2022-12-07T16:21:00.000Z",
+  "destinations": [
+    {
+      "name": "Prague"
+    },
+    {
+      "name": "Vienna"
+    },
+    {
+      "name": "Aria Hotel Prague"
+    },
+    {
+      "name": "Palais Hansen Kempinski Vienna"
+    },
+    {
+      "name": "Prague Airport",
+      "code": "PRG"
+    },
+    {
+      "name": "Vienna International Airport",
+      "code": "VIE"
+    },
+    {
+      "name": "Schönbrunn Palace"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "843537ea-9e82-462c-93e8-e38713e02249",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-01T07:30:00.000Z",
+      "endDatetime": "2022-12-01T11:45:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Direct flight from departure to arrival",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "Unknown",
+        "code": "UNKNOWN"
+      },
+      "flightNumber": "XX0000",
+      "origin": {
+        "name": "Unknown",
+        "code": "UNK",
+        "coordinates": {
+          "latitude": 26.492533,
+          "longitude": 92.3308789
+        }
+      },
+      "destination": {
+        "name": "Prague Airport",
+        "code": "PRG",
+        "coordinates": {
+          "latitude": 50.1020451,
+          "longitude": 14.2705663
+        }
+      }
+    },
+    {
+      "id": "8fa7ae11-c075-41af-8686-d875575ab6b4",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-01T11:45:00.000Z",
+      "endDatetime": "2022-12-01T12:12:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Private transfer from Prague Airport to Aria Hotel Prague",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Prague Airport",
+        "coordinates": {
+          "latitude": 50.1020451,
+          "longitude": 14.2705663
+        }
+      },
+      "dropoffLocation": {
+        "name": "Aria Hotel Prague",
+        "coordinates": {
+          "latitude": 50.0871433,
+          "longitude": 14.4026655
+        }
+      }
+    },
+    {
+      "id": "abaeec58-2829-4fb0-9d20-fe63b18fa5cc",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-01T14:00:00.000Z",
+      "endDatetime": "2022-12-04T10:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Luxury hotel with musical theme, steps from Charles Bridge and Prague Castle",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Aria Hotel Prague"
+      },
+      "location": {
+        "name": "Trziste 9",
+        "coordinates": {
+          "latitude": 50.0871433,
+          "longitude": 14.4026655
+        }
+      },
+      "checkInDate": "2022-12-01T00:00:00.000Z",
+      "checkOutDate": "2022-12-04T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "JUNIOR SUITE TWO BEDS",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "89dc88a5-7369-47bd-b758-8e5fd02ac7b6",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-03T07:30:00.000Z",
+      "endDatetime": "2022-12-03T14:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Enjoy a full-day private tour in Prague with hotel pickup provided.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Prague - Private Tour of the Golden City",
+      "description": "Discover the highlights of each side of the Vltava River, including Prague Castle, Strahov Monastery, the Jewish Quarter, and Old Town Square.",
+      "location": {
+        "name": "Prague - Private Tour of the Golden City"
+      }
+    },
+    {
+      "id": "b5fcdcf0-a9a2-4d1d-91ca-ba662a4ce39a",
+      "status": "TENTATIVE",
+      "startDatetime": "2022-12-03T15:00:00.000Z",
+      "endDatetime": "2022-12-03T22:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T17:27:32.029Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Prague - Private Tour of the Golden City and Prague Christmas Market Experience",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Prague - Private Tour of the Golden City"
+      },
+      "dropoffLocation": {
+        "name": "Prague Christmas Market Experience"
+      }
+    },
+    {
+      "id": "d18b5f46-35e7-46b9-b923-2c78ee07b036",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-03T23:00:00.000Z",
+      "endDatetime": "2022-12-04T22:59:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "No other details provided.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Prague Christmas Market Experience",
+      "description": "Explore the festive Christmas markets in Prague.",
+      "location": {
+        "name": "Prague Christmas Market Experience"
+      }
+    },
+    {
+      "id": "58eb6946-0c6a-4254-b5bb-c3532502277a",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-05T11:45:00.000Z",
+      "endDatetime": "2022-12-05T16:21:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "High-speed train from Prague to Vienna",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "RAIL",
+      "pickupLocation": {
+        "name": "Prague Main Station",
+        "coordinates": {
+          "latitude": 50.0829628,
+          "longitude": 14.4360939
+        }
+      },
+      "dropoffLocation": {
+        "name": "Vienna Hauptbahnhof",
+        "coordinates": {
+          "latitude": 48.1853833,
+          "longitude": 16.3747438
+        }
+      }
+    },
+    {
+      "id": "7229b91b-2158-4bee-9ce0-fb88e387d998",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-05T14:30:00.000Z",
+      "endDatetime": "2022-12-07T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Boutique hotel with Viennese decor, 4 minutes walk from a U-Bahn station",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Palais Hansen Kempinski Vienna"
+      },
+      "location": {
+        "name": "Schottenring 24",
+        "coordinates": {
+          "latitude": 48.2163665,
+          "longitude": 16.3686588
+        }
+      },
+      "checkInDate": "2022-12-05T00:00:00.000Z",
+      "checkOutDate": "2022-12-07T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "GRAND DELUXE ROOM",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "5e5653cd-2b8c-46a6-b99b-1f4a55d9d745",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-05T16:21:00.000Z",
+      "endDatetime": "2022-12-05T16:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Private transfer from Vienna Hauptbahnhof to Palais Hansen Kempinski Vienna",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Vienna Hauptbahnhof",
+        "coordinates": {
+          "latitude": 48.1853833,
+          "longitude": 16.3747438
+        }
+      },
+      "dropoffLocation": {
+        "name": "Palais Hansen Kempinski Vienna",
+        "coordinates": {
+          "latitude": 48.2163449,
+          "longitude": 16.3684353
+        }
+      }
+    },
+    {
+      "id": "0f338507-fb63-44a2-8504-0a45e22dacde",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-06T14:00:00.000Z",
+      "endDatetime": "2022-12-06T17:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Includes private tour, skip-the-line tickets, and private transportation.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Schönbrunn Palace Rooms & Gardens Private Tour",
+      "description": "Explore the UNESCO-listed Schönbrunn Palace and gardens with a private guide, including skip-the-line access.",
+      "location": {
+        "name": "Schönbrunn Palace Rooms & Gardens Private Tour"
+      }
+    },
+    {
+      "id": "25c7fe31-e3bb-435f-b9c6-47c87fef5606",
+      "status": "CONFIRMED",
+      "startDatetime": "2022-12-06T23:00:00.000Z",
+      "endDatetime": "2022-12-06T23:20:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:27:32.026Z"
+      },
+      "notes": "Private transfer from Palais Hansen Kempinski Vienna to Vienna Airport",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Palais Hansen Kempinski Vienna",
+        "coordinates": {
+          "latitude": 48.2163449,
+          "longitude": 16.3684353
+        }
+      },
+      "dropoffLocation": {
+        "name": "Vienna International Airport",
+        "code": "VIE",
+        "coordinates": {
+          "latitude": 48.1049968,
+          "longitude": 16.5848987
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "luxury",
+    "christmas",
+    "cultural",
+    "city-break"
+  ],
+  "metadata": {}
+}

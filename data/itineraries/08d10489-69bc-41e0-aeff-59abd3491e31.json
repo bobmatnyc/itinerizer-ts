@@ -1,0 +1,202 @@
+{
+  "id": "08d10489-69bc-41e0-aeff-59abd3491e31",
+  "version": 1,
+  "createdAt": "2025-12-18T14:17:10.980Z",
+  "updatedAt": "2025-12-18T22:24:25.297Z",
+  "title": "Family Adventure in Moab",
+  "description": "Explore the stunning red rock landscapes of Moab, Utah with a mix of outdoor activities, luxury accommodations, and flights between New York and Salt Lake City.",
+  "status": "DRAFT",
+  "startDate": "2021-03-23T07:00:00.000Z",
+  "endDate": "2021-03-28T07:00:00.000Z",
+  "destinations": [
+    {
+      "name": "New York, John F. Kennedy International Airport"
+    },
+    {
+      "name": "Salt Lake City, Salt Lake City International Airport"
+    },
+    {
+      "name": "Kimpton Hotel Monaco Salt Lake"
+    },
+    {
+      "name": "Hoodoo Moab, Curio Collection By Hilton"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "b5fc172f-4f65-4b42-94a1-7e77945249a6",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-03-23T07:00:00.000Z",
+      "endDatetime": "2021-03-23T12:38:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:17:10.975Z"
+      },
+      "notes": "5 hour, 38 minute flight from New York to Salt Lake City",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "Delta Air Lines",
+        "code": "DL"
+      },
+      "flightNumber": "XX0000",
+      "origin": {
+        "name": "New York, John F. Kennedy International Airport",
+        "code": "JFK",
+        "coordinates": {
+          "latitude": 40.6429479,
+          "longitude": -73.7793734
+        }
+      },
+      "destination": {
+        "name": "Salt Lake City, Salt Lake City International Airport",
+        "code": "SLC",
+        "coordinates": {
+          "latitude": 40.7900661,
+          "longitude": -111.9798985
+        }
+      }
+    },
+    {
+      "id": "2a66bc03-8f18-4679-bcf8-28251e43eff1",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-03-23T18:00:00.000Z",
+      "endDatetime": "2021-03-23T18:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:17:10.975Z"
+      },
+      "notes": "Car rental from Alamo Rent a Car at Salt Lake City Airport for 7 days",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "RENTAL_CAR",
+      "pickupLocation": {
+        "name": "Salt Lake City Airport",
+        "coordinates": {
+          "latitude": 40.7843099,
+          "longitude": -111.982745
+        }
+      },
+      "dropoffLocation": {
+        "name": "Salt Lake City Airport",
+        "coordinates": {
+          "latitude": 40.7843099,
+          "longitude": -111.982745
+        }
+      }
+    },
+    {
+      "id": "1ab2446f-a829-4e24-bc87-bac57a537435",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-03-23T22:00:00.000Z",
+      "endDatetime": "2021-03-26T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:17:10.975Z"
+      },
+      "notes": "Playful atmosphere, perfect for a Utah ski vacation. Relax in spirited guest rooms and mingle in communal spaces.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Kimpton Hotel Monaco Salt Lake"
+      },
+      "location": {
+        "name": "15 West 200 South",
+        "coordinates": {
+          "latitude": 40.7646563,
+          "longitude": -111.8919453
+        }
+      },
+      "checkInDate": "2021-03-23T00:00:00.000Z",
+      "checkOutDate": "2021-03-26T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Deluxe Room, 2 Queen Beds",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "b1a10eab-66f1-4903-9afe-dc80607ef265",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-03-26T23:00:00.000Z",
+      "endDatetime": "2021-03-30T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:17:10.975Z"
+      },
+      "notes": "Modern luxury meets Western style at this new hotel in Moab, Utah, just minutes from Arches National Park. Enjoy a relaxing stay and outdoor adventure.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Hoodoo Moab, Curio Collection By Hilton"
+      },
+      "location": {
+        "name": "51 N 100 West",
+        "coordinates": {
+          "latitude": 40.2344246,
+          "longitude": -111.660596
+        }
+      },
+      "checkInDate": "2021-03-26T00:00:00.000Z",
+      "checkOutDate": "2021-03-30T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Room, 2 Queen Beds",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "304f48e5-7cba-4b61-b800-8dbda61ee8ad",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-03-30T07:00:00.000Z",
+      "endDatetime": "2021-03-30T11:18:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:17:10.975Z"
+      },
+      "notes": "4 hour, 18 minute flight from Salt Lake City to New York",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "Delta Air Lines",
+        "code": "DL"
+      },
+      "flightNumber": "XX0000",
+      "origin": {
+        "name": "Salt Lake City, Salt Lake City International Airport",
+        "code": "SLC",
+        "coordinates": {
+          "latitude": 40.7900661,
+          "longitude": -111.9798985
+        }
+      },
+      "destination": {
+        "name": "New York, John F. Kennedy International Airport",
+        "code": "JFK",
+        "coordinates": {
+          "latitude": 40.6429479,
+          "longitude": -73.7793734
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "family",
+    "adventure",
+    "outdoor",
+    "luxury"
+  ],
+  "metadata": {}
+}

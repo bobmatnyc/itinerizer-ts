@@ -1,0 +1,131 @@
+{
+  "id": "1096bf81-ce50-4df9-98d1-331dcbb36a0d",
+  "version": 1,
+  "createdAt": "2025-12-18T14:20:29.727Z",
+  "updatedAt": "2025-12-18T22:24:30.942Z",
+  "title": "Tahiti for Irene & Kyler",
+  "description": "A 12-day trip to Tahiti, including a stay at the Hotel Sarah Nui in Papeete and flights between Los Angeles and Papeete.",
+  "status": "DRAFT",
+  "startDate": "2023-01-01T00:00:00.000Z",
+  "endDate": "2023-01-12T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "Los Angeles International Airport"
+    },
+    {
+      "name": "Tahiti Faa'a Airport"
+    },
+    {
+      "name": "Hotel Sarah Nui"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "7b09d8fc-1572-4b23-8cda-cdcb24c928e0",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-01T12:00:00.000Z",
+      "endDatetime": "2023-01-02T00:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:20:29.724Z"
+      },
+      "notes": "Nonstop flight from Los Angeles to Papeete",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "Air Tahiti Nui",
+        "code": "TN"
+      },
+      "flightNumber": "XX0000",
+      "origin": {
+        "name": "Los Angeles International Airport",
+        "code": "LAX",
+        "coordinates": {
+          "latitude": 33.9421675,
+          "longitude": -118.4213591
+        }
+      },
+      "destination": {
+        "name": "Tahiti Faa'a Airport",
+        "code": "PPT",
+        "coordinates": {
+          "latitude": -17.5541906,
+          "longitude": -149.6105901
+        }
+      }
+    },
+    {
+      "id": "723501bf-7057-4ed5-b2e6-13c9abe2795a",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-01T12:00:00.000Z",
+      "endDatetime": "2023-01-02T12:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:20:29.724Z"
+      },
+      "notes": "Charming 3-star hotel near the center of Papeete, with amenities like a tour desk, airport shuttle, and rental services.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Hotel Sarah Nui"
+      },
+      "location": {
+        "name": "BP 4354 Fare Tony, Papeete 98713"
+      },
+      "checkInDate": "2023-01-01T00:00:00.000Z",
+      "checkOutDate": "2023-01-02T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "2c3a1d1b-7096-4ba4-a2aa-b50742430d0c",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-02T00:00:00.000Z",
+      "endDatetime": "2023-01-02T02:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:20:29.724Z"
+      },
+      "notes": "Nonstop flight from Papeete to Los Angeles",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "Air Tahiti Nui",
+        "code": "TN"
+      },
+      "flightNumber": "XX0000",
+      "origin": {
+        "name": "Tahiti Faa'a Airport",
+        "code": "PPT",
+        "coordinates": {
+          "latitude": -17.5541906,
+          "longitude": -149.6105901
+        }
+      },
+      "destination": {
+        "name": "Los Angeles International Airport",
+        "code": "LAX",
+        "coordinates": {
+          "latitude": 33.9421675,
+          "longitude": -118.4213591
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "leisure",
+    "island",
+    "beach"
+  ],
+  "metadata": {}
+}

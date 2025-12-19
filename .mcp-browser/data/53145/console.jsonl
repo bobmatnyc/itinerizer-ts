@@ -1,0 +1,15 @@
+{"timestamp": "2025-12-19T02:45:29.635000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:45:29.647000+00:00", "level": "log", "message": "[MCP Browser] Download border shown", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:45:39.530000+00:00", "level": "log", "message": "[MCP Browser] Download border shown", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:55:27.411000+00:00", "level": "log", "message": "[mcp-browser] Console capture initialized", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:55:27.411000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive port connected", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:55:27.416000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive acknowledged", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:55:27.420000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:59:16.718000+00:00", "level": "log", "message": "[mcp-browser] Console capture initialized", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:59:16.719000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive port connected", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:59:16.721000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive acknowledged", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T02:59:16.726000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T03:06:15.859000+00:00", "level": "log", "message": "[mcp-browser] Console capture initialized", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T03:06:15.859000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive port connected", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T03:06:15.861000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive acknowledged", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-19T03:06:15.869000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 53145, "url": "http://localhost:5176/", "metadata": {}}

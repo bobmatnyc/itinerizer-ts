@@ -1,0 +1,2 @@
+{"timestamp": "2025-12-18T22:07:04.850000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 59769, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-18T22:07:04.851000+00:00", "level": "log", "message": "[MCP Browser] Download border shown", "port": 59769, "url": "http://localhost:5176/", "metadata": {}}

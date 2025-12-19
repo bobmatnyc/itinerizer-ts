@@ -1,0 +1,184 @@
+{
+  "id": "670ef2d3-dd7f-4b08-9242-7f15d02e098d",
+  "version": 1,
+  "createdAt": "2025-12-18T14:09:44.330Z",
+  "updatedAt": "2025-12-18T22:24:01.266Z",
+  "title": "Nicaragua for the Tulcans",
+  "description": "A family adventure in Nicaragua featuring stays at the luxury eco-lodges of Morgan's Rock and Rancho Santana, with activities like surfing, sandboarding, and wildlife viewing.",
+  "status": "DRAFT",
+  "startDate": "2025-12-28T00:00:00.000Z",
+  "endDate": "2026-01-04T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "Morgan's Rock"
+    },
+    {
+      "name": "Rancho Santana"
+    },
+    {
+      "name": "Phoenix Sky Harbor International Airport",
+      "code": "PHX"
+    },
+    {
+      "name": "Miami International Airport",
+      "code": "MIA"
+    },
+    {
+      "name": "Managua Augusto C. Sandino International Airport",
+      "code": "MGA"
+    },
+    {
+      "name": "Houston George Bush Intercontinental Airport",
+      "code": "IAH"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "832656b3-2a74-4fce-84a4-09135a50b43a",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-28T00:26:00.000Z",
+      "endDatetime": "2025-12-28T12:16:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:09:44.324Z"
+      },
+      "notes": "Flight from Phoenix to Miami, then Miami to Managua. Total travel time approximately 12 hours.",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "American Airlines",
+        "code": "AA"
+      },
+      "flightNumber": "2468",
+      "origin": {
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "coordinates": {
+          "latitude": 33.4328487,
+          "longitude": -112.0067915
+        }
+      },
+      "destination": {
+        "name": "Managua Augusto C. Sandino International Airport",
+        "code": "MGA",
+        "coordinates": {
+          "latitude": 12.1407312,
+          "longitude": -86.1682362
+        }
+      }
+    },
+    {
+      "id": "f1cf77ec-63ec-45a3-bc20-614ff8b5c1fa",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-28T12:00:00.000Z",
+      "endDatetime": "2026-01-01T12:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:09:44.324Z"
+      },
+      "notes": "Each Forest View Bungalow with private Plunge Pool includes a comfortable terrace where guests might enjoy a morning coffee, a glass of wine with the sunset, or a well-deserved nap while soaking in stunning views and unparalleled wildlife.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Morgan's Rock"
+      },
+      "location": {
+        "name": "Unknown",
+        "coordinates": {
+          "latitude": 26.492533,
+          "longitude": 92.3308789
+        }
+      },
+      "checkInDate": "2025-12-28T00:00:00.000Z",
+      "checkOutDate": "2026-01-01T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Forest View Bungalow with Plunge Pool",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "3802ebda-ca35-4c3a-b510-bfea6e158b17",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-01T12:00:00.000Z",
+      "endDatetime": "2026-01-04T12:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:09:44.324Z"
+      },
+      "notes": "Spot surfers at Playa Santana right from your expansive private terrace. Guestrooms also feature handcrafted furniture and finishes made on-site by Santana Madera and Rancho Santana Mill Works, as well as 100% cotton designer towels by Frette and hand-painted tiles in the bathroom.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Rancho Santana"
+      },
+      "location": {
+        "name": "Unknown",
+        "coordinates": {
+          "latitude": 26.492533,
+          "longitude": 92.3308789
+        }
+      },
+      "checkInDate": "2026-01-01T00:00:00.000Z",
+      "checkOutDate": "2026-01-04T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Pied-a-Terre Suite",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "c8b2f846-2ffe-43a2-bbf3-a85b24e2b0d2",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-04T14:25:00.000Z",
+      "endDatetime": "2026-01-04T22:14:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:09:44.324Z"
+      },
+      "notes": "Flight from Managua to Houston, then Houston to Phoenix. Total travel time approximately 8 hours.",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "1433",
+      "origin": {
+        "name": "Managua Augusto C. Sandino International Airport",
+        "code": "MGA",
+        "coordinates": {
+          "latitude": 12.1407312,
+          "longitude": -86.1682362
+        }
+      },
+      "destination": {
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "coordinates": {
+          "latitude": 33.4328487,
+          "longitude": -112.0067915
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "luxury",
+    "eco-lodge",
+    "family",
+    "adventure",
+    "surfing",
+    "wildlife"
+  ],
+  "metadata": {}
+}

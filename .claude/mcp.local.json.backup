@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "kuzu-memory": {
+      "type": "stdio",
+      "command": "/Users/masa/.local/bin/kuzu-memory",
+      "args": [
+        "mcp"
+      ],
+      "env": {
+        "KUZU_MEMORY_PROJECT": "/Users/masa/Projects/itinerizer-ts"
+      }
+    }
+  }
+}

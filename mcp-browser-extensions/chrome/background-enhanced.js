@@ -67,27 +67,29 @@ function setIconState(state, titleText) {
 
   console.log(`[MCP Browser] Icon state changed to: ${state}${titleText ? ` (${titleText})` : ''}`);
 
-  // STRICT BORDER RULE: Only show border on CONTROLLED tab when green
-  // Non-controlled tabs should show NO signals (borders, flashes) even if server connected
-  if (state === 'green' && controlledTabId !== null) {
-    // Show green border ONLY on the controlled tab
-    chrome.tabs.sendMessage(controlledTabId, { type: 'show_connection_border' }, () => {
-      if (chrome.runtime.lastError) { /* tab may not have content script */ }
-    });
-  } else {
-    // Hide green border on all tabs (yellow, red, or no controlled tab = not connected)
-    chrome.tabs.query({}, (tabs) => {
-      if (tabs) {
-        tabs.forEach(tab => {
-          if (tab.id) {
+  // MULTI-TAB BORDER: Show green border on ALL connected tabs, not just one
+  // Get all tabs that are connected to any backend
+  const connectedTabIds = new Set(connectionManager.tabConnections.keys());
+
+  chrome.tabs.query({}, (tabs) => {
+    if (tabs) {
+      tabs.forEach(tab => {
+        if (tab.id) {
+          if (connectedTabIds.has(tab.id)) {
+            // This tab is connected to a backend - show green border
+            chrome.tabs.sendMessage(tab.id, { type: 'show_connection_border' }, () => {
+              if (chrome.runtime.lastError) { /* tab may not have content script */ }
+            });
+          } else {
+            // This tab is not connected - hide border
             chrome.tabs.sendMessage(tab.id, { type: 'hide_connection_border' }, () => {
               if (chrome.runtime.lastError) { /* ignore */ }
             });
           }
-        });
-      }
-    });
-  }
+        }
+      });
+    }
+  });
 }
 
 /**
@@ -165,6 +167,8 @@ function isRestrictedUrl(url) {
 }
 
 // LEGACY: Single connection fallback (deprecated)
+// DEPRECATED: Legacy single connection - kept for backward compatibility only
+// Use connectionManager.primaryPort and connectionManager.clients instead
 let currentConnection = null;
 let messageQueue = [];
 let connectionReady = false;
@@ -473,6 +477,12 @@ class WebSocketClient {
     this.intentionallyClosed = true;
     this._stopHeartbeat();
 
+    // Clear gap recovery timeout - memory leak prevention
+    if (this.gapRecoveryTimeout) {
+      clearTimeout(this.gapRecoveryTimeout);
+      this.gapRecoveryTimeout = null;
+    }
+
     if (this.ws) {
       try {
         this.ws.close();
@@ -647,6 +657,13 @@ class WebSocketClient {
 
   async _handleGapRecovery(data) {
     this.pendingGapRecovery = false;
+
+    // Clear gap recovery timeout - memory leak prevention
+    if (this.gapRecoveryTimeout) {
+      clearTimeout(this.gapRecoveryTimeout);
+      this.gapRecoveryTimeout = null;
+    }
+
     if (data.messages && Array.isArray(data.messages)) {
       for (const msg of data.messages) {
         if (msg.sequence !== undefined && msg.sequence > this.lastSequence) {
@@ -797,6 +814,43 @@ class TabRegistry {
       }
     }
 
+    // ENFORCE 1:1 TAB-TO-BACKEND CONNECTION
+    // Disconnect all OTHER tabs currently assigned to this port
+    const existingTabs = this.connectionTabs.get(port);
+    if (existingTabs && existingTabs.size > 0) {
+      const tabsToDisconnect = Array.from(existingTabs).filter(id => id !== tabId);
+      console.log(`[TabRegistry] Enforcing 1:1 connection: disconnecting ${tabsToDisconnect.length} tabs from port ${port}`);
+
+      tabsToDisconnect.forEach(otherTabId => {
+        console.log(`[TabRegistry] Disconnecting tab ${otherTabId} from port ${port} (replaced by tab ${tabId})`);
+        // Remove from maps
+        this.tabConnections.delete(otherTabId);
+        existingTabs.delete(otherTabId);
+
+        // Hide connection border on disconnected tab
+        try {
+          chrome.tabs.sendMessage(otherTabId, { type: 'hide_connection_border' }, (response) => {
+            if (chrome.runtime.lastError) {
+              // Tab may be closed, ignore error
+              console.log(`[TabRegistry] Tab ${otherTabId} unreachable (may be closed)`);
+            }
+          });
+        } catch (e) {
+          console.log(`[TabRegistry] Error sending hide_connection_border to tab ${otherTabId}:`, e);
+        }
+
+        // Notify popup that tab was disconnected
+        chrome.runtime.sendMessage({
+          type: 'tab_disconnected',
+          tabId: otherTabId,
+          port: port,
+          reason: 'replaced_by_new_tab'
+        }).catch(() => {
+          // Popup may not be open, ignore error
+        });
+      });
+    }
+
     this.tabConnections.set(tabId, port);
 
     if (!this.connectionTabs.has(port)) {
@@ -850,6 +904,36 @@ class MessageRouter {
   constructor(tabRegistry) {
     this.tabRegistry = tabRegistry;
     this.unroutedMessages = [];
+
+    // Periodic cleanup of old messages - memory leak prevention
+    this._cleanupInterval = setInterval(() => this._cleanOldMessages(), 60000); // Every 60 seconds
+  }
+
+  /**
+   * Clean messages older than 5 minutes - memory leak prevention
+   * @private
+   */
+  _cleanOldMessages() {
+    const now = Date.now();
+    const MAX_AGE = 5 * 60 * 1000; // 5 minutes
+    const oldCount = this.unroutedMessages.length;
+    this.unroutedMessages = this.unroutedMessages.filter(
+      m => (now - m.timestamp) < MAX_AGE
+    );
+    const removedCount = oldCount - this.unroutedMessages.length;
+    if (removedCount > 0) {
+      console.log(`[MessageRouter] Cleaned ${removedCount} old messages (older than 5 minutes)`);
+    }
+  }
+
+  /**
+   * Clean up resources when shutting down
+   */
+  destroy() {
+    if (this._cleanupInterval) {
+      clearInterval(this._cleanupInterval);
+      this._cleanupInterval = null;
+    }
   }
 
   async routeMessage(tabId, message, sendFn) {
@@ -1577,6 +1661,12 @@ class ConnectionManager {
           console.log(`[ConnectionManager] Gap recovery response received for port ${port}`);
           connection.pendingGapRecovery = false;
 
+          // Clear gap recovery timeout - memory leak prevention
+          if (connection.gapRecoveryTimeout) {
+            clearTimeout(connection.gapRecoveryTimeout);
+            connection.gapRecoveryTimeout = null;
+          }
+
           if (data.messages && Array.isArray(data.messages)) {
             for (const msg of data.messages) {
               if (msg.sequence !== undefined && msg.sequence > connection.lastSequence) {
@@ -1818,6 +1908,14 @@ class ConnectionManager {
     connection.pendingGapRecovery = true;
     console.log(`[ConnectionManager] Requesting gap recovery for port ${connection.port}: sequences ${fromSequence} to ${toSequence}`);
 
+    // Set 30-second timeout for gap recovery - memory leak prevention
+    connection.gapRecoveryTimeout = setTimeout(() => {
+      console.warn(`[ConnectionManager] Gap recovery timeout for port ${connection.port}, clearing buffer`);
+      connection.pendingGapRecovery = false;
+      connection.outOfOrderBuffer = [];
+      connection.gapRecoveryTimeout = null;
+    }, 30000);
+
     try {
       connection.ws.send(JSON.stringify({
         type: 'gap_recovery',
@@ -1827,6 +1925,10 @@ class ConnectionManager {
     } catch (e) {
       console.error(`[ConnectionManager] Failed to request gap recovery for port ${connection.port}:`, e);
       connection.pendingGapRecovery = false;
+      if (connection.gapRecoveryTimeout) {
+        clearTimeout(connection.gapRecoveryTimeout);
+        connection.gapRecoveryTimeout = null;
+      }
     }
   }
 
@@ -2041,9 +2143,16 @@ function checkSequenceGap(incomingSequence) {
 
 /**
  * Request recovery of missed messages
+ * MIGRATED: Now uses ConnectionManager's primary connection
  */
 function requestGapRecovery(fromSequence, toSequence) {
-  if (!currentConnection || currentConnection.readyState !== WebSocket.OPEN) {
+  const primaryPort = connectionManager.primaryPort;
+  if (!primaryPort) {
+    return;
+  }
+
+  const client = connectionManager.clients.get(primaryPort);
+  if (!client || !client.ws || client.ws.readyState !== WebSocket.OPEN) {
     return;
   }
 
@@ -2051,7 +2160,7 @@ function requestGapRecovery(fromSequence, toSequence) {
   console.log(`[MCP Browser] Requesting gap recovery: sequences ${fromSequence} to ${toSequence}`);
 
   try {
-    currentConnection.send(JSON.stringify({
+    client.ws.send(JSON.stringify({
       type: 'gap_recovery',
       fromSequence: fromSequence,
       toSequence: toSequence
@@ -2156,15 +2265,23 @@ function stopHeartbeat() {
 
 /**
  * Send heartbeat and check for pong timeout
+ * MIGRATED: Now uses ConnectionManager's primary connection
  */
 function sendHeartbeat() {
-  if (currentConnection && currentConnection.readyState === WebSocket.OPEN) {
+  const primaryPort = connectionManager.primaryPort;
+  if (!primaryPort) {
+    stopHeartbeat();
+    return;
+  }
+
+  const client = connectionManager.clients.get(primaryPort);
+  if (client && client.ws && client.ws.readyState === WebSocket.OPEN) {
     // Check if we received pong recently
     const timeSinceLastPong = Date.now() - lastPongTime;
     if (timeSinceLastPong > HEARTBEAT_INTERVAL + PONG_TIMEOUT) {
       console.warn(`[MCP Browser] Heartbeat timeout - no pong for ${timeSinceLastPong}ms, reconnecting`);
       // Close connection and trigger reconnect
-      currentConnection.close();
+      client.ws.close();
       stopHeartbeat();
 
       // Calculate delay with backoff
@@ -2177,7 +2294,7 @@ function sendHeartbeat() {
 
     // Send heartbeat with timestamp
     try {
-      currentConnection.send(JSON.stringify({
+      client.ws.send(JSON.stringify({
         type: 'heartbeat',
         timestamp: Date.now()
       }));
@@ -2582,6 +2699,9 @@ async function probePort(port) {
 }
 
 /**
+ * DEPRECATED: Legacy connection function - kept for backward compatibility only
+ * Use connectionManager.connectToBackend() instead
+ *
  * Connect to a specific server
  * @param {number} port - Port to connect to
  * @param {Object} serverInfo - Optional server info
@@ -2862,14 +2982,18 @@ function setupWebSocketHandlers(ws) {
 
 /**
  * Try to connect to a specific port
+ * MIGRATED: Now uses ConnectionManager instead of legacy connectToServer
  */
 async function tryConnectToPort(port) {
   const serverInfo = await probePort(port);
   if (serverInfo) {
-    const connected = await connectToServer(port);
-    if (connected) {
-      console.log(`[MCP Browser] Connected to port ${port}`);
+    try {
+      await connectionManager.connectToBackend(port, serverInfo);
+      console.log(`[MCP Browser] Connected to port ${port} via ConnectionManager`);
       return true;
+    } catch (error) {
+      console.error(`[MCP Browser] Failed to connect to port ${port}:`, error);
+      return false;
     }
   }
   return false;
@@ -3551,6 +3675,99 @@ async function executeCommandOnTab(tabId, data, connection = null) {
         }
         break;
 
+      case 'extract_ascii_layout':
+        console.log(`[MCP Browser] Extracting ASCII layout for request ${data.requestId}`);
+        try {
+          const options = data.options || {};
+          const layoutResults = await chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: (opts) => {
+              const viewport = {
+                width: window.innerWidth,
+                height: window.innerHeight
+              };
+
+              const elements = [];
+              const maxText = opts.max_text || 30;
+
+              // Capture key layout elements with their positions
+              const selectors = [
+                { selector: 'header, [role="banner"]', type: 'HEADER' },
+                { selector: 'nav, [role="navigation"]', type: 'NAV' },
+                { selector: 'main, [role="main"]', type: 'MAIN' },
+                { selector: 'aside, [role="complementary"]', type: 'ASIDE' },
+                { selector: 'footer, [role="contentinfo"]', type: 'FOOTER' },
+                { selector: 'form', type: 'FORM' },
+                { selector: 'input:not([type="hidden"])', type: 'input' },
+                { selector: 'button, [role="button"]', type: 'button' },
+                { selector: 'a[href]', type: 'link' },
+                { selector: 'h1, h2, h3', type: 'heading' },
+                { selector: 'img', type: 'img' },
+                { selector: 'table', type: 'table' },
+              ];
+
+              selectors.forEach(({ selector, type }) => {
+                document.querySelectorAll(selector).forEach(el => {
+                  const rect = el.getBoundingClientRect();
+                  // Only include visible elements in viewport
+                  if (rect.width > 0 && rect.height > 0 &&
+                      rect.bottom > 0 && rect.top < viewport.height &&
+                      rect.right > 0 && rect.left < viewport.width) {
+                    elements.push({
+                      type: type,
+                      x: Math.round(rect.left),
+                      y: Math.round(rect.top),
+                      width: Math.round(rect.width),
+                      height: Math.round(rect.height),
+                      text: el.textContent?.trim().substring(0, maxText) || '',
+                      tag: el.tagName.toLowerCase(),
+                      id: el.id || null,
+                      name: el.name || null,
+                    });
+                  }
+                });
+              });
+
+              return {
+                success: true,
+                layout: {
+                  viewport,
+                  url: window.location.href,
+                  title: document.title,
+                  elements
+                }
+              };
+            },
+            args: [options]
+          });
+
+          const extractionResult = layoutResults[0]?.result || { success: false, error: 'No result from script' };
+
+          const response = {
+            type: 'ascii_layout_extracted',
+            requestId: data.requestId,
+            response: extractionResult
+          };
+
+          if (connection && connection.ws && connection.ws.readyState === WebSocket.OPEN) {
+            connection.ws.send(JSON.stringify(response));
+            console.log(`[MCP Browser] Sent ascii_layout_extracted response for request ${data.requestId}`);
+          } else {
+            console.error(`[MCP Browser] No active connection to send ASCII layout for request ${data.requestId}`);
+          }
+        } catch (e) {
+          console.error('[MCP Browser] ASCII layout extraction failed:', e);
+          const errorResponse = {
+            type: 'ascii_layout_extracted',
+            requestId: data.requestId,
+            response: { success: false, error: e.message }
+          };
+          if (connection && connection.ws && connection.ws.readyState === WebSocket.OPEN) {
+            connection.ws.send(JSON.stringify(errorResponse));
+          }
+        }
+        break;
+
       case 'capture_screenshot':
         // Capture screenshot using chrome.tabs.captureVisibleTab
         console.log(`[MCP Browser] Capturing screenshot for request ${data.requestId}`);
@@ -3675,33 +3892,45 @@ async function executeCommandOnTab(tabId, data, connection = null) {
 
 /**
  * Send message to server
+ * MIGRATED: Now uses ConnectionManager's primary connection instead of legacy currentConnection
  * @param {Object} message - Message to send
  * @returns {Promise<boolean>} Success status
  */
 async function sendToServer(message) {
-  if (currentConnection && currentConnection.readyState === WebSocket.OPEN && connectionReady) {
-    // Connection is open AND handshake is complete
-    currentConnection.send(JSON.stringify(message));
-    connectionStatus.messageCount++;
-    return true;
-  } else {
-    // Queue message if not connected or handshake not complete
-    messageQueue.push(message);
-    // Enforce max queue size
-    if (messageQueue.length > MAX_QUEUE_SIZE) {
-      messageQueue.shift();
+  // Use ConnectionManager's primary connection
+  const primaryPort = connectionManager.primaryPort;
+  if (primaryPort) {
+    const client = connectionManager.clients.get(primaryPort);
+    if (client && client.ws && client.ws.readyState === WebSocket.OPEN && client.connectionReady) {
+      client.ws.send(JSON.stringify(message));
+      connectionStatus.messageCount++;
+      return true;
     }
-    // Persist queue to storage
-    await saveMessageQueue();
-    return false;
   }
+
+  // Queue message if not connected or handshake not complete
+  messageQueue.push(message);
+  // Enforce max queue size
+  if (messageQueue.length > MAX_QUEUE_SIZE) {
+    messageQueue.shift();
+  }
+  // Persist queue to storage
+  await saveMessageQueue();
+  return false;
 }
 
 /**
  * Flush queued messages
+ * MIGRATED: Now uses ConnectionManager's primary connection
  */
 async function flushMessageQueue() {
-  if (!currentConnection || currentConnection.readyState !== WebSocket.OPEN) {
+  const primaryPort = connectionManager.primaryPort;
+  if (!primaryPort) {
+    return;
+  }
+
+  const client = connectionManager.clients.get(primaryPort);
+  if (!client || !client.ws || client.ws.readyState !== WebSocket.OPEN) {
     return;
   }
 
@@ -3710,7 +3939,7 @@ async function flushMessageQueue() {
   while (messageQueue.length > 0) {
     const message = messageQueue.shift();
     try {
-      currentConnection.send(JSON.stringify(message));
+      client.ws.send(JSON.stringify(message));
       connectionStatus.messageCount++;
     } catch (e) {
       console.error('[MCP Browser] Failed to send queued message:', e);
@@ -3730,20 +3959,32 @@ async function flushMessageQueue() {
  * Clean up ports when tabs are closed
  */
 chrome.tabs.onRemoved.addListener((tabId) => {
+  console.log(`[MCP Browser] Cleaned up tab ${tabId}`);
+
+  // Clean ALL tab-related Maps - comprehensive cleanup
   if (activePorts.has(tabId)) {
-    console.log(`[MCP Browser] Tab ${tabId} closed, removing port`);
     activePorts.delete(tabId);
   }
 
-  // Remove tab from ConnectionManager
+  // Remove tab from ConnectionManager registry
   connectionManager.removeTab(tabId);
 
-  // Remove unrouted messages for closed tab - memory leak fix
-  connectionManager.unroutedMessages = connectionManager.unroutedMessages.filter(item => item.tabId !== tabId);
-
   // Remove from pending tabs
-  if (connectionManager.pendingTabs.has(tabId)) {
-    connectionManager.pendingTabs.delete(tabId);
+  if (connectionManager.tabRegistry) {
+    connectionManager.tabRegistry.removePendingTab(tabId);
+  }
+
+  // Clean navigating tabs Set
+  navigatingTabs.delete(tabId);
+
+  // Remove unrouted messages for closed tab - memory leak fix
+  if (connectionManager.messageRouter) {
+    connectionManager.messageRouter.unroutedMessages =
+      connectionManager.messageRouter.unroutedMessages.filter(m => m.tabId !== tabId);
+  }
+
+  // Update badge to reflect cleanup
+  if (connectionManager._updatePendingBadge) {
     connectionManager._updatePendingBadge();
   }
 });
@@ -3880,6 +4121,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         connectionManager.assignTabToConnection(tabId, port);
         console.log(`[MCP Browser] Tab ${tabId} assigned to port ${port}`);
 
+        // Set this tab as the controlled tab and show green border
+        controlledTabId = tabId;
+        console.log(`[MCP Browser] Tab ${tabId} set as controlled tab via popup`);
+
+        // Show green connection border on this tab
+        chrome.tabs.sendMessage(tabId, { type: 'show_connection_border' }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.debug(`[MCP Browser] Could not show border on tab ${tabId}:`, chrome.runtime.lastError.message);
+          }
+        });
+
         // Get tab URL for domain caching
         try {
           const tab = await chrome.tabs.get(tabId);
@@ -3972,23 +4224,53 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true; // Keep channel open for async response
   } else if (request.type === 'get_detailed_status') {
-    // Get detailed technical status for debugging
-    const connections = connectionManager.getActiveConnections();
-    const firstConnection = connections.length > 0 ? connections[0] : null;
+    // Get detailed technical status for debugging - use current tab's connection
+    (async () => {
+      try {
+        // Get the active tab to find its connection
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const tabId = activeTab?.id;
 
-    const detailedStatus = {
-      port: firstConnection?.port || connectionStatus.port || null,
-      connectionState: firstConnection ? (firstConnection.ready ? 'connected' : 'connecting') : 'disconnected',
-      retryCount: firstConnection?.reconnectAttempts || reconnectAttempts || 0,
-      projectName: firstConnection?.projectName || connectionStatus.projectName || null,
-      serverPid: firstConnection?.serverPid || null,
-      messageCount: connectionStatus.messageCount || 0,
-      lastError: connectionStatus.lastError || null,
-      totalConnections: connections.length,
-      extensionState: extensionState
-    };
+        const connections = connectionManager.getActiveConnections();
 
-    sendResponse(detailedStatus);
+        // Find connection for the active tab, or fall back to first connection
+        let tabConnection = null;
+        if (tabId) {
+          tabConnection = connections.find(conn => {
+            // Check if this connection is assigned to the active tab
+            const assignedTabs = connectionManager.getTabsForPort(conn.port);
+            return assignedTabs && assignedTabs.has(tabId);
+          });
+        }
+
+        // Use tab's connection if found, otherwise first connection for backward compat
+        const connection = tabConnection || (connections.length > 0 ? connections[0] : null);
+
+        const detailedStatus = {
+          port: connection?.port || connectionStatus.port || null,
+          connectionState: connection ? (connection.ready ? 'connected' : 'connecting') : 'disconnected',
+          retryCount: connection?.reconnectAttempts || reconnectAttempts || 0,
+          projectName: connection?.projectName || connectionStatus.projectName || null,
+          serverPid: connection?.serverPid || null,
+          messageCount: connectionStatus.messageCount || 0,
+          lastError: connectionStatus.lastError || null,
+          totalConnections: connections.length,
+          extensionState: extensionState,
+          activeTabId: tabId || null,
+          isTabSpecific: !!tabConnection
+        };
+
+        sendResponse(detailedStatus);
+      } catch (error) {
+        console.error('[MCP Browser] Error getting detailed status:', error);
+        sendResponse({
+          port: null,
+          connectionState: 'error',
+          lastError: error.message
+        });
+      }
+    })();
+    return true; // Keep channel open for async response
   }
 });
 

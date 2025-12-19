@@ -1,0 +1,3 @@
+{"timestamp": "2025-12-18T14:33:34.394000+00:00", "level": "log", "message": "[mcp-browser] Console capture initialized", "port": 65163, "url": "http://localhost:5173/", "metadata": {}}
+{"timestamp": "2025-12-18T14:33:34.394000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive port connected", "port": 65163, "url": "http://localhost:5173/", "metadata": {}}
+{"timestamp": "2025-12-18T14:33:34.418000+00:00", "level": "log", "message": "[MCP Browser Content] Keepalive acknowledged", "port": 65163, "url": "http://localhost:5173/", "metadata": {}}

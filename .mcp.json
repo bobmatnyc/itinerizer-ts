@@ -15,6 +15,17 @@
         "mcp"
       ],
       "env": {}
+    },
+    "kuzu-memory": {
+      "type": "stdio",
+      "command": "kuzu-memory",
+      "args": [
+        "mcp"
+      ],
+      "env": {
+        "KUZU_MEMORY_PROJECT_ROOT": "/Users/masa/Projects/itinerizer-ts",
+        "KUZU_MEMORY_DB": "/Users/masa/Projects/itinerizer-ts/kuzu-memories"
+      }
     }
   }
 }

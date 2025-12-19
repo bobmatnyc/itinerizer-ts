@@ -1,0 +1,613 @@
+{
+  "id": "641e7b29-2432-49e8-9866-e4db400494ba",
+  "version": 1,
+  "createdAt": "2025-12-18T17:07:40.332Z",
+  "updatedAt": "2025-12-18T22:23:38.958Z",
+  "title": "Own the Road - 8 Day Adventure to Peru",
+  "description": "Explore the highlights of Peru, including the vibrant capital of Lima, the Sacred Valley, Machu Picchu, and the historic city of Cusco on this 8-day adventure.",
+  "status": "DRAFT",
+  "startDate": "2023-01-01T00:00:00.000Z",
+  "endDate": "2023-01-08T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "Phoenix Sky Harbor International Airport"
+    },
+    {
+      "name": "Jorge Chavez International Airport"
+    },
+    {
+      "name": "Pullman Lima Miraflores"
+    },
+    {
+      "name": "Awanakancha"
+    },
+    {
+      "name": "Pisac Markets"
+    },
+    {
+      "name": "Aranwa Sacred Valley Hotel & Wellness"
+    },
+    {
+      "name": "Inkaterra Machu Picchu"
+    },
+    {
+      "name": "Novotel Cusco"
+    },
+    {
+      "name": "Alejandro Velasco Astete International Airport"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "1c414174-f083-46b9-8076-00325536ee29",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-01T00:00:00.000Z",
+      "endDatetime": "2023-01-01T00:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.319Z"
+      },
+      "notes": "Private transfer from Lima Airport to Pullman Lima Miraflores hotel",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Lima Airport",
+        "coordinates": {
+          "latitude": 45.085489,
+          "longitude": 7.6022108
+        }
+      },
+      "dropoffLocation": {
+        "name": "Pullman Lima Miraflores",
+        "coordinates": {
+          "latitude": -12.1297278,
+          "longitude": -77.0295749
+        }
+      }
+    },
+    {
+      "id": "851dadec-7c29-401b-9845-1dd1a5b99e40",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-01T14:30:00.000Z",
+      "endDatetime": "2023-01-01T21:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.319Z"
+      },
+      "notes": "Flight from Phoenix to Lima, Peru",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "LATAM Airlines",
+        "code": "LA"
+      },
+      "flightNumber": "LA123",
+      "origin": {
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "coordinates": {
+          "latitude": 33.4328487,
+          "longitude": -112.0067915
+        }
+      },
+      "destination": {
+        "name": "Jorge Chavez International Airport",
+        "code": "LIM",
+        "coordinates": {
+          "latitude": -12.019515,
+          "longitude": -77.1183731
+        }
+      }
+    },
+    {
+      "id": "7d2ea456-1240-4bd2-a546-78903107228c",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-01T15:00:00.000Z",
+      "endDatetime": "2023-01-03T12:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Pullman Lima Miraflores offers 237 rooms and suites, an executive floor, 6 meeting rooms, a restaurant, 2 bars, a gym, and a swimming pool with ocean views.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Pullman Lima Miraflores"
+      },
+      "location": {
+        "name": "Juan Fanning 515-525",
+        "coordinates": {
+          "latitude": -12.1297278,
+          "longitude": -77.0295749
+        }
+      },
+      "checkInDate": "2023-01-01T00:00:00.000Z",
+      "checkOutDate": "2023-01-03T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "DELUXE DBL and TWIN BEDS",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "f8489f1c-bc74-455d-992d-d16414355726",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-02T14:30:00.000Z",
+      "endDatetime": "2023-01-02T20:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Please pay the guide directly - $280 for the tour (driver can stop at an ATM for you on the tour)",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "City Tour of Lima including Light Show",
+      "description": "Enjoy a personalized guided tour of Lima including the Lacro Museum, Historic Center, and Magic water Circuit.",
+      "location": {
+        "name": "City Tour of Lima including Light Show"
+      }
+    },
+    {
+      "id": "c6c6da33-17fd-466d-8813-bbb65f8327db",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-03T09:30:00.000Z",
+      "endDatetime": "2023-01-03T10:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Private transfer from hotel to Awanakancha and Pisac Markets",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Aranwa Sacred Valley Hotel & Wellness",
+        "coordinates": {
+          "latitude": -13.3302834,
+          "longitude": -72.0511953
+        }
+      },
+      "dropoffLocation": {
+        "name": "Awanakancha",
+        "coordinates": {
+          "latitude": -13.4545254,
+          "longitude": -71.8880602
+        }
+      }
+    },
+    {
+      "id": "fb177edd-3d58-4de7-9ade-743d6a36c2ef",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-03T09:30:00.000Z",
+      "endDatetime": "2023-01-03T15:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Tour of Awanakancha and the Pisac Markets",
+      "description": "Visit the Awanakancha textile exhibition center and the Pisac market to see local crafts and textiles.",
+      "location": {
+        "name": "Awanakancha and Pisac Markets"
+      }
+    },
+    {
+      "id": "22937fbd-c321-4b15-b486-91fe3e7228d8",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-01-03T15:30:00.000Z",
+      "endDatetime": "2023-01-03T16:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T17:07:40.329Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Awanakancha and Pisac Markets and Antigua Hacienda Yaravilca",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Awanakancha and Pisac Markets"
+      },
+      "dropoffLocation": {
+        "name": "Antigua Hacienda Yaravilca"
+      }
+    },
+    {
+      "id": "1464bcbb-1f8f-4a72-9e2b-88188541c8c9",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-03T15:00:00.000Z",
+      "endDatetime": "2023-01-05T12:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Aranwa Sacred Valley Hotel & Wellness is located in the Sacred Valley, 1 hour from Cusco, on the route to Machu Picchu.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Aranwa Sacred Valley Hotel & Wellness"
+      },
+      "location": {
+        "name": "Antigua Hacienda Yaravilca"
+      },
+      "checkInDate": "2023-01-03T00:00:00.000Z",
+      "checkOutDate": "2023-01-05T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "2 rooms",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "58f9fe15-f889-45a1-91c2-350b54de453c",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-04T08:00:00.000Z",
+      "endDatetime": "2023-01-04T16:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Lunch at Wayra Ranch",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Tour of Urubamba / Sacred Valley",
+      "description": "Explore the highlights of the Sacred Valley, including Chinchero, Moray, Maras salt mines, and Ollantaytambo.",
+      "location": {
+        "name": "Tour of Urubamba / Sacred Valley"
+      }
+    },
+    {
+      "id": "648ba7d1-def9-441f-adff-535f38fdf105",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-05T07:00:00.000Z",
+      "endDatetime": "2023-01-05T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Includes breakfast, box lunch, and dinner",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Inca Trek to Machu Picchu",
+      "description": "Hike the Inca Trail from km 104 to Machu Picchu, visiting Chachabamba, Wiñayhuayna, and Inti Punku (Sun Gate).",
+      "location": {
+        "name": "Inca Trek to Machu Picchu"
+      }
+    },
+    {
+      "id": "3af1ead1-3606-438f-992d-82b2860fc04a",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-01-05T18:30:00.000Z",
+      "endDatetime": "2023-01-05T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T17:07:40.329Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Inca Trek to Machu Picchu and Machu Picchu Pueblo",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Inca Trek to Machu Picchu"
+      },
+      "dropoffLocation": {
+        "name": "Machu Picchu Pueblo",
+        "coordinates": {
+          "latitude": -13.1558504,
+          "longitude": -72.5239692
+        }
+      }
+    },
+    {
+      "id": "cefea909-c963-4c69-aa8c-23c4dd2f9908",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-05T13:00:00.000Z",
+      "endDatetime": "2023-01-06T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Inkaterra Machu Picchu Pueblo Hotel is an intimate Andean village with 83 whitewashed adobe casitas, located in the cloud forest.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Inkaterra Machu Picchu"
+      },
+      "location": {
+        "name": "Machu Picchu Pueblo",
+        "coordinates": {
+          "latitude": -13.1558504,
+          "longitude": -72.5239692
+        }
+      },
+      "checkInDate": "2023-01-05T00:00:00.000Z",
+      "checkOutDate": "2023-01-06T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "2 ROOMS",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "af19257f-7fce-482a-b14a-4752e07e60ab",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-06T07:00:00.000Z",
+      "endDatetime": "2023-01-06T15:45:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Tour of Machu Picchu",
+      "description": "Explore the ancient Inca citadel of Machu Picchu, including the option to hike Huayna Picchu. Enjoy lunch at Belmond Sanctuary Lodge.",
+      "location": {
+        "name": "Machu Picchu",
+        "coordinates": {
+          "latitude": -13.164341,
+          "longitude": -72.5450094
+        }
+      }
+    },
+    {
+      "id": "101c6dc0-8806-4231-867b-504a95c24f23",
+      "status": "TENTATIVE",
+      "startDatetime": "2023-01-06T16:15:00.000Z",
+      "endDatetime": "2023-01-06T16:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T17:07:40.329Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Machu Picchu and San Agustin 239, Esq Pasaje Sta Monica",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Machu Picchu",
+        "coordinates": {
+          "latitude": -13.164341,
+          "longitude": -72.5450094
+        }
+      },
+      "dropoffLocation": {
+        "name": "San Agustin 239, Esq Pasaje Sta Monica"
+      }
+    },
+    {
+      "id": "14416ba0-b9a7-46cc-9a74-b334a4e16da0",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-06T15:00:00.000Z",
+      "endDatetime": "2023-01-08T09:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "The Novotel Cusco is located in a 16th century building in the heart of Cusco, 3 blocks from the Plaza de Armas.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Novotel Cusco"
+      },
+      "location": {
+        "name": "San Agustin 239, Esq Pasaje Sta Monica"
+      },
+      "checkInDate": "2023-01-06T00:00:00.000Z",
+      "checkOutDate": "2023-01-08T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "2 Rooms",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "9f31d0cc-f2be-467d-b299-5875ce0ed81e",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-06T15:45:00.000Z",
+      "endDatetime": "2023-01-06T17:15:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Transfer from Machu Picchu to Cusco by train",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PUBLIC",
+      "pickupLocation": {
+        "name": "Machu Picchu",
+        "coordinates": {
+          "latitude": -13.164341,
+          "longitude": -72.5450094
+        }
+      },
+      "dropoffLocation": {
+        "name": "Novotel Cusco",
+        "coordinates": {
+          "latitude": -13.5174293,
+          "longitude": -71.9757325
+        }
+      }
+    },
+    {
+      "id": "432809de-d29b-4ff3-9ba7-1074b408b29e",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-07T00:00:00.000Z",
+      "endDatetime": "2023-01-07T23:59:59.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Dinner at Cicciolina",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Day of Leisure in Cusco",
+      "description": "Explore Cusco at your own pace, with suggested activities including the Plaza de Armas, San Pedro Market, Coricancha, and the Cusco Planetarium.",
+      "location": {
+        "name": "Day of Leisure in Cusco"
+      }
+    },
+    {
+      "id": "d8a17866-2281-4311-aeb9-1333ab8c7954",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-08T00:00:00.000Z",
+      "endDatetime": "2023-01-08T01:20:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Private transfer from Cusco hotel to Cusco Airport, followed by flight from Cusco to Lima",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Novotel Cusco",
+        "coordinates": {
+          "latitude": -13.5174293,
+          "longitude": -71.9757325
+        }
+      },
+      "dropoffLocation": {
+        "name": "Alejandro Velasco Astete International Airport",
+        "coordinates": {
+          "latitude": -13.5363543,
+          "longitude": -71.9367957
+        }
+      }
+    },
+    {
+      "id": "ab5d20db-bd55-4412-bcd5-7a2a51d855ce",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-08T00:00:00.000Z",
+      "endDatetime": "2023-01-08T02:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Flight from Lima to Phoenix",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "LATAM Airlines",
+        "code": "LA"
+      },
+      "flightNumber": "LA789",
+      "origin": {
+        "name": "Jorge Chavez International Airport",
+        "code": "LIM",
+        "coordinates": {
+          "latitude": -12.019515,
+          "longitude": -77.1183731
+        }
+      },
+      "destination": {
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "coordinates": {
+          "latitude": 33.4328487,
+          "longitude": -112.0067915
+        }
+      }
+    },
+    {
+      "id": "ed31dcc1-f470-4380-a951-c28c99d2f91c",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-01-08T01:20:00.000Z",
+      "endDatetime": "2023-01-08T02:40:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:07:40.320Z"
+      },
+      "notes": "Flight from Cusco to Lima (1 hr, 20 min)",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "LATAM Airlines",
+        "code": "LA"
+      },
+      "flightNumber": "LA456",
+      "origin": {
+        "name": "Alejandro Velasco Astete International Airport",
+        "code": "CUZ",
+        "coordinates": {
+          "latitude": -13.5363543,
+          "longitude": -71.9367957
+        }
+      },
+      "destination": {
+        "name": "Jorge Chavez International Airport",
+        "code": "LIM",
+        "coordinates": {
+          "latitude": -12.019515,
+          "longitude": -77.1183731
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "family",
+    "adventure",
+    "cultural",
+    "luxury"
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,15 @@
+{
+  "id": "273447bd-f8b6-448f-ae3e-5ce321ab6fdf",
+  "version": 1,
+  "createdAt": "2025-12-18T21:41:44.302Z",
+  "updatedAt": "2025-12-18T21:41:44.303Z",
+  "title": "New Itinerary",
+  "status": "DRAFT",
+  "startDate": "2025-12-18T21:41:44.285Z",
+  "endDate": "2025-12-25T21:41:44.285Z",
+  "destinations": [],
+  "travelers": [],
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}

@@ -1,0 +1,415 @@
+{
+  "id": "dc8bb3cf-650b-4af7-90f2-74019820243d",
+  "version": 1,
+  "createdAt": "2025-12-18T14:24:23.309Z",
+  "updatedAt": "2025-12-18T22:23:15.437Z",
+  "title": "Family Adventure in New York City",
+  "description": "Explore the iconic sights and vibrant culture of New York City, from the Statue of Liberty to the bright lights of Times Square, while staying at the luxurious St. Regis hotel.",
+  "status": "DRAFT",
+  "startDate": "2025-12-03T23:59:00.000Z",
+  "endDate": "2025-12-08T22:44:00.000Z",
+  "destinations": [
+    {
+      "name": "Phoenix Sky Harbor International Airport"
+    },
+    {
+      "name": "New York John F. Kennedy International Airport"
+    },
+    {
+      "name": "The St. Regis New York"
+    },
+    {
+      "name": "Ground Zero"
+    },
+    {
+      "name": "Statue of Liberty"
+    },
+    {
+      "name": "Times Square"
+    },
+    {
+      "name": "Rockefeller Center"
+    },
+    {
+      "name": "Le Café Louis Vuitton"
+    },
+    {
+      "name": "Bad Roman"
+    },
+    {
+      "name": "Club Macanudo"
+    },
+    {
+      "name": "Four Twenty Five, a Jean-Georges Restaurant"
+    },
+    {
+      "name": "New York Comedy Club"
+    },
+    {
+      "name": "Marea"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "2a22e2c3-3f80-4772-a4c5-00a685fe7ea7",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-03T23:59:00.000Z",
+      "endDatetime": "2025-12-04T03:45:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Red-eye flight from Phoenix to New York with JetBlue",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "JetBlue",
+        "code": "B6"
+      },
+      "flightNumber": "B636",
+      "origin": {
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "coordinates": {
+          "latitude": 33.4328487,
+          "longitude": -112.0067915
+        }
+      },
+      "destination": {
+        "name": "New York John F. Kennedy International Airport",
+        "code": "JFK",
+        "coordinates": {
+          "latitude": 40.6429479,
+          "longitude": -73.7793734
+        }
+      }
+    },
+    {
+      "id": "3df539de-ce7b-4621-952a-2c7844559c3e",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-04T15:00:00.000Z",
+      "endDatetime": "2025-12-08T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Luxury accommodations at the historic St. Regis New York, with amenities like butler service, breakfast, and a $350 hotel credit",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "The St. Regis New York"
+      },
+      "location": {
+        "name": "Fifth Avenue and 55th Street"
+      },
+      "checkInDate": "2025-12-04T00:00:00.000Z",
+      "checkOutDate": "2025-12-08T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Grand Luxe Room",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "25856dc1-ea52-4b91-a0e0-f85205ed75f8",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-04T19:00:00.000Z",
+      "endDatetime": "2025-12-04T21:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Reservations required, business casual dress code",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Dinner at Bad Roman",
+      "description": "Enjoy a unique twist on classic Italian cuisine at this trendy Brooklyn-inspired restaurant",
+      "location": {
+        "name": "Dinner at Bad Roman"
+      }
+    },
+    {
+      "id": "84d6895f-0e4f-4843-b2f5-2f670b6e1007",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-05T12:00:00.000Z",
+      "endDatetime": "2025-12-05T13:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Smart casual dress code",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Lunch at Le Café Louis Vuitton",
+      "description": "Dine on creatively reimagined French and New York-inspired dishes in the elegant setting of the Louis Vuitton flagship store",
+      "location": {
+        "name": "Lunch at Le Café Louis Vuitton"
+      }
+    },
+    {
+      "id": "86b9b5e7-2d7c-49c9-aa97-3a40689b9bcb",
+      "status": "TENTATIVE",
+      "startDatetime": "2025-12-05T14:00:00.000Z",
+      "endDatetime": "2025-12-05T16:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:24:23.305Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Lunch at Le Café Louis Vuitton and Comedy Club Showcase at New York Comedy Club",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Lunch at Le Café Louis Vuitton"
+      },
+      "dropoffLocation": {
+        "name": "Comedy Club Showcase at New York Comedy Club"
+      }
+    },
+    {
+      "id": "041f7174-ef68-45ad-ac41-a2abe3a30467",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-05T17:00:00.000Z",
+      "endDatetime": "2025-12-05T19:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Tickets included",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Comedy Club Showcase at New York Comedy Club",
+      "description": "Experience the authentic New York stand-up comedy scene with a showcase of top local and touring comedians",
+      "location": {
+        "name": "Comedy Club Showcase at New York Comedy Club"
+      }
+    },
+    {
+      "id": "b87ffdde-7722-4f26-a5c1-40b2db95e184",
+      "status": "TENTATIVE",
+      "startDatetime": "2025-12-05T19:30:00.000Z",
+      "endDatetime": "2025-12-05T20:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:24:23.305Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Comedy Club Showcase at New York Comedy Club and Dinner at Marea",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Comedy Club Showcase at New York Comedy Club"
+      },
+      "dropoffLocation": {
+        "name": "Dinner at Marea"
+      }
+    },
+    {
+      "id": "0435bf14-9ff9-45bb-81ae-7abb44ccd956",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-05T19:30:00.000Z",
+      "endDatetime": "2025-12-05T21:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Reservations required",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Dinner at Marea",
+      "description": "Dine on elevated Italian cuisine at this acclaimed Michelin-starred restaurant",
+      "location": {
+        "name": "Dinner at Marea"
+      }
+    },
+    {
+      "id": "3fd96d94-2d22-4923-889b-9917e10eb486",
+      "status": "TENTATIVE",
+      "startDatetime": "2025-12-05T22:00:00.000Z",
+      "endDatetime": "2025-12-05T23:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:24:23.305Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Dinner at Marea and Self-Guided Sightseeing Tour",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Dinner at Marea"
+      },
+      "dropoffLocation": {
+        "name": "Self-Guided Sightseeing Tour"
+      }
+    },
+    {
+      "id": "35d92a02-3ff1-410a-b7b1-56903a89850c",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-06T00:00:00.000Z",
+      "endDatetime": "2025-12-06T17:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Flexible, self-guided tour",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Self-Guided Sightseeing Tour",
+      "description": "Explore New York City's iconic landmarks at your own pace, including Ground Zero, the Statue of Liberty, Times Square, and Rockefeller Center",
+      "location": {
+        "name": "Self-Guided Sightseeing Tour"
+      }
+    },
+    {
+      "id": "9b12bce7-9396-4e5f-87aa-71c7ebaa19fb",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-07T17:00:00.000Z",
+      "endDatetime": "2025-12-07T19:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Reservations recommended",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Cocktails and Cigars at Club Macanudo",
+      "description": "Unwind in the elegant, sophisticated atmosphere of this upscale cigar lounge",
+      "location": {
+        "name": "Cocktails and Cigars at Club Macanudo"
+      }
+    },
+    {
+      "id": "f4957b4f-6694-402e-bbcd-79dc0e63bf55",
+      "status": "TENTATIVE",
+      "startDatetime": "2025-12-07T20:00:00.000Z",
+      "endDatetime": "2025-12-07T20:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "confidence": 0.6,
+        "mode": "dream",
+        "timestamp": "2025-12-18T14:24:23.305Z"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Cocktails and Cigars at Club Macanudo and Dinner at Four Twenty Five, a Jean-Georges Restaurant",
+      "type": "TRANSFER",
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Cocktails and Cigars at Club Macanudo"
+      },
+      "dropoffLocation": {
+        "name": "Dinner at Four Twenty Five, a Jean-Georges Restaurant"
+      }
+    },
+    {
+      "id": "b3d9ccc4-d6bd-430c-b66b-ad38cabd3a92",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-07T19:30:00.000Z",
+      "endDatetime": "2025-12-07T21:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Reservations required",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Dinner at Four Twenty Five, a Jean-Georges Restaurant",
+      "description": "Enjoy a fine dining experience at this elegant restaurant from renowned chefs Jean-Georges Vongerichten and Jonathan Benno",
+      "location": {
+        "name": "Dinner at Four Twenty Five, a Jean-Georges Restaurant"
+      }
+    },
+    {
+      "id": "a5f8855f-cbc9-4ecd-a867-cb17cd44cf40",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-12-08T18:59:00.000Z",
+      "endDatetime": "2025-12-08T22:07:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T14:24:23.300Z"
+      },
+      "notes": "Evening flight from New York to Phoenix with JetBlue",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "JetBlue",
+        "code": "B6"
+      },
+      "flightNumber": "B6735",
+      "origin": {
+        "name": "New York John F. Kennedy International Airport",
+        "code": "JFK",
+        "coordinates": {
+          "latitude": 40.6429479,
+          "longitude": -73.7793734
+        }
+      },
+      "destination": {
+        "name": "Phoenix Sky Harbor International Airport",
+        "code": "PHX",
+        "coordinates": {
+          "latitude": 33.4328487,
+          "longitude": -112.0067915
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "luxury",
+    "sightseeing",
+    "dining",
+    "entertainment"
+  ],
+  "metadata": {}
+}

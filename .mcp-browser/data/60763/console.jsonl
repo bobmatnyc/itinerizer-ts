@@ -1,0 +1,5 @@
+{"timestamp": "2025-12-18T19:38:16.494000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 60763, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-18T19:38:16.496000+00:00", "level": "log", "message": "[MCP Browser] Download border shown", "port": 60763, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-18T19:38:19.469000+00:00", "level": "log", "message": "[MCP Browser] Connection border hidden", "port": 60763, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-18T19:38:20.313000+00:00", "level": "log", "message": "[MCP Browser] Connection border shown (persistent)", "port": 60763, "url": "http://localhost:5176/", "metadata": {}}
+{"timestamp": "2025-12-18T19:41:44.050000+00:00", "level": "log", "message": "[MCP Browser] Connection border hidden", "port": 60763, "url": "http://localhost:5176/", "metadata": {}}

@@ -1,0 +1,394 @@
+{
+  "id": "d6d6f0b9-57e0-4cef-811b-6888084957b9",
+  "version": 1,
+  "createdAt": "2025-12-18T17:06:30.225Z",
+  "updatedAt": "2025-12-18T22:22:58.210Z",
+  "title": "Norway - Adventure Itinerary, Deluxe, Couples",
+  "description": "An 8-day adventure through Norway's stunning fjords, mountains, and cities, featuring luxury accommodations, private tours, and unique experiences.",
+  "status": "DRAFT",
+  "startDate": "2023-06-01T00:00:00.000Z",
+  "endDate": "2023-06-08T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "Bergen Airport"
+    },
+    {
+      "name": "Opus XVI"
+    },
+    {
+      "name": "Bergen"
+    },
+    {
+      "name": "Balestrand"
+    },
+    {
+      "name": "Kviknes Hotel"
+    },
+    {
+      "name": "Flåm"
+    },
+    {
+      "name": "Myrdal"
+    },
+    {
+      "name": "Oslo"
+    },
+    {
+      "name": "The Thief"
+    },
+    {
+      "name": "Oslo Airport"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "9de79cb7-3124-4dd2-b808-06d1e461c2b6",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-01T00:00:00.000Z",
+      "endDatetime": "2023-06-01T00:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "Welcome to Bergen! A local expert will meet you at the airport and take you to your hotel while sharing knowledge about Bergen and the trip ahead.",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Bergen Airport",
+        "coordinates": {
+          "latitude": 60.4080493,
+          "longitude": 5.3206542
+        }
+      },
+      "dropoffLocation": {
+        "name": "Opus XVI",
+        "coordinates": {
+          "latitude": 60.393867,
+          "longitude": 5.327218
+        }
+      }
+    },
+    {
+      "id": "10b8147d-5c0d-44a6-b93c-0cbaa1e3a69c",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-01T15:00:00.000Z",
+      "endDatetime": "2023-06-04T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "A contemporary celebration of creative heritage at this boutique Bergen bolthole. Like the bold melodic flourishes that open the famous Edvard Grieg concerto it is named after- Opus XVI captures you from the first moment. Created by descendants of the Bergen-born composer- this boutique hotel pairs a celebration of his life and legacy with up-to-the-minute style and comfort.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Opus XVI"
+      },
+      "location": {
+        "name": "Vaagsallmenningen 16"
+      },
+      "checkInDate": "2023-06-01T00:00:00.000Z",
+      "checkOutDate": "2023-06-04T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Standard Room with Breakfast",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "c14f8c20-0021-49ca-baa6-ca776f59a095",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-03T09:00:00.000Z",
+      "endDatetime": "2023-06-03T13:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "Founded in AD 1070, Bergen, Norway, 190 mi/305 km northwest of Oslo, is the country's second largest—and one of its most attractive—cities. Bergen is a popular cruise ship destination that attracts visitors year-round, and it requires a three-night stay to see everything.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Bergen Private Tour",
+      "description": "Your local expert will meet you at your hotel and take you for a half day historical walking tour around Bergen to show you the city from a local perspective. The tour will include the city center and the surrounding mountains.",
+      "location": {
+        "name": "Bergen",
+        "coordinates": {
+          "latitude": 60.3943055,
+          "longitude": 5.3259192
+        }
+      }
+    },
+    {
+      "id": "602195c8-616e-42d4-9103-a2edabdbefd6",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-04T00:00:00.000Z",
+      "endDatetime": "2023-06-04T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "It weather permits it, some of the trip will be done under sail. Spend the evening enjoying your last day in Bergen.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Bergen Sailing Adventure",
+      "description": "Today you take a tour in a sailboat around the ares of Bergen. The captain talks about the history of Bergen and shares stories from the area. Learn all about the cities history as a trading and shipping stronghold, its fortifications, Old Bergen and the shipyards.",
+      "location": {
+        "name": "Bergen",
+        "coordinates": {
+          "latitude": 60.3943055,
+          "longitude": 5.3259192
+        }
+      }
+    },
+    {
+      "id": "8bbf9c86-7b3a-4b21-986e-0a987e0f586c",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-05T00:00:00.000Z",
+      "endDatetime": "2023-06-05T01:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "Today you will take a ferry trough Norway's deepest and longest fjord, the Sognefjord. End up in the charming fjord side village of Balestrand with an amazing location along the Sognefjord.",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PUBLIC",
+      "pickupLocation": {
+        "name": "Bergen",
+        "coordinates": {
+          "latitude": 60.3943055,
+          "longitude": 5.3259192
+        }
+      },
+      "dropoffLocation": {
+        "name": "Balestrand",
+        "coordinates": {
+          "latitude": 61.2096194,
+          "longitude": 6.5360834
+        }
+      }
+    },
+    {
+      "id": "3a075787-8d95-48f7-bb55-8bec30349e79",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-05T15:00:00.000Z",
+      "endDatetime": "2023-06-07T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "The Sognefjord, situated in the middle of Fjord Norway, extends 204 km inland and contains some of the wildest and most beautiful scenery in Norway. This region has awe inspiring and dramatic mountains and fjords, unique cultural attractions and exciting activities.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Kviknes Hotel"
+      },
+      "location": {
+        "name": "Balestrand",
+        "coordinates": {
+          "latitude": 61.2096194,
+          "longitude": 6.5360834
+        }
+      },
+      "checkInDate": "2023-06-05T00:00:00.000Z",
+      "checkOutDate": "2023-06-07T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Fjord View Room with Breakfast",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "11f66a07-a17c-47f2-90ac-3fa17f6c915d",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-06T00:00:00.000Z",
+      "endDatetime": "2023-06-06T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "Optional Fjord Kayaking in the heart of Sognefjord- Norway's longest fjord",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Balestrand Private Tour Adventure",
+      "description": "Go for a private tour with a local expert in the mountains surrounding Balestrand. Take a trip adapted to your level and hike the incredible mountains overlooking the fjords. There are a wide variety of hikes available with varying levels of difficulty and incline but each one offers unforgettable access to some of the most idyllic and wild natural spaces on the planet.",
+      "location": {
+        "name": "Balestrand",
+        "coordinates": {
+          "latitude": 61.2096194,
+          "longitude": 6.5360834
+        }
+      }
+    },
+    {
+      "id": "ef0ae947-feb1-40b1-856f-1c8b9fc1c539",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-07T00:00:00.000Z",
+      "endDatetime": "2023-06-07T02:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "After breakfast take the ferry to the famous fjord village Flåm and have a look around. Then board the Flåm railway, taking you up trough the mountains to Myrdal. Described as one of the most beautiful and naturally spectacular train journeys in the world the Flåm railroad is one of the most popular tourist attractions in Norway. The train runs from the end of Aurlandsfjord, a tributary of the Sognefjord, to the steep mountains at Myrdal station. The journey allows visitors to take in the incredible scenery of Western Norway",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PUBLIC",
+      "pickupLocation": {
+        "name": "Balestrand",
+        "coordinates": {
+          "latitude": 61.2096194,
+          "longitude": 6.5360834
+        }
+      },
+      "dropoffLocation": {
+        "name": "Flåm",
+        "coordinates": {
+          "latitude": 60.8629525,
+          "longitude": 7.1131783
+        }
+      }
+    },
+    {
+      "id": "2c27e40e-3811-4432-8688-b8f9e380f2e7",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-07T02:00:00.000Z",
+      "endDatetime": "2023-06-07T04:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "From Myrdal you will continue to Oslo and be transported to your hotel for the night.",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PUBLIC",
+      "pickupLocation": {
+        "name": "Myrdal",
+        "coordinates": {
+          "latitude": 60.7351714,
+          "longitude": 7.1228288
+        }
+      },
+      "dropoffLocation": {
+        "name": "The Thief",
+        "coordinates": {
+          "latitude": 59.907613,
+          "longitude": 10.72098
+        }
+      }
+    },
+    {
+      "id": "ccaedce8-5bbc-49a3-874b-21258f7cd752",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-07T15:00:00.000Z",
+      "endDatetime": "2023-06-09T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "From Myrdal you will continue to Oslo and be transported to your hotel for the night.",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "The Thief"
+      },
+      "location": {
+        "name": "Landgangen 1",
+        "coordinates": {
+          "latitude": 59.907658,
+          "longitude": 10.721052
+        }
+      },
+      "checkInDate": "2023-06-07T00:00:00.000Z",
+      "checkOutDate": "2023-06-09T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Standard Room with Breakfast",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "e3cf0f5d-1d9f-495f-9e67-c364f6a59575",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-08T00:00:00.000Z",
+      "endDatetime": "2023-06-08T18:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "Norwegian food is good, although it might seem unexciting or even bland for those who like their food well-seasoned. Seafood, various meats (including reindeer and elk steak), vegetables and delicious desserts are easy to find.",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Oslo Foodie Tour",
+      "description": "A local expert will meet you at your hotel and show you the local favorites in the capital. Sample some of the great food Norway can offer along the route.",
+      "location": {
+        "name": "Oslo",
+        "coordinates": {
+          "latitude": 59.9133301,
+          "longitude": 10.7389701
+        }
+      }
+    },
+    {
+      "id": "75cf1200-43ea-4943-8f83-a01649b92b5b",
+      "status": "CONFIRMED",
+      "startDatetime": "2023-06-08T00:00:00.000Z",
+      "endDatetime": "2023-06-08T00:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T17:06:30.217Z"
+      },
+      "notes": "Your private driver will pick you up from the hotel and take you to the airport in comfort.",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "The Thief",
+        "coordinates": {
+          "latitude": 59.907613,
+          "longitude": 10.72098
+        }
+      },
+      "dropoffLocation": {
+        "name": "Oslo Airport",
+        "coordinates": {
+          "latitude": 60.1931498,
+          "longitude": 11.0968156
+        }
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "luxury",
+    "adventure",
+    "couples",
+    "fjords",
+    "mountains",
+    "food"
+  ],
+  "metadata": {}
+}

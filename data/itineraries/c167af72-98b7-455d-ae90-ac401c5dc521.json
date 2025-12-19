@@ -2,7 +2,7 @@
   "id": "c167af72-98b7-455d-ae90-ac401c5dc521",
   "version": 8,
   "createdAt": "2025-12-18T01:01:50.678Z",
-  "updatedAt": "2025-12-18T01:01:50.681Z",
+  "updatedAt": "2025-12-18T22:24:40.142Z",
   "title": "Business Trip to NYC",
   "description": "Annual tech conference and client meetings",
   "status": "DRAFT",
@@ -30,6 +30,7 @@
       "travelerIds": [
         "40ee1237-cd8a-4609-b27e-a1a373621833"
       ],
+      "source": "import",
       "metadata": {},
       "type": "FLIGHT",
       "airline": {
@@ -39,11 +40,19 @@
       "flightNumber": "UA123",
       "origin": {
         "name": "San Francisco International",
-        "code": "SFO"
+        "code": "SFO",
+        "coordinates": {
+          "latitude": 37.622452,
+          "longitude": -122.3839894
+        }
       },
       "destination": {
         "name": "John F. Kennedy International",
-        "code": "JFK"
+        "code": "JFK",
+        "coordinates": {
+          "latitude": 28.3873691,
+          "longitude": -80.6058086
+        }
       },
       "cabinClass": "BUSINESS"
     },
@@ -55,6 +64,7 @@
       "travelerIds": [
         "40ee1237-cd8a-4609-b27e-a1a373621833"
       ],
+      "source": "import",
       "metadata": {},
       "type": "HOTEL",
       "property": {
@@ -62,7 +72,11 @@
       },
       "location": {
         "name": "Manhattan, New York",
-        "code": "NYC"
+        "code": "NYC",
+        "coordinates": {
+          "latitude": 40.7579554,
+          "longitude": -73.9855319
+        }
       },
       "checkInDate": "2025-03-15T00:00:00.000Z",
       "checkOutDate": "2025-03-20T00:00:00.000Z",
@@ -77,25 +91,30 @@
       ]
     },
     {
-      "type": "MEETING",
+      "id": "f1bf614c-104f-4879-9d8c-eb5454d2e9ce",
       "status": "CONFIRMED",
       "startDatetime": "2025-03-16T13:00:00.000Z",
       "endDatetime": "2025-03-16T21:00:00.000Z",
       "travelerIds": [
         "40ee1237-cd8a-4609-b27e-a1a373621833"
       ],
+      "source": "import",
+      "metadata": {},
+      "type": "MEETING",
       "title": "Tech Conference Day 1",
       "location": {
         "name": "Jacob Javits Center",
-        "code": "NYC"
+        "code": "NYC",
+        "coordinates": {
+          "latitude": 40.7583595,
+          "longitude": -74.0021206
+        }
       },
       "attendees": [
         "Sarah Developer",
         "Mike Engineer"
       ],
-      "agenda": "Keynotes, workshops, and networking",
-      "metadata": {},
-      "id": "f1bf614c-104f-4879-9d8c-eb5454d2e9ce"
+      "agenda": "Keynotes, workshops, and networking"
     }
   ],
   "tripType": "BUSINESS",

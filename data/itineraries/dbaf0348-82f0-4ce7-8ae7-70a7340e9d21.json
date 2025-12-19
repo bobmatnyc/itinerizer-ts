@@ -2,7 +2,7 @@
   "id": "dbaf0348-82f0-4ce7-8ae7-70a7340e9d21",
   "version": 1,
   "createdAt": "2025-12-18T03:46:39.507Z",
-  "updatedAt": "2025-12-18T03:46:39.507Z",
+  "updatedAt": "2025-12-18T22:24:34.701Z",
   "title": "Spring Break in Oahu",
   "description": "A family adventure in Oahu, Hawaii featuring a luxurious stay at the Four Seasons Resort, with activities like ziplining, snorkeling, and cultural experiences.",
   "status": "DRAFT",
@@ -24,6 +24,7 @@
       "startDatetime": "2026-04-03T15:00:00.000Z",
       "endDatetime": "2026-04-10T11:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Oceanfront rooms, suites, and studios with amenities like a spa, golf, and family-friendly activities.",
       "metadata": {},
       "type": "HOTEL",
@@ -31,7 +32,11 @@
         "name": "Four Seasons Resort Oahu at Ko Olina"
       },
       "location": {
-        "name": "92-1001 Olani St"
+        "name": "92-1001 Olani St",
+        "coordinates": {
+          "latitude": 21.3392955,
+          "longitude": -158.125741
+        }
       },
       "checkInDate": "2026-04-03T00:00:00.000Z",
       "checkOutDate": "2026-04-10T00:00:00.000Z",
@@ -47,6 +52,7 @@
       "startDatetime": "2026-04-04T09:00:00.000Z",
       "endDatetime": "2026-04-09T19:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Activities and experiences highlighting the natural beauty and cultural heritage of Hawaii.",
       "metadata": {},
       "type": "ACTIVITY",
@@ -62,6 +68,7 @@
       "startDatetime": "2026-04-10T10:00:00.000Z",
       "endDatetime": "2026-04-10T10:30:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Transfer from Four Seasons Resort Oahu at Ko Olina to airport.",
       "metadata": {},
       "type": "TRANSFER",
@@ -70,7 +77,11 @@
         "name": "Four Seasons Resort Oahu at Ko Olina"
       },
       "dropoffLocation": {
-        "name": "Honolulu International Airport"
+        "name": "Honolulu International Airport",
+        "coordinates": {
+          "latitude": 21.3211445,
+          "longitude": -157.9184436
+        }
       }
     }
   ],

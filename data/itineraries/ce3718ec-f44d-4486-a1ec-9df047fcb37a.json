@@ -1,0 +1,431 @@
+{
+  "id": "ce3718ec-f44d-4486-a1ec-9df047fcb37a",
+  "version": 1,
+  "createdAt": "2025-12-18T19:43:13.766Z",
+  "updatedAt": "2025-12-18T20:15:24.782Z",
+  "title": "Greece Sailing Family Adventure - 15 Days",
+  "description": "A 15-day family adventure exploring the islands of Greece, including Athens, Santorini, Mykonos, and a private yacht charter to visit the Cyclades islands.",
+  "status": "DRAFT",
+  "startDate": "2021-04-02T00:00:00.000Z",
+  "endDate": "2021-04-16T00:00:00.000Z",
+  "destinations": [
+    {
+      "name": "Athens"
+    },
+    {
+      "name": "Santorini"
+    },
+    {
+      "name": "Mykonos"
+    },
+    {
+      "name": "Paros"
+    },
+    {
+      "name": "Anti-Paros"
+    },
+    {
+      "name": "Ios"
+    },
+    {
+      "name": "Sifnos"
+    },
+    {
+      "name": "Serifos"
+    },
+    {
+      "name": "Kythnos"
+    }
+  ],
+  "travelers": [],
+  "segments": [
+    {
+      "id": "d885b8b5-cb0a-4149-b155-b89019844ae1",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-02T00:00:00.000Z",
+      "endDatetime": "2021-04-02T02:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Flight from the US to Athens",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "Unknown",
+        "code": "UNKNOWN"
+      },
+      "flightNumber": "XX0000",
+      "origin": {
+        "name": "Unknown",
+        "code": "UNK"
+      },
+      "destination": {
+        "name": "Athens International Airport",
+        "code": "ATH"
+      }
+    },
+    {
+      "id": "c2906969-71a1-42e2-bc5e-162a9a88e9cd",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-02T00:00:00.000Z",
+      "endDatetime": "2021-04-02T14:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "One-way private transfer from Athens Airport to King George Hotel in Athens",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Athens International Airport"
+      },
+      "dropoffLocation": {
+        "name": "King George, a Luxury Collection Hotel"
+      }
+    },
+    {
+      "id": "7dc425cc-d258-44cd-a81a-34b9fbc70769",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-02T14:00:00.000Z",
+      "endDatetime": "2021-04-04T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Luxury hotel in the heart of Athens with stunning Acropolis views",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "King George, a Luxury Collection Hotel"
+      },
+      "location": {
+        "name": "3 Vasileos Georgiou A' St, Athina 105 64"
+      },
+      "checkInDate": "2021-04-02T00:00:00.000Z",
+      "checkOutDate": "2021-04-04T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Deluxe Room",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "01db498f-dad3-49dd-8d36-895bba65c947",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-03T09:00:00.000Z",
+      "endDatetime": "2021-04-03T16:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "7-hour private guided tour",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Best of Athens in One Day: Acropolis & City Exploration",
+      "description": "Guided tour of the Acropolis and other top Athens landmarks",
+      "location": {
+        "name": "Acropolis of Athens"
+      }
+    },
+    {
+      "id": "9b36ce76-873c-4597-a81f-9b0825e581eb",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-04T00:00:00.000Z",
+      "endDatetime": "2021-04-04T00:55:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "55-minute flight from Athens to Santorini",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "Sky Express",
+        "code": "GQ"
+      },
+      "flightNumber": "XX0000",
+      "origin": {
+        "name": "Athens International Airport",
+        "code": "ATH"
+      },
+      "destination": {
+        "name": "Santorini International Airport",
+        "code": "JTR"
+      }
+    },
+    {
+      "id": "3bb830a9-0460-4700-8189-8adc21eb5a03",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-04T00:00:00.000Z",
+      "endDatetime": "2021-04-04T00:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "One-way private transfer from Santorini Airport to Andronis Concept Wellness Resort",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Santorini International Airport"
+      },
+      "dropoffLocation": {
+        "name": "Andronis Concept Wellness Resort"
+      }
+    },
+    {
+      "id": "a3e434d1-bff5-47bd-ac31-573186f39e6d",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-04T15:00:00.000Z",
+      "endDatetime": "2021-04-07T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Luxury wellness resort in Santorini with stunning caldera views",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Andronis Concept Wellness Resort"
+      },
+      "location": {
+        "name": "Epar.Od. Firon-Ias"
+      },
+      "checkInDate": "2021-04-04T00:00:00.000Z",
+      "checkOutDate": "2021-04-07T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Two Bedroom Villa with Private Pool",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "7a996178-61d7-4b16-ac4e-9da256aa2391",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-05T00:00:00.000Z",
+      "endDatetime": "2021-04-05T23:59:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Recommendations include visiting the Akrotiri archaeological site, taking a sunset cruise, and dining at local restaurants",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Leisure Day in Santorini",
+      "description": "Free day to explore Santorini at your own pace",
+      "location": {
+        "name": "Santorini"
+      }
+    },
+    {
+      "id": "b90582a7-8b9a-44ad-aeb4-521742dcd3a7",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-06T00:00:00.000Z",
+      "endDatetime": "2021-04-06T23:59:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Recommendations include the Akrotiri archaeological site, hiking from Fira to Oia, and visiting a local farm",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Santorini Off-The-Beaten-Path Exploration",
+      "description": "Discover the island's hidden gems, from hiking trails to local vineyards",
+      "location": {
+        "name": "Santorini"
+      }
+    },
+    {
+      "id": "91e71562-571e-40ba-aa9b-a57af1fb6ca3",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-07T00:00:00.000Z",
+      "endDatetime": "2021-04-07T00:20:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "One-way ferry transfer from Santorini to Mykonos",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PUBLIC",
+      "pickupLocation": {
+        "name": "Santorini Port"
+      },
+      "dropoffLocation": {
+        "name": "Mykonos Port"
+      }
+    },
+    {
+      "id": "0ee7fbaf-7591-4d20-8d68-8342732c72bd",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-07T12:00:00.000Z",
+      "endDatetime": "2021-04-07T12:20:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Shared transfer from Mykonos Port to Myconian Imperial Resort",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "SHUTTLE",
+      "pickupLocation": {
+        "name": "Mykonos Port"
+      },
+      "dropoffLocation": {
+        "name": "Myconian Imperial Resort and Villas"
+      }
+    },
+    {
+      "id": "16096e69-d269-42b7-967b-12ff290a7a89",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-07T15:00:00.000Z",
+      "endDatetime": "2021-04-09T11:00:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Luxury beachfront resort on Mykonos with stunning sea views",
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Myconian Imperial Resort and Villas"
+      },
+      "location": {
+        "name": "Elia Beach"
+      },
+      "checkInDate": "2021-04-07T00:00:00.000Z",
+      "checkOutDate": "2021-04-09T00:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Premium Sea View Room",
+      "roomCount": 1,
+      "amenities": []
+    },
+    {
+      "id": "ebbe427f-89bf-46ad-87d0-ba10f92c0024",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-08T00:00:00.000Z",
+      "endDatetime": "2021-04-08T23:59:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Recommendations include visiting the Mykonos Town, exploring the island's beaches, and dining at local restaurants",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Free Day to Explore Mykonos",
+      "description": "Spend the day discovering the island's charming towns, beaches, and nightlife",
+      "location": {
+        "name": "Mykonos"
+      }
+    },
+    {
+      "id": "47473aea-b83b-4306-a79c-c3228307b662",
+      "type": "TRANSFER",
+      "status": "TENTATIVE",
+      "startDatetime": "2021-04-09T00:29:00.000Z",
+      "endDatetime": "2021-04-08T23:45:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "dream",
+        "confidence": 0.6,
+        "timestamp": "2025-12-18T19:43:13.764Z"
+      },
+      "transferType": "TAXI",
+      "pickupLocation": {
+        "name": "Mykonos"
+      },
+      "dropoffLocation": {
+        "name": "Cyclades Islands"
+      },
+      "notes": "TAXI transfer - Found via intelligent gap filling",
+      "metadata": {
+        "source": "travel-agent-service",
+        "gapType": "UNKNOWN"
+      },
+      "inferred": true,
+      "inferredReason": "Transportation gap between Mykonos and Cyclades Islands"
+    },
+    {
+      "id": "0c7caa2e-e872-432c-851e-4b3cb07ac474",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-09T00:00:00.000Z",
+      "endDatetime": "2021-04-14T23:59:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "Includes a captain, hostess, and all meals and activities on board",
+      "metadata": {},
+      "type": "ACTIVITY",
+      "name": "Private Yacht Charter: Greek Island Sailing Adventure",
+      "description": "6-day private yacht charter to explore the Cyclades islands, including Paros, Anti-Paros, Ios, Sifnos, Serifos, and Kythnos",
+      "location": {
+        "name": "Cyclades Islands"
+      }
+    },
+    {
+      "id": "1182d188-036b-4bd1-b5ae-13e3702e7e9c",
+      "status": "CONFIRMED",
+      "startDatetime": "2021-04-15T00:00:00.000Z",
+      "endDatetime": "2021-04-15T00:30:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "sourceDetails": {
+        "model": "anthropic/claude-3-haiku",
+        "timestamp": "2025-12-18T19:43:13.754Z"
+      },
+      "notes": "One-way private transfer from Alimos Marina in Athens to Athens Airport",
+      "metadata": {},
+      "type": "TRANSFER",
+      "transferType": "PRIVATE",
+      "pickupLocation": {
+        "name": "Alimos Marina"
+      },
+      "dropoffLocation": {
+        "name": "Athens International Airport"
+      }
+    }
+  ],
+  "tripType": "LEISURE",
+  "tags": [
+    "family",
+    "sailing",
+    "adventure",
+    "luxury",
+    "beach",
+    "cultural"
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,38 @@
+{
+  "outputStyle": "Claude MPM",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/masa/.local/bin/kuzu-memory hooks session-start"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/masa/.local/bin/kuzu-memory hooks enhance"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/masa/.local/bin/kuzu-memory hooks learn"
+          }
+        ]
+      }
+    ]
+  }
+}

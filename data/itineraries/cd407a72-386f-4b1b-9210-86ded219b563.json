@@ -2,7 +2,7 @@
   "id": "cd407a72-386f-4b1b-9210-86ded219b563",
   "version": 1,
   "createdAt": "2025-12-18T03:03:26.683Z",
-  "updatedAt": "2025-12-18T03:03:26.683Z",
+  "updatedAt": "2025-12-18T22:24:13.381Z",
   "title": "Italy for the Wafers",
   "description": "A family adventure exploring the highlights of northern Italy, including Lake Como, the Dolomites, and Milan.",
   "status": "DRAFT",
@@ -39,6 +39,7 @@
       "startDatetime": "2026-05-21T14:50:00.000Z",
       "endDatetime": "2026-05-21T21:15:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Flight from Chicago to Philadelphia, then Philadelphia to Milan",
       "metadata": {},
       "type": "FLIGHT",
@@ -49,28 +50,19 @@
       "flightNumber": "2840",
       "origin": {
         "name": "Chicago O'Hare International Airport",
-        "code": "ORD"
+        "code": "ORD",
+        "coordinates": {
+          "latitude": 41.9782523,
+          "longitude": -87.9092355
+        }
       },
       "destination": {
         "name": "Philadelphia International Airport",
-        "code": "PHL"
-      }
-    },
-    {
-      "id": "9fa1840e-2b07-44d0-9a29-95c9f8b33ebe",
-      "status": "CONFIRMED",
-      "startDatetime": "2026-05-22T11:20:00.000Z",
-      "endDatetime": "2026-05-22T12:20:00.000Z",
-      "travelerIds": [],
-      "notes": "Private transfer from Milan Malpensa Airport to Hilton Lake Como",
-      "metadata": {},
-      "type": "TRANSFER",
-      "transferType": "PRIVATE",
-      "pickupLocation": {
-        "name": "Milan Malpensa Airport"
-      },
-      "dropoffLocation": {
-        "name": "Hilton Lake Como"
+        "code": "PHL",
+        "coordinates": {
+          "latitude": 39.875018,
+          "longitude": -75.2352128
+        }
       }
     },
     {
@@ -79,6 +71,7 @@
       "startDatetime": "2026-05-22T15:00:00.000Z",
       "endDatetime": "2026-05-25T11:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Enjoy the scenic views and amenities at the Hilton Lake Como",
       "metadata": {},
       "type": "HOTEL",
@@ -86,7 +79,11 @@
         "name": "Hilton Lake Como"
       },
       "location": {
-        "name": "Lake Como"
+        "name": "Lake Como",
+        "coordinates": {
+          "latitude": 45.9917589,
+          "longitude": 9.264881
+        }
       },
       "checkInDate": "2026-05-22T00:00:00.000Z",
       "checkOutDate": "2026-05-25T00:00:00.000Z",
@@ -102,13 +99,18 @@
       "startDatetime": "2026-05-23T09:00:00.000Z",
       "endDatetime": "2026-05-23T12:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Tour includes private walking tour of Como and funicular tickets",
       "metadata": {},
       "type": "ACTIVITY",
       "name": "Como Private Walking Tour with Funicular Legendary Panorama",
       "description": "Discover the charm of Como's historic center on a private guided walking tour that blends art, history, and gastronomy.",
       "location": {
-        "name": "Hilton Lake Como"
+        "name": "Hilton Lake Como",
+        "coordinates": {
+          "latitude": 45.8166013,
+          "longitude": 9.0642119
+        }
       }
     },
     {
@@ -117,15 +119,24 @@
       "startDatetime": "2026-05-25T09:00:00.000Z",
       "endDatetime": "2026-05-25T10:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Private transfer from Hilton Lake Como to Modena",
       "metadata": {},
       "type": "TRANSFER",
       "transferType": "PRIVATE",
       "pickupLocation": {
-        "name": "Hilton Lake Como"
+        "name": "Hilton Lake Como",
+        "coordinates": {
+          "latitude": 45.8166013,
+          "longitude": 9.0642119
+        }
       },
       "dropoffLocation": {
-        "name": "Modena"
+        "name": "Modena",
+        "coordinates": {
+          "latitude": 44.5384728,
+          "longitude": 10.9359609
+        }
       }
     },
     {
@@ -134,13 +145,18 @@
       "startDatetime": "2026-05-26T09:00:00.000Z",
       "endDatetime": "2026-05-26T12:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Tour includes private guide, food and wine tastings",
       "metadata": {},
       "type": "ACTIVITY",
       "name": "Downtown Foodie Tour",
       "description": "Explore the local food scene in Bologna, including tastings of typical cheese, cured meats, and fresh pasta.",
       "location": {
-        "name": "Quadrilatero, Bologna"
+        "name": "Quadrilatero, Bologna",
+        "coordinates": {
+          "latitude": 44.4931597,
+          "longitude": 11.3450991
+        }
       }
     },
     {
@@ -149,15 +165,24 @@
       "startDatetime": "2026-05-28T09:00:00.000Z",
       "endDatetime": "2026-05-28T10:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Private transfer from Modena to the Dolomites Hotel",
       "metadata": {},
       "type": "TRANSFER",
       "transferType": "PRIVATE",
       "pickupLocation": {
-        "name": "Modena"
+        "name": "Modena",
+        "coordinates": {
+          "latitude": 44.5384728,
+          "longitude": 10.9359609
+        }
       },
       "dropoffLocation": {
-        "name": "HOTEL De LEN"
+        "name": "HOTEL De LEN",
+        "coordinates": {
+          "latitude": 46.538796,
+          "longitude": 12.1342169
+        }
       }
     },
     {
@@ -166,6 +191,7 @@
       "startDatetime": "2026-05-28T15:00:00.000Z",
       "endDatetime": "2026-05-30T11:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Enjoy the sustainable design and mountain views at HOTEL De LEN",
       "metadata": {},
       "type": "HOTEL",
@@ -173,7 +199,11 @@
         "name": "HOTEL De LEN"
       },
       "location": {
-        "name": "Cortina d'Ampezzo"
+        "name": "Cortina d'Ampezzo",
+        "coordinates": {
+          "latitude": 46.5383332,
+          "longitude": 12.1373506
+        }
       },
       "checkInDate": "2026-05-28T00:00:00.000Z",
       "checkOutDate": "2026-05-30T00:00:00.000Z",
@@ -189,15 +219,24 @@
       "startDatetime": "2026-05-30T09:00:00.000Z",
       "endDatetime": "2026-05-30T10:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Private transfer from the Dolomites to the hotel in Milan",
       "metadata": {},
       "type": "TRANSFER",
       "transferType": "PRIVATE",
       "pickupLocation": {
-        "name": "HOTEL De LEN"
+        "name": "HOTEL De LEN",
+        "coordinates": {
+          "latitude": 46.538796,
+          "longitude": 12.1342169
+        }
       },
       "dropoffLocation": {
-        "name": "Sine De La Ville"
+        "name": "Sine De La Ville",
+        "coordinates": {
+          "latitude": -22.2702453,
+          "longitude": 166.4421861
+        }
       }
     },
     {
@@ -206,6 +245,7 @@
       "startDatetime": "2026-05-30T15:00:00.000Z",
       "endDatetime": "2026-05-31T11:00:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Relax at the historic Sine De La Ville hotel in the heart of Milan",
       "metadata": {},
       "type": "HOTEL",
@@ -213,7 +253,11 @@
         "name": "Sine De La Ville"
       },
       "location": {
-        "name": "Milan"
+        "name": "Milan",
+        "coordinates": {
+          "latitude": 45.4641943,
+          "longitude": 9.1896346
+        }
       },
       "checkInDate": "2026-05-30T00:00:00.000Z",
       "checkOutDate": "2026-05-31T00:00:00.000Z",
@@ -229,6 +273,7 @@
       "startDatetime": "2026-05-31T13:20:00.000Z",
       "endDatetime": "2026-05-31T20:09:00.000Z",
       "travelerIds": [],
+      "source": "import",
       "notes": "Flight from Milan to Philadelphia, then Philadelphia to Chicago",
       "metadata": {},
       "type": "FLIGHT",
@@ -239,11 +284,19 @@
       "flightNumber": "299",
       "origin": {
         "name": "Milan Malpensa Airport",
-        "code": "MXP"
+        "code": "MXP",
+        "coordinates": {
+          "latitude": 45.6276327,
+          "longitude": 8.7110406
+        }
       },
       "destination": {
         "name": "Philadelphia International Airport",
-        "code": "PHL"
+        "code": "PHL",
+        "coordinates": {
+          "latitude": 39.875018,
+          "longitude": -75.2352128
+        }
       }
     }
   ],

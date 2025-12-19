@@ -1,0 +1,45 @@
+[DEBUG] LLM Response Preview (first 1000 chars):
+{
+  "title": "12 Day Luxury Peru Sample Itinerary",
+  "description": "A 12-day luxury adventure through Peru, including stays in Lima, the Sacred Valley, Machu Picchu, Cusco, and the Amazon rainforest.",
+  "startDate": "2023-01-01T00:00:00Z",
+  "endDate": "2023-01-12T00:00:00Z",
+  "tripType": "LEISURE",
+  "destinations": [
+    {
+      "name": "Lima",
+      "city": "Lima",
+      "country": "Peru",
+      "type": "CITY"
+    },
+    {
+      "name": "Miraflores Park, A Belmond Hotel",
+      "city": "Lima",
+      "country": "Peru",
+      "type": "HOTEL"
+    },
+    {
+      "name": "Parque del Amor",
+      "city": "Lima",
+      "country": "Peru",
+      "type": "ATTRACTION"
+    },
+    {
+      "name": "Huaca Pucllana",
+      "city": "Lima",
+      "country": "Peru",
+      "type": "ATTRACTION"
+    },
+    {
+      "name": "Historic Center of Lima",
+      "city": "Lima",
+      "country": "Peru",
+      "type": "ATTRACTION"
+    },
+    {
+      "name": "Convent of San Francisco",
+      "city": "Lima",
+   
+
+[DEBUG] Response length: 11451
+[?25h✗ LLM returned invalid JSON
