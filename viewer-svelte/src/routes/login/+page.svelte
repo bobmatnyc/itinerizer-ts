@@ -1,10 +1,22 @@
 <script lang="ts">
-  import { authStore } from '$lib/stores/auth.svelte';
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
 
   let password = $state('');
   let error = $state('');
   let loading = $state(false);
+  let authMode = $state<'password' | 'open'>('password');
+
+  // Fetch auth mode on component mount
+  onMount(async () => {
+    try {
+      const response = await fetch('/api/auth/status');
+      const data = await response.json();
+      authMode = data.mode;
+    } catch (err) {
+      console.error('Failed to fetch auth mode:', err);
+    }
+  });
 
   async function handleSubmit(e: Event) {
     e.preventDefault();
@@ -12,13 +24,19 @@
     loading = true;
 
     try {
-      const success = await authStore.login(password);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: authMode === 'password' ? password : '' })
+      });
 
-      if (success) {
-        // Redirect to itineraries on successful login
-        await goto('/itineraries');
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Redirect to home on successful login
+        await goto('/');
       } else {
-        error = 'Invalid password. Please try again.';
+        error = data.error || 'Login failed. Please try again.';
         password = '';
       }
     } catch (err) {
@@ -46,19 +64,25 @@
 
     <!-- Login Form -->
     <form class="login-form" onsubmit={handleSubmit}>
-      <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <input
-          id="password"
-          type="password"
-          class="form-input"
-          bind:value={password}
-          placeholder="Enter your password"
-          disabled={loading}
-          autocomplete="current-password"
-          required
-        />
-      </div>
+      {#if authMode === 'password'}
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input
+            id="password"
+            type="password"
+            class="form-input"
+            bind:value={password}
+            placeholder="Enter your password"
+            disabled={loading}
+            autocomplete="current-password"
+            required
+          />
+        </div>
+      {:else}
+        <div class="form-group">
+          <p class="dev-mode-message">Development Mode - No password required</p>
+        </div>
+      {/if}
 
       {#if error}
         <div class="error-message">
@@ -69,16 +93,16 @@
       <button
         type="submit"
         class="login-button"
-        disabled={loading || !password}
+        disabled={loading || (authMode === 'password' && !password)}
       >
-        {loading ? 'Logging in...' : 'Login'}
+        {#if loading}
+          {authMode === 'password' ? 'Logging in...' : 'Continuing...'}
+        {:else}
+          {authMode === 'password' ? 'Login' : 'Continue'}
+        {/if}
       </button>
     </form>
 
-    <!-- Demo hint -->
-    <div class="demo-hint">
-      <p class="text-sm text-minimal-text-muted">Demo password: travel2025</p>
-    </div>
   </div>
 </div>
 
@@ -179,6 +203,17 @@
     margin-bottom: 1rem;
   }
 
+  .dev-mode-message {
+    padding: 0.75rem 1rem;
+    background-color: #dbeafe;
+    border: 1px solid #bfdbfe;
+    border-radius: 0.5rem;
+    color: #1e40af;
+    font-size: 0.875rem;
+    text-align: center;
+    margin: 0;
+  }
+
   .login-button {
     width: 100%;
     padding: 0.875rem 1rem;
@@ -201,12 +236,6 @@
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
-  }
-
-  .demo-hint {
-    text-align: center;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
   }
 
   /* Mobile responsiveness */

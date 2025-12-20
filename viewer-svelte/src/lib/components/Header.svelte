@@ -1,20 +1,39 @@
 <script lang="ts">
-  import { authStore } from '$lib/stores/auth.svelte';
+  import { goto } from '$app/navigation';
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // Redirect to login page
+      await goto('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }
 </script>
 
 <div class="header">
   <h1 class="text-xl font-semibold tracking-tight text-minimal-text">Itinerizer</h1>
 
-  {#if authStore.isAuthenticated}
-    <div class="header-actions">
-      <a href="/profile" class="settings-link" aria-label="Settings">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6m-6-6h6m6 0h-6M4.22 4.22l4.24 4.24m5.66 5.66l4.24 4.24M19.78 4.22l-4.24 4.24M9.88 14.12l-4.24 4.24"></path>
-        </svg>
-      </a>
-    </div>
-  {/if}
+  <div class="header-actions">
+    <a href="/profile" class="settings-link" aria-label="Settings">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M12 1v6m0 6v6m-6-6h6m6 0h-6M4.22 4.22l4.24 4.24m5.66 5.66l4.24 4.24M19.78 4.22l-4.24 4.24M9.88 14.12l-4.24 4.24"></path>
+      </svg>
+    </a>
+    <button onclick={handleLogout} class="logout-button" aria-label="Logout">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <style>
@@ -50,5 +69,23 @@
   .settings-link:hover {
     background-color: #f3f4f6;
     color: #374151;
+  }
+
+  .logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    color: #6b7280;
+    background: none;
+    border: none;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .logout-button:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
   }
 </style>

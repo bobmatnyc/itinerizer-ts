@@ -212,7 +212,16 @@ async function initializeServices(): Promise<Services> {
 }
 
 /**
- * SvelteKit handle hook
+ * Session authentication constants
+ */
+const SESSION_COOKIE_NAME = 'itinerizer_session';
+const SESSION_SECRET = 'authenticated';
+
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = ['/login', '/api/auth'];
+
+/**
+ * SvelteKit handle hook - Authentication + Services
  */
 export const handle: Handle = async ({ event, resolve }) => {
 	console.log(`Request: ${event.request.method} ${event.url.pathname}`);
@@ -223,6 +232,42 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		// Make services available to all API routes via locals
 		event.locals.services = services;
+
+		// Check for session cookie
+		const sessionCookie = event.cookies.get(SESSION_COOKIE_NAME);
+		event.locals.isAuthenticated = sessionCookie === SESSION_SECRET;
+
+		// Check if route requires authentication
+		const isPublicRoute = PUBLIC_ROUTES.some(route => event.url.pathname.startsWith(route));
+
+		// Redirect to login if not authenticated and not on a public route
+		if (!event.locals.isAuthenticated && !isPublicRoute) {
+			// Allow API routes to fail with 401 instead of redirecting
+			if (event.url.pathname.startsWith('/api/')) {
+				return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+					status: 401,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+
+			// Redirect to login page
+			return new Response(null, {
+				status: 302,
+				headers: {
+					location: '/login'
+				}
+			});
+		}
+
+		// Redirect to home if authenticated and trying to access login page
+		if (event.locals.isAuthenticated && event.url.pathname === '/login') {
+			return new Response(null, {
+				status: 302,
+				headers: {
+					location: '/'
+				}
+			});
+		}
 
 		const response = await resolve(event);
 		console.log(`Response: ${event.request.method} ${event.url.pathname} - ${response.status}`);

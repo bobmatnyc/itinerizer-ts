@@ -1,17 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { authStore } from '$lib/stores/auth.svelte';
 
   onMount(() => {
-    // Check authentication status
-    if (authStore.isAuthenticated) {
-      // Redirect to main dashboard
-      goto('/itineraries');
-    } else {
-      // Redirect to login
-      goto('/login');
-    }
+    // Server handles authentication redirects
+    // Redirect authenticated users to itineraries page
+    goto('/itineraries');
   });
 </script>
 
