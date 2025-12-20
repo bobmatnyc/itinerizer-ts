@@ -6,7 +6,7 @@
    * (emails, notes, confirmations, etc.)
    */
 
-  import { settingsStore } from '$lib/stores/settings';
+  import { settingsStore } from '$lib/stores/settings.svelte';
 
   let { open = $bindable(false), onSuccess }: { open: boolean; onSuccess: (itineraryId: string) => void } = $props();
 

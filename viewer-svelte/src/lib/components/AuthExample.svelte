@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { authStore } from '$lib/stores/auth';
-  import { settingsStore } from '$lib/stores/settings';
+  import { authStore } from '$lib/stores/auth.svelte';
+  import { settingsStore } from '$lib/stores/settings.svelte';
 
   let password = $state('');
   let errorMessage = $state('');
