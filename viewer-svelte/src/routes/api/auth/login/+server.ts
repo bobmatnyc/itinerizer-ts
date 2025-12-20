@@ -11,7 +11,7 @@
  */
 
 import type { RequestHandler } from './$types';
-import { AUTH_PASSWORD } from '$env/static/private';
+import * as privateEnv from '$env/static/private';
 import * as env from '$env/static/public';
 
 const SESSION_COOKIE_NAME = 'itinerizer_session';
@@ -50,7 +50,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		if (authMode === 'password') {
 			// Password mode: validate against AUTH_PASSWORD
-			if (!AUTH_PASSWORD) {
+			const authPassword = privateEnv.AUTH_PASSWORD;
+			if (!authPassword) {
 				console.error('AUTH_PASSWORD not configured but in password mode');
 				return new Response(
 					JSON.stringify({ error: 'Authentication not configured' }),
@@ -58,7 +59,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				);
 			}
 
-			if (password !== AUTH_PASSWORD) {
+			if (password !== authPassword) {
 				return new Response(
 					JSON.stringify({ error: 'Invalid password' }),
 					{ status: 401, headers: { 'Content-Type': 'application/json' } }
