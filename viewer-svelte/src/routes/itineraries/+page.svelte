@@ -106,7 +106,8 @@
       viewMode = 'chat';
     } catch (error) {
       console.error('Failed to create itinerary:', error);
-      alert('Failed to create new itinerary. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create new itinerary. Please try again.';
+      alert(errorMessage);
     }
   }
 
@@ -153,7 +154,8 @@
       await deleteItinerary(itinerary.id);
     } catch (error) {
       console.error('Failed to delete itinerary:', error);
-      alert('Failed to delete itinerary. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete itinerary. Please try again.';
+      alert(errorMessage);
     }
   }
 

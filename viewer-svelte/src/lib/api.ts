@@ -20,7 +20,17 @@ const API_V1 = {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`);
+    // Try to extract error message from response body
+    let errorMessage = `${response.status} ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // If JSON parsing fails, use status text
+    }
+    throw new Error(errorMessage);
   }
   return response.json();
 }
@@ -80,7 +90,17 @@ export const apiClient = {
       method: 'DELETE',
     });
     if (!response.ok) {
-      throw new Error(`Failed to delete: ${response.status} ${response.statusText}`);
+      // Try to extract error message from response body
+      let errorMessage = `${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch {
+        // If JSON parsing fails, use status text
+      }
+      throw new Error(errorMessage);
     }
   },
 
@@ -190,7 +210,17 @@ export const apiClient = {
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      // Try to extract error message from response body
+      let errorMessage = `${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch {
+        // If JSON parsing fails, use status text
+      }
+      throw new Error(errorMessage);
     }
 
     if (!response.body) {
