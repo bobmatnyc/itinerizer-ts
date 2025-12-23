@@ -36,21 +36,27 @@ import { summarizeItineraryMinimal, summarizeItinerary } from './itinerary-summa
 /**
  * Default model for Trip Designer
  *
- * Evaluation (2025-12-23) Results:
- * - Claude 3 Haiku: Better format compliance, perfect ONE question rule, 7-10x cheaper
+ * Model Selection (2025-12-23):
+ * - Claude 3.5 Haiku: Recommended replacement for deprecated Claude 3 Haiku
+ * - Better format compliance, perfect ONE question rule, cost-effective
  * - See: tests/eval/results/EVALUATION_SUMMARY.md
+ *
+ * Available Haiku models (OpenRouter):
+ * - claude-3-haiku: $0.25/1M (deprecated soon)
+ * - claude-3.5-haiku: $0.80/1M (current, recommended)
+ * - claude-haiku-4.5: $1.00/1M (latest)
  *
  * Can be overridden via TripDesignerConfig.model
  */
-const DEFAULT_MODEL = 'anthropic/claude-3-haiku';
+const DEFAULT_MODEL = 'anthropic/claude-3.5-haiku';
 
 /**
- * Claude 3 Haiku pricing (USD per 1M tokens)
- * See: https://openrouter.ai/anthropic/claude-3-haiku
+ * Claude 3.5 Haiku pricing (USD per 1M tokens)
+ * See: https://openrouter.ai/anthropic/claude-3.5-haiku
  */
 const CLAUDE_PRICING = {
-  inputCostPer1M: 0.25,
-  outputCostPer1M: 1.25,
+  inputCostPer1M: 0.80,
+  outputCostPer1M: 4.00,
 };
 
 /**

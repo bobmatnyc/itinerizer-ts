@@ -8,28 +8,31 @@
 /**
  * LOCKED_MODELS - Production model assignments based on evaluation
  *
- * Evaluation Date: 2025-12-23
- * Key Findings:
- * - Claude 3 Haiku outperformed Sonnet 4 on all agents
- * - Perfect ONE question rule compliance (1.00) for both
- * - Haiku: 7-10x cheaper, 20-40% faster
- * - Format compliance: Haiku >= Sonnet 4
+ * Model Selection (2025-12-23):
+ * - Claude 3.5 Haiku: Recommended replacement for deprecated Claude 3 Haiku
+ * - Perfect ONE question rule compliance (1.00)
+ * - Fast response times, cost-effective
+ *
+ * Available Haiku models (OpenRouter):
+ * - claude-3-haiku: $0.25/1M (deprecated soon)
+ * - claude-3.5-haiku: $0.80/1M (current, recommended)
+ * - claude-haiku-4.5: $1.00/1M (latest)
  *
  * See: tests/eval/results/EVALUATION_SUMMARY.md
  */
 export const LOCKED_MODELS = {
   'trip-designer': {
-    model: 'anthropic/claude-3-haiku',
+    model: 'anthropic/claude-3.5-haiku',
     description: 'Fast, excellent format compliance, perfect ONE question rule',
     maxTokens: 4096,
   },
   'help': {
-    model: 'anthropic/claude-3-haiku',
-    description: 'Fast and cheap for simple Q&A',
+    model: 'anthropic/claude-3.5-haiku',
+    description: 'Fast and capable for Q&A',
     maxTokens: 2048,
   },
   'travel-agent': {
-    model: 'anthropic/claude-3-haiku',
+    model: 'anthropic/claude-3.5-haiku',
     description: 'Fast synthesis with perfect question compliance',
     maxTokens: 4096,
   },
@@ -37,10 +40,10 @@ export const LOCKED_MODELS = {
 
 export const EVAL_MODELS = [
   'anthropic/claude-sonnet-4',
-  'anthropic/claude-3-haiku',
-  'anthropic/claude-opus-4',
+  'anthropic/claude-3.5-haiku',
+  'anthropic/claude-haiku-4.5',
   'openai/gpt-4o',
-  'google/gemini-2.0-flash',
+  'google/gemini-2.0-flash-exp',
 ] as const;
 
 export type AgentType = keyof typeof LOCKED_MODELS;
