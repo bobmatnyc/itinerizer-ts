@@ -3,7 +3,9 @@
   import { onMount } from 'svelte';
   import { settingsStore } from '$lib/stores/settings.svelte';
   import { authStore } from '$lib/stores/auth.svelte';
+  import { resetChat } from '$lib/stores/chat';
 
+  let email = $state('');
   let password = $state('');
   let error = $state('');
   let loading = $state(false);
@@ -29,7 +31,10 @@
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: authMode === 'password' ? password : '' })
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password: authMode === 'password' ? password : ''
+        })
       });
 
       const data = await response.json();
@@ -38,6 +43,12 @@
         // Sync client-side auth store with server state
         // Don't call authStore.login() - server already validated
         authStore.isAuthenticated = true;
+        authStore.userEmail = email.trim().toLowerCase();
+
+        // IMPORTANT: Clear any cached itinerary data and chat session
+        // This ensures the list refreshes with the new user's itineraries
+        // and they start with a fresh Trip Designer session
+        resetChat();
 
         // Check if OpenRouter API key is configured
         const apiKey = settingsStore.getApiKey();
@@ -46,8 +57,16 @@
           // Redirect to profile with onboarding message
           await goto('/profile?onboarding=true');
         } else {
-          // Redirect to home on successful login
-          await goto('/');
+          // Check if user has seen the help page
+          const hasSeenHelp = localStorage.getItem('itinerizer_has_seen_help');
+          if (!hasSeenHelp) {
+            // First time user - show help page
+            localStorage.setItem('itinerizer_has_seen_help', 'true');
+            await goto('/help');
+          } else {
+            // Returning user - go to itineraries
+            await goto('/itineraries');
+          }
         }
       } else {
         error = data.error || 'Login failed. Please try again.';
@@ -78,6 +97,20 @@
 
     <!-- Login Form -->
     <form class="login-form" onsubmit={handleSubmit}>
+      <div class="form-group">
+        <label for="email" class="form-label">Email</label>
+        <input
+          id="email"
+          type="email"
+          class="form-input"
+          bind:value={email}
+          placeholder="Enter your email"
+          disabled={loading}
+          autocomplete="email"
+          required
+        />
+      </div>
+
       {#if authMode === 'password'}
         <div class="form-group">
           <label for="password" class="form-label">Password</label>
@@ -107,7 +140,7 @@
       <button
         type="submit"
         class="login-button"
-        disabled={loading || (authMode === 'password' && !password)}
+        disabled={loading || !email || (authMode === 'password' && !password)}
       >
         {#if loading}
           {authMode === 'password' ? 'Logging in...' : 'Continuing...'}

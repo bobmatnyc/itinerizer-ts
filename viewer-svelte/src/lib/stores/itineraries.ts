@@ -161,3 +161,14 @@ export async function deleteSegment(itineraryId: string, segmentId: string): Pro
   // Reload the list to update segment counts
   await loadItineraries();
 }
+
+/**
+ * Clear all itinerary data
+ * Used when logging out or switching users
+ */
+export function clearItineraries() {
+  itineraries.set([]);
+  selectedItinerary.set(null);
+  selectedItineraryId.set(undefined);
+  itinerariesError.set(null);
+}

@@ -268,3 +268,30 @@ export function summarizeItineraryMinimal(itinerary: Itinerary): string {
 
   return parts.join(' | ');
 }
+
+/**
+ * Create a compact summary for get_itinerary tool result
+ * Returns minimal data to save tokens while still being useful
+ */
+export function summarizeItineraryForTool(itinerary: Itinerary): unknown {
+  return {
+    id: itinerary.id,
+    title: itinerary.title,
+    summary: summarizeItineraryMinimal(itinerary),
+    dates: {
+      start: itinerary.startDate,
+      end: itinerary.endDate,
+    },
+    destinations: itinerary.destinations?.map(d => d.city || d.name) || [],
+    segmentCount: itinerary.segments?.length || 0,
+    // Only include segment IDs and types for reference
+    segments: itinerary.segments?.map(s => ({
+      id: s.id,
+      type: s.type,
+      startDatetime: s.startDatetime,
+      name: s.metadata?.name || s.metadata?.route || s.flightNumber || s.property || s.name || s.title || `${s.type} segment`,
+    })) || [],
+    tripPreferences: itinerary.tripPreferences || {},
+    travelers: itinerary.travelers?.map(t => `${t.firstName} ${t.lastName}`) || [],
+  };
+}

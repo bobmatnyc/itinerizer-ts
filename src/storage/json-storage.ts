@@ -216,10 +216,14 @@ export class JsonItineraryStorage implements ItineraryStorage {
               travelerCount: itinerary.travelers.length,
               segmentCount: itinerary.segments.length,
               updatedAt: itinerary.updatedAt,
+              createdBy: itinerary.createdBy,
             });
+          } else {
+            // Log validation errors to help identify data issues
+            console.warn(`Skipping invalid itinerary file: ${file}`, result.error.errors);
           }
-        } catch {
-          // Skip invalid files
+        } catch (error) {
+          // Skip invalid files silently (likely corrupted or incomplete)
         }
       }
 
@@ -234,6 +238,32 @@ export class JsonItineraryStorage implements ItineraryStorage {
         })
       );
     }
+  }
+
+  /**
+   * List itineraries for a specific user
+   * Returns summaries filtered by createdBy, sorted by updatedAt descending
+   */
+  async listByUser(userEmail: string): Promise<Result<ItinerarySummary[], StorageError>> {
+    console.log('[listByUser] filtering for:', userEmail);
+    const listResult = await this.list();
+
+    if (!listResult.success) {
+      return listResult;
+    }
+
+    console.log('[listByUser] total itineraries:', listResult.value.length);
+
+    // Filter by user email (case-insensitive)
+    const normalizedEmail = userEmail.toLowerCase().trim();
+    const userItineraries = listResult.value.filter((summary) => {
+      const summaryEmail = summary.createdBy?.toLowerCase().trim();
+      console.log('[listByUser] comparing:', { summaryEmail, normalizedEmail, match: summaryEmail === normalizedEmail });
+      return summaryEmail === normalizedEmail;
+    });
+
+    console.log('[listByUser] found:', userItineraries.length, 'itineraries for user');
+    return ok(userItineraries);
   }
 
   /**

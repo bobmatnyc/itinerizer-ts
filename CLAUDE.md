@@ -6,24 +6,23 @@ A modern travel itinerary management system with CLI and web interfaces.
 
 ```
 itinerizer-ts/
-├── src/                    # Core TypeScript library + Express API
+├── src/                    # Core TypeScript library
 │   ├── domain/             # Types, schemas, branded types
 │   ├── services/           # Business logic services
-│   ├── storage/            # Storage backends (JSON, Blob)
-│   └── server/             # Express API (local development)
-├── viewer-svelte/          # SvelteKit frontend (Vercel deployment)
-│   └── src/routes/api/     # SvelteKit API routes (production)
+│   └── storage/            # Storage backends (JSON, Blob)
+├── viewer-svelte/          # SvelteKit full-stack application
+│   └── src/routes/api/     # SvelteKit API routes
 └── dist/                   # CLI build output (tsup)
 ```
 
-## Dual Deployment Model
+## Deployment Model
 
-This project has **two deployment targets** with shared business logic:
+This project uses **SvelteKit for both frontend and API** with shared business logic:
 
 | Component | Local Development | Production (Vercel) |
 |-----------|-------------------|---------------------|
-| **Frontend** | `viewer-svelte` on port 5176 | SvelteKit on Vercel |
-| **API** | Express on port 5177 | SvelteKit routes `/api/v1/*` |
+| **Frontend** | SvelteKit on port 5176 | SvelteKit on Vercel |
+| **API** | SvelteKit routes `/api/v1/*` | SvelteKit routes `/api/v1/*` |
 | **Storage** | JSON files in `./data/` | Vercel Blob |
 | **Vector DB** | Vectra (filesystem) | Disabled (no filesystem) |
 
@@ -39,9 +38,8 @@ const storage = createItineraryStorage();
 ## Quick Start Commands
 
 ```bash
-# Local Development (both servers)
-npm run server          # API on :5177
-cd viewer-svelte && npm run dev  # Frontend on :5176
+# Local Development
+cd viewer-svelte && npm run dev  # Frontend + API on :5176
 
 # Build CLI
 npm run build           # Creates dist/index.js
@@ -54,8 +52,7 @@ npx itinerizer [command]
 
 - **TypeScript 5.7** - Strict mode, branded types
 - **Svelte 5** - Runes-based reactivity (.svelte.ts stores)
-- **SvelteKit 2** - Vercel adapter, API routes
-- **Express 5** - Local API server
+- **SvelteKit 2** - Full-stack framework with Vercel adapter
 - **Vercel Blob** - Cloud storage for itineraries
 - **Vectra** - Local vector database (disabled on Vercel)
 - **OpenRouter** - LLM API for Trip Designer
@@ -96,10 +93,11 @@ KuzuMemory is configured for intelligent context management.
 ## Development Guidelines
 
 1. **Svelte 5 Stores**: Use `.svelte.ts` extension for runes compatibility
-2. **API Routes**: Duplicate changes in both Express and SvelteKit routes
+2. **API Routes**: All API routes in `viewer-svelte/src/routes/api/v1/`
 3. **Storage**: All storage operations go through `ItineraryStorage` interface
 4. **Validation**: Use Zod schemas for all data validation
 5. **Error Handling**: Use Result types (`ok`/`err`) for error propagation
+6. **CLI vs Web**: CLI uses core library directly; web goes through SvelteKit API routes
 
 ## Agent Memories
 

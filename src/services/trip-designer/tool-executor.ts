@@ -8,6 +8,7 @@ import { generateSegmentId } from '../../domain/types/branded.js';
 import type {
   ToolExecutionContext,
   ToolExecutionResult,
+  SessionId,
 } from '../../domain/types/trip-designer.js';
 import { SegmentType, SegmentStatus } from '../../domain/types/common.js';
 import type { Segment } from '../../domain/types/segment.js';
@@ -15,6 +16,9 @@ import type { SegmentService } from '../segment.service.js';
 import type { ItineraryService } from '../itinerary.service.js';
 import type { DependencyService } from '../dependency.service.js';
 import type { KnowledgeService } from '../knowledge.service.js';
+import type { WeaviateKnowledgeService } from '../weaviate-knowledge.service.js';
+import { isWeaviateKnowledgeService } from '../knowledge-factory.js';
+import { summarizeItineraryForTool } from './itinerary-summarizer.js';
 
 /**
  * Travel intelligence entry for knowledge base storage
@@ -39,13 +43,15 @@ export interface ToolExecutorDependencies {
   itineraryService?: ItineraryService;
   segmentService?: SegmentService;
   dependencyService?: DependencyService;
-  knowledgeService?: KnowledgeService;
+  knowledgeService?: KnowledgeService | WeaviateKnowledgeService;
 }
 
 /**
  * Executes tool calls against existing services
  */
 export class ToolExecutor {
+  private currentItinerary?: any; // Cache current itinerary for context
+
   constructor(private readonly deps: ToolExecutorDependencies = {}) {}
 
   /**
@@ -58,8 +64,32 @@ export class ToolExecutor {
     const startTime = Date.now();
 
     try {
-      // Parse arguments
-      const args = JSON.parse(argsJson);
+      // Load itinerary context if not cached
+      if (!this.currentItinerary && this.deps.itineraryService) {
+        const itinResult = await this.deps.itineraryService.get(itineraryId);
+        if (itinResult.success) {
+          this.currentItinerary = itinResult.value;
+        }
+      }
+
+      // Parse arguments with validation
+      // Note: Some tools like get_itinerary have no parameters (empty arguments is valid)
+      let args: any = {};
+
+      if (argsJson && argsJson.trim().length > 0) {
+        try {
+          args = JSON.parse(argsJson);
+        } catch (parseError) {
+          return {
+            toolCallId: toolCall.id,
+            success: false,
+            error: `Failed to parse tool arguments: ${parseError instanceof Error ? parseError.message : String(parseError)}. Raw arguments: ${argsJson.substring(0, 100)}...`,
+            metadata: {
+              executionTimeMs: Date.now() - startTime,
+            },
+          };
+        }
+      }
 
       // Route to appropriate handler
       let result: unknown;
@@ -141,6 +171,10 @@ export class ToolExecutor {
           result = await this.handleRetrieveTravelIntelligence(args);
           break;
 
+        case 'switch_to_trip_designer':
+          result = await this.handleSwitchToTripDesigner(context.sessionId, args);
+          break;
+
         default:
           return {
             toolCallId: toolCall.id,
@@ -171,6 +205,7 @@ export class ToolExecutor {
 
   /**
    * Get itinerary handler
+   * Returns a summarized version to save tokens
    */
   private async handleGetItinerary(itineraryId: ItineraryId): Promise<unknown> {
     if (!this.deps.itineraryService) {
@@ -182,7 +217,11 @@ export class ToolExecutor {
       throw new Error(`Failed to get itinerary: ${result.error.message}`);
     }
 
-    return result.value;
+    const itinerary = result.value;
+
+    // Return summarized version to save tokens
+    // Instead of full itinerary JSON (can be 20KB+), return compact summary
+    return summarizeItineraryForTool(itinerary);
   }
 
   /**
@@ -713,13 +752,71 @@ export class ToolExecutor {
   }
 
   /**
-   * Search web handler (placeholder for OpenRouter :online)
+   * Search web handler with KB-first flow
+   * 1. Search Weaviate knowledge base first
+   * 2. If insufficient results, indicate web search needed
+   * 3. OpenRouter :online will handle actual web search
    */
   private async handleSearchWeb(query: string): Promise<unknown> {
-    // OpenRouter's :online mode handles this automatically
-    // Return placeholder for now
+    const knowledgeService = this.deps.knowledgeService;
+
+    // If no knowledge service, fall back to web search
+    if (!knowledgeService) {
+      return {
+        source: 'web_search',
+        note: 'Knowledge base not configured. Using OpenRouter :online for web search.',
+        query,
+      };
+    }
+
+    // KB-first search for Weaviate
+    if (isWeaviateKnowledgeService(knowledgeService)) {
+      try {
+        const searchResult = await knowledgeService.searchWithFallback(query, {
+          itinerary: this.currentItinerary,
+          destinationName: this.currentItinerary?.destinations?.[0]?.name,
+          travelDate: this.currentItinerary
+            ? new Date(this.currentItinerary.startDate)
+            : undefined,
+        });
+
+        if (searchResult.success) {
+          const { source, results, kbFallback } = searchResult.value;
+
+          // If we have good KB results, return them
+          if (results.length > 0 && results[0].relevanceScore > 0.7) {
+            return {
+              source: 'knowledge_base',
+              results: results.map((r) => ({
+                category: r.category,
+                content: r.rawContent,
+                relevance: r.relevanceScore,
+                temporalType: r.temporalType,
+                destination: r.destinationName,
+              })),
+              count: results.length,
+            };
+          }
+
+          // If fallback needed, indicate web search
+          if (kbFallback) {
+            return {
+              source: 'web_search_needed',
+              note: 'Insufficient knowledge base results. Web search recommended via OpenRouter :online.',
+              query,
+              kbResultsCount: results.length,
+            };
+          }
+        }
+      } catch (error) {
+        console.warn('KB search failed, falling back to web:', error);
+      }
+    }
+
+    // Default: indicate web search needed
     return {
-      note: 'Web search is handled automatically by OpenRouter :online mode',
+      source: 'web_search',
+      note: 'Using OpenRouter :online for web search',
       query,
     };
   }
@@ -775,8 +872,73 @@ export class ToolExecutor {
       storedAt: new Date(),
     };
 
-    // Create a searchable document from the intelligence
-    const documentContent = `
+    const knowledgeService = this.deps.knowledgeService;
+
+    // Store in knowledge service if available
+    if (knowledgeService) {
+      try {
+        // Use Weaviate for structured storage
+        if (isWeaviateKnowledgeService(knowledgeService)) {
+          // Parse temporal type from dates
+          let temporalType: 'evergreen' | 'seasonal' | 'event' | 'dated' = 'evergreen';
+          let relevantFrom: Date | undefined;
+          let relevantUntil: Date | undefined;
+
+          if (intelligence.dates) {
+            // Try to parse date range
+            const dateMatch = intelligence.dates.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (dateMatch) {
+              relevantFrom = new Date(intelligence.dates);
+              temporalType = 'dated';
+            } else if (intelligence.dates.toLowerCase().includes('annual')) {
+              temporalType = 'event';
+            } else if (
+              intelligence.dates.toLowerCase().match(/spring|summer|fall|winter|season/)
+            ) {
+              temporalType = 'seasonal';
+            }
+          }
+
+          // Map category to KnowledgeCategory
+          const categoryMap: Record<string, string> = {
+            weather: 'weather',
+            events: 'event',
+            festivals: 'event',
+            closures: 'advisory',
+            advisory: 'advisory',
+            crowds: 'tip',
+            prices: 'tip',
+            opportunities: 'recommendation',
+            warnings: 'advisory',
+            tips: 'tip',
+          };
+
+          const knowledgeCategory = categoryMap[intelligence.category] || 'tip';
+
+          await knowledgeService.storeKnowledge(
+            {
+              content: intelligence.findings,
+              category: knowledgeCategory as any,
+              subcategory: intelligence.category,
+              source: 'trip_designer',
+              temporalType,
+            },
+            {
+              itinerary: this.currentItinerary,
+              destinationName: intelligence.destination,
+              travelDate: relevantFrom,
+            }
+          );
+
+          return {
+            success: true,
+            stored: intelligence,
+            backend: 'weaviate',
+            message: `Stored ${intelligence.category} intelligence for ${intelligence.destination} in Weaviate KB${intelligence.dates ? ` (${intelligence.dates})` : ''}`,
+          };
+        } else {
+          // Fallback to Vectra (store as message)
+          const documentContent = `
 Travel Intelligence: ${intelligence.destination}
 Category: ${intelligence.category}
 Time Period: ${intelligence.dates || 'Year-round'}
@@ -790,29 +952,36 @@ Tags: ${intelligence.tags?.join(', ') || 'none'}
 Source: ${intelligence.source}
 Confidence: ${intelligence.confidence}
 Stored: ${intelligence.storedAt.toISOString()}
-    `.trim();
+          `.trim();
 
-    // Store in knowledge service if available
-    if (this.deps.knowledgeService) {
-      try {
-        // Store as a document in the knowledge base
-        await this.deps.knowledgeService.storeMessages([
-          {
-            content: documentContent,
-            role: 'system',
-            sessionId: `travel-intelligence-${intelligence.destination.toLowerCase().replace(/\s+/g, '-')}` as any,
-          },
-        ]);
+          await knowledgeService.storeMessages([
+            {
+              content: documentContent,
+              role: 'system',
+              sessionId: `travel-intelligence-${intelligence.destination.toLowerCase().replace(/\s+/g, '-')}` as any,
+            },
+          ]);
+
+          return {
+            success: true,
+            stored: intelligence,
+            backend: 'vectra',
+            message: `Stored ${intelligence.category} intelligence for ${intelligence.destination} in Vectra KB${intelligence.dates ? ` (${intelligence.dates})` : ''}`,
+          };
+        }
       } catch (error) {
         console.warn('Failed to store travel intelligence in knowledge base:', error);
-        // Continue anyway - the response will still be useful
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+          message: 'Failed to store intelligence in knowledge base',
+        };
       }
     }
 
     return {
-      success: true,
-      stored: intelligence,
-      message: `Stored ${intelligence.category} intelligence for ${intelligence.destination}${intelligence.dates ? ` (${intelligence.dates})` : ''}`,
+      success: false,
+      message: 'Knowledge base not configured',
     };
   }
 
@@ -823,29 +992,61 @@ Stored: ${intelligence.storedAt.toISOString()}
   private async handleRetrieveTravelIntelligence(params: any): Promise<unknown> {
     const { destination, dates, categories, query } = params;
 
+    const knowledgeService = this.deps.knowledgeService;
+
+    if (!knowledgeService) {
+      return {
+        success: false,
+        message: 'Knowledge base not configured',
+      };
+    }
+
     // Build search query
-    const searchParts: string[] = [
-      `Travel Intelligence: ${destination}`,
-    ];
-
-    if (dates) {
-      searchParts.push(`Time Period: ${dates}`);
-    }
-
-    if (categories && categories.length > 0) {
-      searchParts.push(`Categories: ${categories.join(', ')}`);
-    }
-
+    const searchParts: string[] = [];
     if (query) {
       searchParts.push(query);
+    } else {
+      searchParts.push(destination);
+      if (categories && categories.length > 0) {
+        searchParts.push(categories.join(' '));
+      }
     }
 
     const searchQuery = searchParts.join(' ');
 
-    // Query knowledge service if available
-    if (this.deps.knowledgeService) {
-      try {
-        const result = await this.deps.knowledgeService.retrieveContext(searchQuery, {
+    try {
+      // Use Weaviate for structured search
+      if (isWeaviateKnowledgeService(knowledgeService)) {
+        const searchResult = await knowledgeService.searchWithFallback(searchQuery, {
+          itinerary: this.currentItinerary,
+          destinationName: destination,
+          travelDate: dates ? new Date(dates) : undefined,
+          filters: {
+            categories: categories || [],
+          },
+        });
+
+        if (searchResult.success && searchResult.value.results.length > 0) {
+          return {
+            success: true,
+            destination,
+            dates,
+            intelligence: searchResult.value.results.map((r) => ({
+              content: r.rawContent,
+              category: r.category,
+              subcategory: r.subcategory,
+              relevance: r.relevanceScore,
+              temporalType: r.temporalType,
+              source: r.source,
+            })),
+            count: searchResult.value.results.length,
+            source: searchResult.value.source,
+            message: `Found ${searchResult.value.results.length} relevant intelligence entries for ${destination}`,
+          };
+        }
+      } else {
+        // Fallback to Vectra
+        const result = await knowledgeService.retrieveContext(searchQuery, {
           type: 'chat',
         });
 
@@ -854,17 +1055,22 @@ Stored: ${intelligence.storedAt.toISOString()}
             success: true,
             destination,
             dates,
-            intelligence: result.value.documents.map(doc => ({
+            intelligence: result.value.documents.map((doc) => ({
               content: doc.content,
-              relevance: doc.score,
+              relevance: 0, // Vectra doesn't provide scores
             })),
             context: result.value.context,
             message: `Found ${result.value.documents.length} relevant intelligence entries for ${destination}`,
           };
         }
-      } catch (error) {
-        console.warn('Failed to retrieve travel intelligence from knowledge base:', error);
       }
+    } catch (error) {
+      console.warn('Failed to retrieve travel intelligence from knowledge base:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        message: 'Failed to retrieve intelligence from knowledge base',
+      };
     }
 
     return {
@@ -874,6 +1080,23 @@ Stored: ${intelligence.storedAt.toISOString()}
       intelligence: [],
       context: null,
       message: `No stored intelligence found for ${destination}. Consider running web searches to gather information.`,
+    };
+  }
+
+  /**
+   * Handle switch to Trip Designer agent
+   * This is a signal to the Trip Designer service to switch modes
+   */
+  private async handleSwitchToTripDesigner(
+    sessionId: SessionId,
+    params: { initialContext?: string }
+  ): Promise<unknown> {
+    return {
+      success: true,
+      action: 'switch_agent',
+      newMode: 'trip_designer',
+      initialContext: params.initialContext,
+      message: 'Switching to Trip Designer mode. Ready to help plan your trip!',
     };
   }
 }

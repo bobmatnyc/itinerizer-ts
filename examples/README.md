@@ -13,7 +13,7 @@ Demonstrates the complete flow of using the Trip Designer API:
 - Viewing session statistics
 
 **Prerequisites:**
-1. Start the API server: `npm run server`
+1. Start the SvelteKit server: `cd viewer-svelte && npm run dev`
 2. Configure your OpenRouter API key in `.itinerizer/config.yaml`:
    ```yaml
    openrouter:
@@ -121,12 +121,12 @@ export OPENROUTER_API_KEY=YOUR_KEY
 
 ### "Connection refused"
 
-Make sure the API server is running:
+Make sure the SvelteKit server is running:
 ```bash
-npm run server
+cd viewer-svelte && npm run dev
 ```
 
-The server should start on http://localhost:5177
+The server should start on http://localhost:5176
 
 ### "Failed to create itinerary"
 

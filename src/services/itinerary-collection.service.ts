@@ -27,6 +27,8 @@ export interface CreateItineraryInput {
   travelers?: Traveler[];
   /** If true, keeps itinerary in memory only until content is added */
   draft?: boolean;
+  /** User email who created the itinerary */
+  createdBy?: string;
 }
 
 /**
@@ -46,6 +48,15 @@ export class ItineraryCollectionService {
    */
   async listItineraries(): Promise<Result<ItinerarySummary[], StorageError>> {
     return this.storage.list();
+  }
+
+  /**
+   * List itineraries for a specific user (summaries only)
+   * @param email - User email to filter by
+   * @returns Result with array of itinerary summaries or storage error
+   */
+  async listItinerariesByUser(email: string): Promise<Result<ItinerarySummary[], StorageError>> {
+    return this.storage.listByUser(email);
   }
 
   /**
@@ -86,6 +97,7 @@ export class ItineraryCollectionService {
       tags: [],
       metadata: {},
       ...(input.tripType && { tripType: input.tripType }),
+      ...(input.createdBy && { createdBy: input.createdBy }),
     };
 
     // If draft mode, keep in memory only

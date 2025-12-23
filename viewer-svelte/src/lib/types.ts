@@ -82,6 +82,33 @@ export interface CustomSegment extends BaseSegment {
 
 export type Segment = FlightSegment | HotelSegment | ActivitySegment | TransferSegment | CustomSegment;
 
+export interface Traveler {
+  id: string;
+  type: 'ADULT' | 'CHILD' | 'INFANT';
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  email?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  passportNumber?: string;
+  passportExpiry?: string;
+  passportCountry?: string;
+}
+
+export interface TripTravelerPreferences {
+  travelStyle?: 'luxury' | 'moderate' | 'budget' | 'backpacker';
+  pace?: 'packed' | 'balanced' | 'leisurely';
+  interests?: string[];
+  budgetFlexibility?: number;
+  dietaryRestrictions?: string;
+  mobilityRestrictions?: string;
+  origin?: string;
+  accommodationPreference?: string;
+  activityPreferences?: string[];
+  avoidances?: string[];
+}
+
 export interface Itinerary {
   id: string;
   title: string;
@@ -92,6 +119,8 @@ export interface Itinerary {
   status: 'DRAFT' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   segments: Segment[];
   destinations: Location[];
+  travelers?: Traveler[];
+  tripPreferences?: TripTravelerPreferences;
   tags: string[];
   createdAt: string;
   updatedAt: string;

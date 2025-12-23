@@ -10,8 +10,8 @@ import { createTripDesignerWithKey } from '$hooks/hooks.server.js';
 
 /**
  * POST /api/v1/designer/sessions
- * Create a new chat session for an itinerary
- * Body: { itineraryId: string }
+ * Create a new chat session for an itinerary or help mode
+ * Body: { itineraryId?: string, mode?: 'trip-designer' | 'help' }
  * Response: { sessionId: string }
  * Headers: X-OpenRouter-API-Key (optional, overrides env var)
  */
@@ -21,6 +21,13 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	// Get API key from header or use cached service
 	const headerApiKey = request.headers.get('X-OpenRouter-API-Key');
 	let tripDesignerService = locals.services.tripDesignerService;
+
+	// Validate API key from header (reject empty/whitespace keys)
+	if (headerApiKey !== null && headerApiKey.trim() === '') {
+		throw error(400, {
+			message: 'Invalid API key: API key cannot be empty. Please add your OpenRouter API key in Profile settings.'
+		});
+	}
 
 	// Create on-demand service if header key provided
 	if (headerApiKey) {
@@ -34,24 +41,30 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	const body = await request.json();
-	const { itineraryId } = body;
+	const { itineraryId, mode = 'trip-designer' } = body;
 
-	if (!itineraryId) {
+	// For trip-designer mode, itineraryId is required
+	if (mode === 'trip-designer' && !itineraryId) {
 		throw error(400, {
-			message: 'Missing itineraryId: itineraryId is required in request body'
+			message: 'Missing itineraryId: itineraryId is required for trip-designer mode'
 		});
 	}
 
-	// Verify itinerary exists
-	const itineraryResult = await itineraryService.get(itineraryId as ItineraryId);
-	if (!itineraryResult.success) {
-		throw error(404, {
-			message: `Itinerary not found: No itinerary found with id: ${itineraryId}`
-		});
+	// Verify itinerary exists (only for trip-designer mode)
+	if (mode === 'trip-designer' && itineraryId) {
+		const itineraryResult = await itineraryService.get(itineraryId as ItineraryId);
+		if (!itineraryResult.success) {
+			throw error(404, {
+				message: `Itinerary not found: No itinerary found with id: ${itineraryId}`
+			});
+		}
 	}
 
-	// Create session
-	const sessionResult = await tripDesignerService.createSession(itineraryId as ItineraryId);
+	// Create session with mode
+	const sessionResult = await tripDesignerService.createSession(
+		itineraryId as ItineraryId | undefined,
+		mode
+	);
 
 	if (!sessionResult.success) {
 		throw error(500, {

@@ -3,7 +3,25 @@
   import { browser } from '$app/environment';
   import type { Itinerary, Segment } from '$lib/types';
 
-  let { itinerary }: { itinerary: Itinerary } = $props();
+  interface MarkerData {
+    lat: number;
+    lng: number;
+    label: string;
+    type: 'flight' | 'hotel' | 'activity' | 'transfer' | 'origin' | 'destination';
+  }
+
+  interface PolylineData {
+    points: Array<{ lat: number; lng: number }>;
+    color?: string;
+  }
+
+  interface Props {
+    itinerary?: Itinerary;
+    markers?: MarkerData[];
+    polylines?: PolylineData[];
+  }
+
+  let { itinerary, markers, polylines }: Props = $props();
 
   let mapContainer = $state<HTMLDivElement | null>(null);
   let map: any = null;
@@ -79,33 +97,51 @@
     return locs;
   }
 
-  // Extract unique locations from segments
+  // Extract unique locations from segments or direct markers
   let locations = $derived.by(() => {
-    const locMap = new Map<string, { lat: number; lng: number; name: string; segments: Segment[] }>();
+    // If direct markers provided, use them (takes precedence)
+    if (markers && markers.length > 0) {
+      return markers.map(m => ({
+        lat: m.lat,
+        lng: m.lng,
+        name: m.label,
+        segments: [],
+        markerType: m.type
+      }));
+    }
 
-    itinerary.segments.forEach((segment) => {
-      const segmentLocs = getSegmentLocations(segment);
+    // Otherwise extract from itinerary (existing logic)
+    if (itinerary) {
+      const locMap = new Map<string, { lat: number; lng: number; name: string; segments: Segment[] }>();
 
-      segmentLocs.forEach((loc) => {
-        const key = `${loc.lat},${loc.lng}`;
+      itinerary.segments.forEach((segment) => {
+        const segmentLocs = getSegmentLocations(segment);
 
-        if (!locMap.has(key)) {
-          locMap.set(key, {
-            lat: loc.lat,
-            lng: loc.lng,
-            name: loc.name,
-            segments: []
-          });
-        }
-        locMap.get(key)!.segments.push(segment);
+        segmentLocs.forEach((loc) => {
+          const key = `${loc.lat},${loc.lng}`;
+
+          if (!locMap.has(key)) {
+            locMap.set(key, {
+              lat: loc.lat,
+              lng: loc.lng,
+              name: loc.name,
+              segments: []
+            });
+          }
+          locMap.get(key)!.segments.push(segment);
+        });
       });
-    });
 
-    return Array.from(locMap.values());
+      return Array.from(locMap.values());
+    }
+
+    return [];
   });
 
   // Get route points in chronological order (first location of each segment)
   let routePoints = $derived.by(() => {
+    if (!itinerary) return [];
+
     return itinerary.segments
       .map(s => {
         const locs = getSegmentLocations(s);
@@ -149,7 +185,33 @@
 
       // Add markers for each location
       locations.forEach((loc, index) => {
-        const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+        // Create custom icon based on marker type if available
+        let markerOptions: any = {};
+
+        if ('markerType' in loc && loc.markerType) {
+          // Use different colors based on marker type
+          const colorMap = {
+            'flight': '#3b82f6',      // blue
+            'hotel': '#10b981',       // green
+            'activity': '#f59e0b',    // amber
+            'transfer': '#8b5cf6',    // purple
+            'origin': '#ef4444',      // red
+            'destination': '#22c55e'  // green
+          };
+
+          const color = colorMap[loc.markerType] || '#3b82f6';
+
+          markerOptions = {
+            icon: L.divIcon({
+              className: 'custom-marker',
+              html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+              iconSize: [24, 24],
+              iconAnchor: [12, 12]
+            })
+          };
+        }
+
+        const marker = L.marker([loc.lat, loc.lng], markerOptions).addTo(map);
 
         const popupContent = `
           <div style="min-width: 200px;">
@@ -163,8 +225,40 @@
         marker.bindPopup(popupContent);
       });
 
-      // Draw route lines between consecutive points
-      if (routePoints.length > 1) {
+      // Draw custom polylines if provided (takes precedence)
+      if (polylines && polylines.length > 0) {
+        polylines.forEach((polyline) => {
+          const latlngs = polyline.points.map(p => [p.lat, p.lng]);
+
+          L.polyline(latlngs, {
+            color: polyline.color || '#3b82f6',
+            weight: 3,
+            opacity: 0.7,
+            smoothFactor: 1
+          }).addTo(map);
+
+          // Add arrow decorators for direction
+          for (let i = 0; i < polyline.points.length - 1; i++) {
+            const start = polyline.points[i];
+            const end = polyline.points[i + 1];
+
+            // Calculate midpoint
+            const midLat = (start.lat + end.lat) / 2;
+            const midLng = (start.lng + end.lng) / 2;
+
+            // Add a small circle at midpoint to indicate direction
+            L.circleMarker([midLat, midLng], {
+              radius: 4,
+              fillColor: polyline.color || '#3b82f6',
+              color: '#ffffff',
+              weight: 1,
+              fillOpacity: 1
+            }).addTo(map);
+          }
+        });
+      }
+      // Otherwise draw route lines from itinerary
+      else if (routePoints.length > 1) {
         const latlngs = routePoints.map(p => [p.lat, p.lng]);
 
         L.polyline(latlngs, {

@@ -17,11 +17,17 @@ export function createCollectionManagerRouter(
 
   /**
    * GET /api/v1/itineraries
-   * List all itineraries (summaries)
+   * List all itineraries (summaries) for the current user
    */
-  router.get('/', async (_req: Request, res: Response) => {
+  router.get('/', async (req: Request, res: Response) => {
     try {
-      const result = await collectionService.listItineraries();
+      // Get user email from X-User-Email header
+      const userEmail = req.headers['x-user-email'] as string | undefined;
+
+      // Use user-scoped list if email provided, otherwise list all
+      const result = userEmail
+        ? await collectionService.listItinerariesByUser(userEmail)
+        : await collectionService.listItineraries();
 
       if (!result.success) {
         return res.status(500).json({
@@ -30,6 +36,7 @@ export function createCollectionManagerRouter(
         });
       }
 
+      console.log(`[EXPRESS] Listed ${result.value.length} itineraries for user: ${userEmail || 'all'}`);
       res.json(result.value);
     } catch (error) {
       res.status(500).json({

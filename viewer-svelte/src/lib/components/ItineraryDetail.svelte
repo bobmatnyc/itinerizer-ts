@@ -156,43 +156,8 @@
 </script>
 
 <div class="h-full overflow-y-auto">
-  <!-- Header -->
+  <!-- Itinerary Metadata -->
   <div class="bg-minimal-card p-6">
-    <h2 class="text-2xl font-semibold text-minimal-text mb-4">
-      {itinerary.title}
-    </h2>
-
-    <!-- Button Controls -->
-    <div class="button-group mb-4">
-      {#if onEditManually}
-        <button
-          class="minimal-button"
-          onclick={handleEditManually}
-          type="button"
-        >
-          Edit Manually
-        </button>
-      {/if}
-      {#if onEditWithPrompt}
-        <button
-          class="minimal-button"
-          onclick={handleEditWithPrompt}
-          type="button"
-        >
-          Edit with AI
-        </button>
-      {/if}
-      {#if onDelete}
-        <button
-          class="minimal-button delete-button"
-          onclick={handleDeleteClick}
-          type="button"
-        >
-          Delete
-        </button>
-      {/if}
-    </div>
-
     {#if formatDateRange()}
       <p class="text-minimal-text-muted text-sm mb-4">
         {formatDateRange()}

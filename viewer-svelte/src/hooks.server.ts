@@ -17,6 +17,7 @@
  */
 
 import type { Handle } from '@sveltejs/kit';
+import { join } from 'node:path';
 import { createItineraryStorage } from '../../src/storage/index.js';
 import type { ItineraryStorage } from '../../src/storage/index.js';
 import { ItineraryService } from '../../src/services/itinerary.service.js';
@@ -33,7 +34,9 @@ import type { TravelAgentFacade } from '../../src/services/travel-agent-facade.s
 import type { TripDesignerService } from '../../src/services/trip-designer/trip-designer.service.js';
 import type { TripDesignerConfig } from '../../src/domain/types/trip-designer.js';
 import type { KnowledgeService } from '../../src/services/knowledge.service.js';
+import type { WeaviateKnowledgeService } from '../../src/services/weaviate-knowledge.service.js';
 import type { KnowledgeConfig } from '../../src/services/knowledge.service.js';
+import type { SessionStorage } from '../../src/services/trip-designer/session.js';
 
 /**
  * Services available to all API routes
@@ -48,10 +51,32 @@ interface Services {
 	travelAgentService: TravelAgentService | null;
 	travelAgentFacade: TravelAgentFacade;
 	tripDesignerService: TripDesignerService | null;
-	knowledgeService: KnowledgeService | null;
+	knowledgeService: KnowledgeService | WeaviateKnowledgeService | null;
 }
 
 let servicesInstance: Services | null = null;
+
+/**
+ * Global session storage that survives HMR
+ * All TripDesignerService instances share this storage to prevent session loss
+ */
+let globalSessionStorage: SessionStorage | null = null;
+
+/**
+ * Cache for TripDesignerService instances keyed by API key
+ * Ensures session persistence across requests with the same API key
+ */
+const tripDesignerCache = new Map<string, TripDesignerService>();
+
+// Preserve session storage across HMR in development
+if (import.meta.hot) {
+	import.meta.hot.dispose(() => {
+		console.log('[HMR] Clearing TripDesigner service cache (sessions preserved)');
+		// Clear the service cache, but keep globalSessionStorage intact
+		// This ensures sessions survive HMR reloads
+		tripDesignerCache.clear();
+	});
+}
 
 /**
  * Initialize services with Vercel compatibility
@@ -63,17 +88,26 @@ async function initializeServices(): Promise<Services> {
 	}
 
 	const isVercel = process.env.VERCEL === '1';
+	const cwd = process.cwd();
 	console.log('Initializing services...', {
 		isVercel,
 		hasBlob: !!process.env.BLOB_READ_WRITE_TOKEN,
-		nodeEnv: process.env.NODE_ENV
+		nodeEnv: process.env.NODE_ENV,
+		cwd
 	});
 
 	try {
 		// CORE SERVICES - Required for all operations
 
 		// Storage - auto-detects Blob vs JSON based on BLOB_READ_WRITE_TOKEN
-		const storage = createItineraryStorage();
+		// For local development, use absolute path to project root's data directory
+		// SvelteKit dev server runs from viewer-svelte/, so we need to go up one level
+		const storagePath = process.env.BLOB_READ_WRITE_TOKEN
+			? undefined // Blob storage doesn't need a path
+			: join(process.cwd(), '..', 'data', 'itineraries');
+
+		console.log('Storage path:', storagePath);
+		const storage = createItineraryStorage(storagePath);
 		const initResult = await storage.initialize();
 
 		if (!initResult.success) {
@@ -134,6 +168,33 @@ async function initializeServices(): Promise<Services> {
 		const travelAgentFacade = new TravelAgentFacadeClass(itineraryService, travelAgentService);
 		console.log('✅ Travel Agent Facade initialized');
 
+		// Knowledge service - auto-detects Weaviate or Vectra
+		// Initialize BEFORE TripDesigner so it can be passed as dependency
+		let knowledgeService: KnowledgeService | WeaviateKnowledgeService | null = null;
+
+		try {
+			// Use factory to auto-detect backend
+			const { createKnowledgeService } = await import(
+				'../../src/services/knowledge-factory.js'
+			);
+
+			knowledgeService = createKnowledgeService();
+
+			if (knowledgeService) {
+				const initResult = await knowledgeService.initialize();
+				if (initResult.success) {
+					console.log('✅ Knowledge service initialized');
+				} else {
+					console.warn('⚠️  Knowledge service initialization failed:', initResult.error.message);
+					knowledgeService = null;
+				}
+			} else {
+				console.log('⚠️  Knowledge service disabled (no backend configured)');
+			}
+		} catch (error) {
+			console.warn('⚠️  Knowledge service setup failed:', error);
+		}
+
 		// Trip Designer service - requires OPENROUTER_API_KEY
 		let tripDesignerService: TripDesignerService | null = null;
 		const tripDesignerApiKey = process.env.OPENROUTER_API_KEY;
@@ -142,49 +203,33 @@ async function initializeServices(): Promise<Services> {
 			const { TripDesignerService: TripDesignerServiceClass } = await import(
 				'../../src/services/trip-designer/trip-designer.service.js'
 			);
+
+			// Initialize global session storage if needed (survives HMR)
+			if (!globalSessionStorage) {
+				const { InMemorySessionStorage } = await import(
+					'../../src/services/trip-designer/session.js'
+				);
+				globalSessionStorage = new InMemorySessionStorage();
+				console.log('✅ Global session storage initialized');
+			}
+
 			const tripDesignerConfig: TripDesignerConfig = {
 				apiKey: tripDesignerApiKey,
 			};
 			tripDesignerService = new TripDesignerServiceClass(
 				tripDesignerConfig,
-				undefined, // Use default in-memory session storage
+				globalSessionStorage, // Use global session storage (survives HMR)
 				{
 					itineraryService,
 					segmentService,
 					dependencyService,
+					knowledgeService: knowledgeService || undefined,
 					travelAgentFacade,
 				}
 			);
 			console.log('✅ Trip Designer service initialized');
 		} else {
 			console.log('⚠️  Trip Designer service disabled (no OPENROUTER_API_KEY)');
-		}
-
-		// Knowledge service - requires OPENROUTER_API_KEY and filesystem (skip on Vercel)
-		let knowledgeService: KnowledgeService | null = null;
-
-		if (!isVercel && process.env.OPENROUTER_API_KEY) {
-			try {
-				// Dynamic imports for filesystem-dependent services only when not on Vercel
-				const { VectraStorage } = await import('../../src/storage/vectra-storage.js');
-				const { EmbeddingService } = await import('../../src/services/embedding.service.js');
-				const { KnowledgeService: KnowledgeServiceClass } = await import(
-					'../../src/services/knowledge.service.js'
-				);
-
-				const vectorStorage = new VectraStorage('./data/vectra');
-				const embeddingService = new EmbeddingService({
-					apiKey: process.env.OPENROUTER_API_KEY,
-				});
-
-				knowledgeService = new KnowledgeServiceClass(vectorStorage, embeddingService);
-				await knowledgeService.initialize();
-				console.log('✅ Knowledge service initialized');
-			} catch (error) {
-				console.warn('⚠️  Knowledge service initialization failed:', error);
-			}
-		} else {
-			console.log('⚠️  Knowledge service disabled (Vercel or no API key)');
 		}
 
 		servicesInstance = {
@@ -216,6 +261,7 @@ async function initializeServices(): Promise<Services> {
  */
 const SESSION_COOKIE_NAME = 'itinerizer_session';
 const SESSION_SECRET = 'authenticated';
+const USER_EMAIL_COOKIE_NAME = 'itinerizer_user_email';
 
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = ['/login', '/api/auth'];
@@ -236,6 +282,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 		// Check for session cookie
 		const sessionCookie = event.cookies.get(SESSION_COOKIE_NAME);
 		event.locals.isAuthenticated = sessionCookie === SESSION_SECRET;
+
+		// Get user email from cookie (null if not set)
+		event.locals.userEmail = event.cookies.get(USER_EMAIL_COOKIE_NAME) || null;
+		console.log('[hooks] userEmail from cookie:', event.locals.userEmail);
 
 		// Check if route requires authentication
 		const isPublicRoute = PUBLIC_ROUTES.some(route => event.url.pathname.startsWith(route));
@@ -320,25 +370,56 @@ export const handle: Handle = async ({ event, resolve }) => {
 /**
  * Create a TripDesignerService on-demand with a custom API key
  * Used when client provides API key in request headers
+ *
+ * IMPORTANT: Uses global session storage to maintain session persistence across:
+ * - HMR reloads in development
+ * - API key changes
+ * - Service instance recreation
+ *
+ * All TripDesignerService instances share the same session storage, ensuring
+ * sessions survive even if the service instance is recreated.
  */
 export async function createTripDesignerWithKey(
 	apiKey: string,
 	services: Services
 ): Promise<TripDesignerService> {
+	// Check cache first - reuse existing service instance to preserve sessions
+	const cached = tripDesignerCache.get(apiKey);
+	if (cached) {
+		console.log('[createTripDesignerWithKey] Using cached TripDesignerService for API key');
+		return cached;
+	}
+
+	console.log('[createTripDesignerWithKey] Creating new TripDesignerService for API key');
 	const { TripDesignerService: TripDesignerServiceClass } = await import(
 		'../../src/services/trip-designer/trip-designer.service.js'
 	);
+
+	// Initialize global session storage if needed (survives HMR)
+	if (!globalSessionStorage) {
+		const { InMemorySessionStorage } = await import(
+			'../../src/services/trip-designer/session.js'
+		);
+		globalSessionStorage = new InMemorySessionStorage();
+		console.log('✅ Global session storage initialized (createTripDesignerWithKey)');
+	}
 
 	const config: TripDesignerConfig = {
 		apiKey,
 	};
 
-	return new TripDesignerServiceClass(config, undefined, {
+	const service = new TripDesignerServiceClass(config, globalSessionStorage, {
 		itineraryService: services.itineraryService,
 		segmentService: services.segmentService,
 		dependencyService: services.dependencyService,
 		travelAgentFacade: services.travelAgentFacade,
+		knowledgeService: services.knowledgeService || undefined,
 	});
+
+	// Cache the service instance to preserve SessionManager across requests
+	tripDesignerCache.set(apiKey, service);
+
+	return service;
 }
 
 // Export type for use in +server.ts files

@@ -872,6 +872,47 @@ export const RETRIEVE_TRAVEL_INTELLIGENCE_TOOL: ToolDefinition = {
 };
 
 /**
+ * Tool: switch_to_trip_designer
+ * Switch from Help agent to Trip Designer agent when user wants to plan a trip
+ */
+export const SWITCH_TO_TRIP_DESIGNER_TOOL: ToolDefinition = {
+  type: 'function',
+  function: {
+    name: 'switch_to_trip_designer',
+    description: 'Switch from Help mode to Trip Designer mode when the user indicates they want to start planning a trip. Call this when you detect trip planning intent like "I want to plan a trip", "Help me plan a vacation", "I\'m going to [destination]", etc.',
+    parameters: {
+      type: 'object',
+      properties: {
+        initialContext: {
+          type: 'string',
+          description: 'Any trip planning context the user has already shared (destination, dates, travelers, etc.) to pass to the Trip Designer',
+        },
+      },
+      required: [],
+    },
+  },
+};
+
+/**
+ * Help agent tools
+ * Minimal set for answering help questions and switching to Trip Designer
+ */
+export const HELP_AGENT_TOOLS: ToolDefinition[] = [
+  SWITCH_TO_TRIP_DESIGNER_TOOL,
+];
+
+/**
+ * Essential tools for initial context (new itineraries)
+ * Minimal set to reduce token count on first message
+ */
+export const ESSENTIAL_TOOLS: ToolDefinition[] = [
+  GET_ITINERARY_TOOL,
+  UPDATE_ITINERARY_TOOL,
+  UPDATE_PREFERENCES_TOOL,
+  SEARCH_WEB_TOOL,
+];
+
+/**
  * All available tools for the Trip Designer Agent
  */
 export const ALL_TOOLS: ToolDefinition[] = [
@@ -919,6 +960,7 @@ export const ToolName = {
   SEARCH_TRANSFERS: 'search_transfers',
   STORE_TRAVEL_INTELLIGENCE: 'store_travel_intelligence',
   RETRIEVE_TRAVEL_INTELLIGENCE: 'retrieve_travel_intelligence',
+  SWITCH_TO_TRIP_DESIGNER: 'switch_to_trip_designer',
 } as const;
 
 export type ToolName = (typeof ToolName)[keyof typeof ToolName];

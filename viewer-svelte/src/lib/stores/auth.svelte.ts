@@ -5,12 +5,15 @@
  * localStorage persistence, and SSR-safe operations.
  */
 
+import { clearItineraries } from './itineraries';
+
 // SSR-safe localStorage access
 const isBrowser = typeof window !== 'undefined';
 const STORAGE_KEY = 'itinerizer_auth';
+const USER_EMAIL_KEY = 'itinerizer_user_email';
 
-// Static hash for demo password "travel2025"
-const VALID_PASSWORD_HASH = '03f8b6334b99364cf4bad126e751ece55b8f34afd1ffbf8bd46f961afd9d5b54';
+// Static hash for app password
+const VALID_PASSWORD_HASH = '1003766e45ffdcbacdbfdedaf03034eee6b6a9b7cb8f0e47c49ed92f952dbad5';
 
 /**
  * Hash a password using SHA-256 (Web Crypto API)
@@ -33,11 +36,33 @@ async function hashPassword(password: string): Promise<string> {
  */
 class AuthStore {
   isAuthenticated = $state(false);
+  private _userEmail = $state<string | null>(null);
 
   constructor() {
     // Initialize from localStorage on client
     if (isBrowser) {
       this.checkAuth();
+    }
+  }
+
+  /**
+   * Get user email
+   */
+  get userEmail(): string | null {
+    return this._userEmail;
+  }
+
+  /**
+   * Set user email and persist to localStorage
+   */
+  set userEmail(email: string | null) {
+    this._userEmail = email;
+    if (isBrowser) {
+      if (email) {
+        localStorage.setItem(USER_EMAIL_KEY, email);
+      } else {
+        localStorage.removeItem(USER_EMAIL_KEY);
+      }
     }
   }
 
@@ -72,9 +97,13 @@ class AuthStore {
    */
   logout(): void {
     this.isAuthenticated = false;
+    this.userEmail = null;
     if (isBrowser) {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(USER_EMAIL_KEY);
     }
+    // Clear cached itinerary data
+    clearItineraries();
   }
 
   /**
@@ -87,6 +116,9 @@ class AuthStore {
 
     const stored = localStorage.getItem(STORAGE_KEY);
     this.isAuthenticated = stored === 'true';
+
+    const storedEmail = localStorage.getItem(USER_EMAIL_KEY);
+    this._userEmail = storedEmail;
   }
 }
 

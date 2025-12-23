@@ -39,6 +39,13 @@ class SettingsStore {
   }
 
   /**
+   * Getter for API key (for backward compatibility)
+   */
+  get apiKey(): string {
+    return this.openRouterKey;
+  }
+
+  /**
    * Update OpenRouter API key and persist to localStorage
    * @param key - New API key
    */

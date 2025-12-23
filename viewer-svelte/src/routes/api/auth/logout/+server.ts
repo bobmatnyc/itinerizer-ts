@@ -7,6 +7,7 @@
 import type { RequestHandler } from './$types';
 
 const SESSION_COOKIE_NAME = 'itinerizer_session';
+const USER_EMAIL_COOKIE_NAME = 'itinerizer_user_email';
 
 /**
  * POST /api/auth/logout
@@ -17,6 +18,11 @@ const SESSION_COOKIE_NAME = 'itinerizer_session';
 export const POST: RequestHandler = async ({ cookies }) => {
 	// Clear session cookie
 	cookies.delete(SESSION_COOKIE_NAME, {
+		path: '/'
+	});
+
+	// Clear user email cookie
+	cookies.delete(USER_EMAIL_COOKIE_NAME, {
 		path: '/'
 	});
 

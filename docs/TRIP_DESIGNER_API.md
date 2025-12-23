@@ -12,7 +12,7 @@ If no API key is configured, all Trip Designer endpoints will return `503 Servic
 
 ## Base URL
 
-All endpoints use the base URL: `http://localhost:5177/api`
+All endpoints use the base URL: `http://localhost:5176/api`
 
 ## Authentication
 
@@ -253,7 +253,7 @@ Sessions have a default cost limit of $2.00 USD. When exceeded:
 
 ```javascript
 // 1. Create a session
-const sessionResponse = await fetch('http://localhost:5177/api/chat/sessions', {
+const sessionResponse = await fetch('http://localhost:5176/api/chat/sessions', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ itineraryId: 'abc123' })
@@ -262,7 +262,7 @@ const { sessionId } = await sessionResponse.json();
 
 // 2. Send a message
 const messageResponse = await fetch(
-  `http://localhost:5177/api/chat/sessions/${sessionId}/messages`,
+  `http://localhost:5176/api/chat/sessions/${sessionId}/messages`,
   {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -274,7 +274,7 @@ const agentResponse = await messageResponse.json();
 console.log('Agent:', agentResponse.message);
 
 // 3. Subscribe to itinerary updates
-const eventSource = new EventSource(`http://localhost:5177/api/itineraries/abc123/events`);
+const eventSource = new EventSource(`http://localhost:5176/api/itineraries/abc123/events`);
 
 eventSource.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
@@ -283,7 +283,7 @@ eventSource.addEventListener('message', (event) => {
 
 // 4. Get session history
 const sessionDetailsResponse = await fetch(
-  `http://localhost:5177/api/chat/sessions/${sessionId}`
+  `http://localhost:5176/api/chat/sessions/${sessionId}`
 );
 const session = await sessionDetailsResponse.json();
 

@@ -9,26 +9,103 @@ import type { TripDesignerService } from '../../services/trip-designer/trip-desi
 import type { KnowledgeService } from '../../services/knowledge.service.js';
 import type { ItineraryService } from '../../services/itinerary.service.js';
 import type { ItineraryId, SessionId } from '../../domain/types/branded.js';
+import type { SegmentService } from '../../services/segment.service.js';
+import type { DependencyService } from '../../services/dependency.service.js';
+import type { TravelAgentFacade } from '../../services/travel-agent-facade.service.js';
+import type { TripDesignerConfig } from '../../domain/types/trip-designer.js';
+
+interface RouterDependencies {
+  tripDesignerService: TripDesignerService | null;
+  knowledgeService: KnowledgeService | undefined;
+  itineraryService: ItineraryService;
+  segmentService: SegmentService;
+  dependencyService: DependencyService;
+  travelAgentFacade: TravelAgentFacade;
+}
 
 export function createTripDesignerRouter(
   tripDesignerService: TripDesignerService | null,
   knowledgeService: KnowledgeService | undefined,
-  itineraryService: ItineraryService
+  itineraryService: ItineraryService,
+  segmentService?: SegmentService,
+  dependencyService?: DependencyService,
+  travelAgentFacade?: TravelAgentFacade
 ): Router {
   const router = Router();
+
+  // Store dependencies for creating on-demand services
+  const deps: RouterDependencies = {
+    tripDesignerService,
+    knowledgeService,
+    itineraryService,
+    segmentService: segmentService!,
+    dependencyService: dependencyService!,
+    travelAgentFacade: travelAgentFacade!,
+  };
+
+  // Cache TripDesignerService instances by API key to maintain session state
+  const serviceCache = new Map<string, TripDesignerService>();
+
+  /**
+   * Helper: Create TripDesignerService on-demand with custom API key
+   */
+  async function createTripDesignerWithKey(apiKey: string): Promise<TripDesignerService> {
+    const { TripDesignerService: TripDesignerServiceClass } = await import(
+      '../../services/trip-designer/trip-designer.service.js'
+    );
+
+    const config: TripDesignerConfig = {
+      apiKey,
+    };
+
+    return new TripDesignerServiceClass(config, undefined, {
+      itineraryService: deps.itineraryService,
+      segmentService: deps.segmentService,
+      dependencyService: deps.dependencyService,
+      travelAgentFacade: deps.travelAgentFacade,
+    });
+  }
+
+  /**
+   * Helper: Get TripDesignerService from header or default
+   * Caches services by API key to maintain session state across requests
+   */
+  async function getTripDesignerService(req: Request): Promise<TripDesignerService | null> {
+    const headerApiKey = req.headers['x-openrouter-api-key'];
+
+    // Create or retrieve cached service if header key provided
+    if (headerApiKey && typeof headerApiKey === 'string') {
+      // Check cache first
+      if (serviceCache.has(headerApiKey)) {
+        return serviceCache.get(headerApiKey)!;
+      }
+
+      // Create new service and cache it
+      const service = await createTripDesignerWithKey(headerApiKey);
+      serviceCache.set(headerApiKey, service);
+      return service;
+    }
+
+    // Use default service
+    return deps.tripDesignerService;
+  }
 
   /**
    * POST /api/v1/designer/sessions
    * Create a new chat session for an itinerary
    * Body: { itineraryId: string }
    * Response: { sessionId: string }
+   * Headers: X-OpenRouter-API-Key (optional, overrides env var)
    */
   router.post('/sessions', async (req: Request, res: Response) => {
     try {
-      if (!tripDesignerService) {
+      // Get TripDesignerService from header or default
+      const service = await getTripDesignerService(req);
+
+      if (!service) {
         return res.status(503).json({
           error: 'Trip Designer disabled',
-          message: 'OPENROUTER_API_KEY not configured - chat functionality is disabled',
+          message: 'No API key provided. Set your OpenRouter API key in Profile settings.',
           hint: 'Add your key to .itinerizer/config.yaml or set OPENROUTER_API_KEY environment variable',
         });
       }
@@ -43,7 +120,7 @@ export function createTripDesignerRouter(
       }
 
       // Verify itinerary exists
-      const itineraryResult = await itineraryService.get(itineraryId as ItineraryId);
+      const itineraryResult = await deps.itineraryService.get(itineraryId as ItineraryId);
       if (!itineraryResult.success) {
         return res.status(404).json({
           error: 'Itinerary not found',
@@ -52,7 +129,7 @@ export function createTripDesignerRouter(
       }
 
       // Create session
-      const sessionResult = await tripDesignerService.createSession(itineraryId as ItineraryId);
+      const sessionResult = await service.createSession(itineraryId as ItineraryId);
 
       if (!sessionResult.success) {
         return res.status(500).json({
@@ -76,19 +153,23 @@ export function createTripDesignerRouter(
    * GET /api/v1/designer/sessions/:sessionId
    * Get session details
    * Response: TripDesignerSession
+   * Headers: X-OpenRouter-API-Key (optional, overrides env var)
    */
   router.get('/sessions/:sessionId', async (req: Request, res: Response) => {
     try {
-      if (!tripDesignerService) {
+      // Get TripDesignerService from header or default
+      const service = await getTripDesignerService(req);
+
+      if (!service) {
         return res.status(503).json({
           error: 'Trip Designer disabled',
-          message: 'OPENROUTER_API_KEY not configured',
+          message: 'No API key provided. Set your OpenRouter API key in Profile settings.',
         });
       }
 
       const sessionId = req.params.sessionId as SessionId;
 
-      const sessionResult = await tripDesignerService.getSession(sessionId);
+      const sessionResult = await service.getSession(sessionId);
 
       if (!sessionResult.success) {
         return res.status(404).json({
@@ -109,20 +190,24 @@ export function createTripDesignerRouter(
   /**
    * DELETE /api/v1/designer/sessions/:sessionId
    * End a chat session
+   * Headers: X-OpenRouter-API-Key (optional, overrides env var)
    */
   router.delete('/sessions/:sessionId', async (req: Request, res: Response) => {
     try {
-      if (!tripDesignerService) {
+      // Get TripDesignerService from header or default
+      const service = await getTripDesignerService(req);
+
+      if (!service) {
         return res.status(503).json({
           error: 'Trip Designer disabled',
-          message: 'OPENROUTER_API_KEY not configured',
+          message: 'No API key provided. Set your OpenRouter API key in Profile settings.',
         });
       }
 
       const sessionId = req.params.sessionId as SessionId;
 
       // Get session to verify it exists
-      const sessionResult = await tripDesignerService.getSession(sessionId);
+      const sessionResult = await service.getSession(sessionId);
 
       if (!sessionResult.success) {
         return res.status(404).json({
@@ -147,13 +232,17 @@ export function createTripDesignerRouter(
    * Send a message to a chat session with SSE streaming
    * Body: { message: string }
    * Response: SSE stream
+   * Headers: X-OpenRouter-API-Key (optional, overrides env var)
    */
   router.post('/sessions/:sessionId/messages/stream', async (req: Request, res: Response) => {
     try {
-      if (!tripDesignerService) {
+      // Get TripDesignerService from header or default
+      const service = await getTripDesignerService(req);
+
+      if (!service) {
         return res.status(503).json({
           error: 'Trip Designer disabled',
-          message: 'OPENROUTER_API_KEY not configured',
+          message: 'No API key provided. Set your OpenRouter API key in Profile settings.',
         });
       }
 
@@ -179,7 +268,7 @@ export function createTripDesignerRouter(
 
       try {
         // Stream the chat response
-        for await (const event of tripDesignerService.chatStream(sessionId, message)) {
+        for await (const event of service.chatStream(sessionId, message)) {
           // Map StreamEvent to SSE format
           switch (event.type) {
             case 'text':
@@ -254,13 +343,17 @@ export function createTripDesignerRouter(
    * Send a message to a chat session (non-streaming)
    * Body: { message: string }
    * Response: AgentResponse
+   * Headers: X-OpenRouter-API-Key (optional, overrides env var)
    */
   router.post('/sessions/:sessionId/messages', async (req: Request, res: Response) => {
     try {
-      if (!tripDesignerService) {
+      // Get TripDesignerService from header or default
+      const service = await getTripDesignerService(req);
+
+      if (!service) {
         return res.status(503).json({
           error: 'Trip Designer disabled',
-          message: 'OPENROUTER_API_KEY not configured',
+          message: 'No API key provided. Set your OpenRouter API key in Profile settings.',
         });
       }
 
@@ -275,7 +368,7 @@ export function createTripDesignerRouter(
       }
 
       // Send message and get response
-      const chatResult = await tripDesignerService.chat(sessionId, message);
+      const chatResult = await service.chat(sessionId, message);
 
       if (!chatResult.success) {
         const error = chatResult.error;

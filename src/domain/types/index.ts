@@ -14,3 +14,4 @@ export * from './agent.js';
 export * from './trip-taxonomy.js';
 export * from './trip-designer.js';
 export * from './knowledge.js';
+export * from './weaviate.js';

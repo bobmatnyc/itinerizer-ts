@@ -172,7 +172,8 @@ vercel logs [deployment-url]
 
 ## Notes
 
-- Express server in `src/server/` is not deployed (CLI-only)
-- All production traffic goes through SvelteKit routes
+- SvelteKit handles both frontend and API routes on a single server
+- All traffic goes through SvelteKit routes at `/api/v1/*`
 - Services are initialized once per serverless function cold start
-- File storage is ephemeral in Vercel (consider adding persistent storage for production)
+- File storage is ephemeral in Vercel (consider Vercel Blob for production)
+- No separate Express server needed for deployment

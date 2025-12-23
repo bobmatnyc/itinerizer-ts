@@ -27,13 +27,50 @@ function getOpenRouterApiKey(): string | null {
 }
 
 /**
- * Get headers for AI-powered API requests
- * Includes OpenRouter API key from user settings
+ * Get user email from localStorage
+ * Reads directly to avoid issues with Svelte 5 runes in non-component context
  */
-function getAIHeaders(): HeadersInit {
+function getUserEmail(): string | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    // Try new unified storage first
+    const settings = localStorage.getItem('itinerizer_settings');
+    if (settings) {
+      const parsed = JSON.parse(settings);
+      if (parsed.email) return parsed.email;
+    }
+
+    // Fall back to legacy storage
+    return localStorage.getItem('itinerizer_user_email');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get base headers for all API requests
+ * Includes user email for server-side scoping
+ */
+function getBaseHeaders(): HeadersInit {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
+
+  const userEmail = getUserEmail();
+  if (userEmail) {
+    headers['X-User-Email'] = userEmail;
+  }
+
+  return headers;
+}
+
+/**
+ * Get headers for AI-powered API requests
+ * Includes both user email and OpenRouter API key
+ */
+function getAIHeaders(): HeadersInit {
+  const headers = { ...getBaseHeaders() };
 
   const apiKey = getOpenRouterApiKey();
   if (apiKey) {
@@ -77,13 +114,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export const apiClient = {
   // Get all itineraries
   async getItineraries(): Promise<ItineraryListItem[]> {
-    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}`);
+    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}`, {
+      headers: getBaseHeaders(),
+    });
     return handleResponse<ItineraryListItem[]>(response);
   },
 
   // Get single itinerary
   async getItinerary(id: string): Promise<Itinerary> {
-    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${id}`);
+    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${id}`, {
+      headers: getBaseHeaders(),
+    });
     return handleResponse<Itinerary>(response);
   },
 
@@ -96,7 +137,7 @@ export const apiClient = {
   }): Promise<Itinerary> {
     const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getBaseHeaders(),
       body: JSON.stringify(data),
     });
     return handleResponse<Itinerary>(response);
@@ -117,7 +158,7 @@ export const apiClient = {
   ): Promise<Itinerary> {
     const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getBaseHeaders(),
       body: JSON.stringify(data),
     });
     return handleResponse<Itinerary>(response);
@@ -127,6 +168,7 @@ export const apiClient = {
   async deleteItinerary(id: string): Promise<void> {
     const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${id}`, {
       method: 'DELETE',
+      headers: getBaseHeaders(),
     });
     if (!response.ok) {
       // Try to extract error message from response body
@@ -147,7 +189,7 @@ export const apiClient = {
   async addSegment(itineraryId: string, segmentData: Partial<import('./types').Segment>): Promise<import('./types').Itinerary> {
     const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${itineraryId}/segments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getBaseHeaders(),
       body: JSON.stringify(segmentData),
     });
     return handleResponse<import('./types').Itinerary>(response);
@@ -161,7 +203,7 @@ export const apiClient = {
   ): Promise<import('./types').Itinerary> {
     const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${itineraryId}/segments/${segmentId}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getBaseHeaders(),
       body: JSON.stringify(segmentData),
     });
     return handleResponse<import('./types').Itinerary>(response);
@@ -171,13 +213,16 @@ export const apiClient = {
   async deleteSegment(itineraryId: string, segmentId: string): Promise<import('./types').Itinerary> {
     const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${itineraryId}/segments/${segmentId}`, {
       method: 'DELETE',
+      headers: getBaseHeaders(),
     });
     return handleResponse<import('./types').Itinerary>(response);
   },
 
   // Get available models
   async getModels(): Promise<ModelConfig[]> {
-    const response = await fetch(`${API_BASE_URL}${API_V1.AGENT.MODELS}`);
+    const response = await fetch(`${API_BASE_URL}${API_V1.AGENT.MODELS}`, {
+      headers: getBaseHeaders(),
+    });
     return handleResponse<ModelConfig[]>(response);
   },
 
@@ -204,8 +249,16 @@ export const apiClient = {
       formData.append('model', model);
     }
 
+    // Get headers without Content-Type (browser sets it with boundary for multipart)
+    const headers: HeadersInit = {};
+    const userEmail = getUserEmail();
+    if (userEmail) {
+      headers['X-User-Email'] = userEmail;
+    }
+
     const response = await fetch(`${API_BASE_URL}${API_V1.AGENT.IMPORT_PDF}`, {
       method: 'POST',
+      headers,
       body: formData,
     });
     return handleResponse(response);
@@ -213,16 +266,18 @@ export const apiClient = {
 
   // Get cost summary
   async getCosts(): Promise<unknown> {
-    const response = await fetch(`${API_BASE_URL}${API_V1.AGENT.COSTS}`);
+    const response = await fetch(`${API_BASE_URL}${API_V1.AGENT.COSTS}`, {
+      headers: getBaseHeaders(),
+    });
     return handleResponse(response);
   },
 
   // Chat endpoints (AI-powered - use getAIHeaders for API key)
-  async createChatSession(itineraryId: string): Promise<{ sessionId: string }> {
+  async createChatSession(itineraryId?: string, mode: 'trip-designer' | 'help' = 'trip-designer'): Promise<{ sessionId: string }> {
     const response = await fetch(`${API_BASE_URL}${API_V1.DESIGNER.SESSIONS}`, {
       method: 'POST',
       headers: getAIHeaders(),
-      body: JSON.stringify({ itineraryId }),
+      body: JSON.stringify({ itineraryId, mode }),
     });
     return handleResponse<{ sessionId: string }>(response);
   },

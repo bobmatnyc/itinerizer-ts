@@ -16,7 +16,13 @@ export interface DomainError {
  * Storage-related errors
  */
 export type StorageError = DomainError & {
-  code: 'NOT_FOUND' | 'WRITE_ERROR' | 'READ_ERROR' | 'VALIDATION_ERROR';
+  code:
+    | 'NOT_FOUND'
+    | 'WRITE_ERROR'
+    | 'READ_ERROR'
+    | 'VALIDATION_ERROR'
+    | 'CONNECTION_ERROR'
+    | 'INITIALIZATION_ERROR';
 };
 
 /**

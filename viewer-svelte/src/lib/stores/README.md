@@ -49,7 +49,7 @@ Authentication state management with password verification and localStorage pers
 - `authStore.logout(): void` - Clear authentication
 - `authStore.checkAuth(): void` - Restore auth from localStorage (called automatically)
 
-**Demo Password:** `travel2025`
+**Password:** Stored in `.env.local`
 
 ### Settings Store (`settings.ts`)
 

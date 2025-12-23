@@ -109,18 +109,19 @@ export class SessionManager {
   constructor(private readonly storage: SessionStorage) {}
 
   /**
-   * Create a new session for an itinerary
+   * Create a new session for an itinerary or help mode
    */
-  async createSession(itineraryId: ItineraryId): Promise<Result<TripDesignerSession, StorageError>> {
+  async createSession(itineraryId?: ItineraryId, mode: 'trip-designer' | 'help' = 'trip-designer'): Promise<Result<TripDesignerSession, StorageError>> {
     const now = new Date();
 
     const session: TripDesignerSession = {
       id: generateSessionId(),
-      itineraryId,
+      itineraryId: itineraryId || ('' as ItineraryId), // Empty string for help mode
       messages: [],
       tripProfile: this.createEmptyProfile(now),
       createdAt: now,
       lastActiveAt: now,
+      agentMode: mode,
       metadata: {
         messageCount: 0,
         totalTokens: 0,
@@ -288,10 +289,11 @@ export class SessionManager {
    *
    * IMPORTANT: This estimates the FULL context sent to the API, not just
    * the incremental tokens. The API receives:
-   * - System prompt (~2-3k tokens)
+   * - System prompt (~5-7k tokens with tool definitions)
    * - Itinerary context (~1-2k tokens)
    * - RAG context (0-2k tokens)
    * - ALL messages in session history (this grows unbounded!)
+   * - Tool results (can be large even after summarization)
    *
    * So we must estimate the total context size, not just `metadata.totalTokens`.
    */
@@ -300,7 +302,7 @@ export class SessionManager {
     const hardLimit = 180000; // Force compression at 180k tokens
 
     // Estimate full context size (characters / 4 is rough token estimate)
-    const systemPromptTokens = 3000; // System prompt + itinerary context + RAG
+    const systemPromptTokens = 7000; // System prompt + tool definitions + itinerary context + RAG
 
     // Estimate all message tokens
     let messageTokens = 0;
@@ -309,8 +311,16 @@ export class SessionManager {
       if (msg.tokens) {
         messageTokens += (msg.tokens.input || 0) + (msg.tokens.output || 0);
       } else {
-        // Rough estimate: 1 token per 4 characters
+        // More accurate estimate: 1 token per 4 characters
         messageTokens += Math.ceil(msg.content.length / 4);
+      }
+
+      // Account for tool results which can be large even after truncation
+      if (msg.toolResults && msg.toolResults.length > 0) {
+        for (const toolResult of msg.toolResults) {
+          const resultJson = JSON.stringify(toolResult.result || {});
+          messageTokens += Math.ceil(resultJson.length / 4);
+        }
       }
     }
 

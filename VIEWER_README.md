@@ -47,56 +47,59 @@ itinerizer import my-itinerary.pdf --model anthropic/claude-3.5-sonnet
 
 ## Feature 2: Web Viewer
 
-A modern React-based web interface for viewing and managing itineraries.
+A modern SvelteKit-based web interface for viewing and managing itineraries.
 
 ### Architecture
 
-**Backend (Express API Server)**
-- `/api/itineraries` - List all itineraries
-- `/api/itineraries/:id` - Get itinerary details
-- `/api/models` - List available models
-- `/api/import` - Import PDF (multipart form)
-- `/api/costs` - Get cost summary
+**SvelteKit (Frontend + API)**
+- `/api/v1/itineraries` - List all itineraries
+- `/api/v1/itineraries/:id` - Get itinerary details
+- `/api/v1/designer/sessions` - Create chat sessions
+- `/api/v1/agent/import/pdf` - Import PDF (multipart form)
+- Frontend routes for UI
 
-**Frontend (Vite + React + Tailwind)**
+**Features:**
 - List view with all itineraries
 - Detail view with segment timeline
 - Visual indicators for segment source (📄 import, 🤖 agent, ✍️ manual)
 - Color-coded segment types
 - PDF import with model selection
-- Gap detection visualization
+- Interactive chat designer
 
 ### Running the Viewer
 
 1. Set up environment variables:
 
 ```bash
+cd viewer-svelte
+
 # Copy example env file
 cp .env.example .env
 
-# Edit .env and add your OpenRouter API key
+# Edit .env and add your OpenRouter API key (optional)
 OPENROUTER_API_KEY=your_key_here
 ```
 
-2. Start both API server and viewer:
+2. Start the SvelteKit server:
 
 ```bash
-npm run viewer
+cd viewer-svelte && npm run dev
 ```
 
 This will start:
-- API server on http://localhost:3001
-- Vite dev server on http://localhost:5173
+- SvelteKit server (frontend + API) on http://localhost:5176
 
-3. Open http://localhost:5173 in your browser
+3. Open http://localhost:5176 in your browser
 
 ### Building for Production
 
 ```bash
-# Build viewer for production
-npm run viewer:build
+# Build SvelteKit app for production
+cd viewer-svelte
+npm run build
 
-# Build is output to viewer/dist/
+# Preview production build
+npm run preview
 ```
 
 ### Features
@@ -135,7 +138,7 @@ npm run viewer:build
 ### Import a PDF via API
 
 ```bash
-curl -X POST http://localhost:3001/api/import \
+curl -X POST http://localhost:5176/api/v1/agent/import/pdf \
   -F "file=@my-itinerary.pdf" \
   -F "model=anthropic/claude-3.5-sonnet"
 ```
@@ -143,13 +146,15 @@ curl -X POST http://localhost:3001/api/import \
 ### Get All Itineraries
 
 ```bash
-curl http://localhost:3001/api/itineraries
+curl http://localhost:5176/api/v1/itineraries
 ```
 
-### Get Available Models
+### Create a Chat Session
 
 ```bash
-curl http://localhost:3001/api/models
+curl -X POST http://localhost:5176/api/v1/designer/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"itineraryId":"your-id-here"}'
 ```
 
 ## Development
@@ -159,35 +164,28 @@ curl http://localhost:3001/api/models
 ```
 itinerizer-ts/
 ├── src/
-│   ├── services/
-│   │   └── model-selector.service.ts  # Dynamic model selection
-│   └── server/
-│       ├── api.ts                     # Express API routes
-│       └── index.ts                   # Server entry point
-├── viewer/
+│   ├── services/             # Business logic services
+│   └── domain/               # Types and schemas
+├── viewer-svelte/
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── ItineraryList.tsx
-│   │   │   ├── ItineraryDetail.tsx
-│   │   │   ├── SegmentCard.tsx
-│   │   │   └── GapIndicator.tsx
-│   │   ├── hooks/
-│   │   │   └── useItineraries.ts      # React Query hooks
+│   │   ├── routes/
+│   │   │   ├── api/v1/       # SvelteKit API routes
+│   │   │   └── +page.svelte  # Frontend pages
 │   │   ├── lib/
-│   │   │   └── api.ts                 # API client
-│   │   └── types/
-│   │       └── index.ts               # TypeScript types
-│   ├── tailwind.config.js
+│   │   │   ├── components/   # Svelte components
+│   │   │   ├── stores/       # Svelte stores
+│   │   │   └── api.ts        # API client
+│   │   └── app.d.ts
+│   ├── svelte.config.js
 │   └── vite.config.ts
 └── package.json
 ```
 
 ### Scripts
 
-- `npm run server` - Start API server only
-- `npm run viewer:dev` - Start Vite dev server only
-- `npm run viewer` - Start both (recommended)
-- `npm run viewer:build` - Build viewer for production
+- `cd viewer-svelte && npm run dev` - Start SvelteKit server (frontend + API)
+- `cd viewer-svelte && npm run build` - Build for production
+- `cd viewer-svelte && npm run preview` - Preview production build
 
 ## LOC Summary
 

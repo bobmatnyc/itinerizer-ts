@@ -20,6 +20,13 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 	const headerApiKey = request.headers.get('X-OpenRouter-API-Key');
 	let tripDesignerService = locals.services.tripDesignerService;
 
+	// Validate API key from header (reject empty/whitespace keys)
+	if (headerApiKey !== null && headerApiKey.trim() === '') {
+		throw error(400, {
+			message: 'Invalid API key: API key cannot be empty. Please add your OpenRouter API key in Profile settings.'
+		});
+	}
+
 	// Create on-demand service if header key provided
 	if (headerApiKey) {
 		tripDesignerService = await createTripDesignerWithKey(headerApiKey, locals.services);

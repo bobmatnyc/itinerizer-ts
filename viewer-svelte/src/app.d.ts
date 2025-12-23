@@ -9,6 +9,7 @@ declare global {
 		interface Locals {
 			services: Services;
 			isAuthenticated: boolean;
+			userEmail: string | null;
 		}
 		// interface PageData {}
 		// interface PageState {}

@@ -3,7 +3,6 @@
 ## Prerequisites
 
 - Node.js 18+ installed
-- Backend API running on `http://localhost:3001`
 
 ## Installation
 
@@ -17,15 +16,18 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+Open http://localhost:5176 in your browser.
 
 ## Environment Configuration
 
 Create a `.env` file (or use the existing one):
 
 ```bash
-VITE_API_URL=http://localhost:3001
+# Optional: OpenRouter API key for LLM features
+OPENROUTER_API_KEY=your-key-here
 ```
+
+**Note:** SvelteKit handles both the frontend AND API on the same server (port 5176).
 
 ## Available Scripts
 
@@ -36,11 +38,10 @@ VITE_API_URL=http://localhost:3001
 
 ## First Steps
 
-1. Make sure the backend API is running on port 3001
-2. Start the dev server: `npm run dev`
-3. Open http://localhost:5173
-4. You should see the Itinerizer Viewer interface
-5. Import a PDF file to test the full workflow
+1. Start the dev server: `npm run dev`
+2. Open http://localhost:5176
+3. You should see the Itinerizer Viewer interface
+4. Import a PDF file to test the full workflow
 
 ## Features
 
@@ -52,18 +53,18 @@ VITE_API_URL=http://localhost:3001
 
 ## Troubleshooting
 
-### Backend not responding
-Make sure the backend is running:
-```bash
-cd ../backend
-npm run dev
+### Port already in use
+Change the port in `vite.config.ts`:
+```typescript
+export default defineConfig({
+  server: {
+    port: 5177 // Change to any available port
+  }
+});
 ```
 
-### Port already in use
-Change the port in the dev command:
-```bash
-npm run dev -- --port 5174
-```
+### API routes not working
+Verify SvelteKit routes are properly configured in `src/routes/api/v1/`
 
 ### Build errors
 Clean and reinstall dependencies:
@@ -87,12 +88,12 @@ npm run check
 - Simpler component syntax
 
 ### API
-All API endpoints are identical:
-- GET /api/itineraries
-- GET /api/itineraries/:id
-- GET /api/models
-- POST /api/import
-- GET /api/costs
+SvelteKit handles all API routes at `/api/v1/*`:
+- GET /api/v1/itineraries
+- GET /api/v1/itineraries/:id
+- POST /api/v1/designer/sessions
+- POST /api/v1/designer/sessions/:id/messages
+- POST /api/v1/agent/import/pdf
 
 ## Next Steps
 

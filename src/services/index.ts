@@ -69,5 +69,26 @@ export type { GeocodingResult } from './geocoding.service.js';
 export { AnonymizerService } from './anonymizer.service.js';
 export { EmbeddingService } from './embedding.service.js';
 export type { EmbeddingConfig, EmbeddingResult, BatchEmbeddingResult } from './embedding.service.js';
+
+// Vectra-based knowledge service
 export { KnowledgeService } from './knowledge.service.js';
 export type { KnowledgeConfig, ChatMessage, RAGResult } from './knowledge.service.js';
+
+// Weaviate-based knowledge service
+export { WeaviateKnowledgeService } from './weaviate-knowledge.service.js';
+export type {
+  RawKnowledge,
+  KnowledgeContext,
+  SearchContext,
+  KnowledgeResult,
+  KBSearchResult,
+  WeaviateKnowledgeConfig,
+} from './weaviate-knowledge.service.js';
+
+// Knowledge service factory
+export {
+  createKnowledgeService,
+  createWeaviateKnowledgeService,
+  createVectraKnowledgeService,
+} from './knowledge-factory.js';
+export type { KnowledgeBackend } from './knowledge-factory.js';

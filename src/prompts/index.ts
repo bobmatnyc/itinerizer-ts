@@ -14,8 +14,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Load prompts from filesystem for Node.js runtime
 // In production builds (Vite), these would use ?raw imports instead
 const tripDesignerSystem = readFileSync(path.join(__dirname, 'trip-designer/system.md'), 'utf-8');
+const tripDesignerSystemMinimal = readFileSync(path.join(__dirname, 'trip-designer/system-minimal.md'), 'utf-8');
 const tripDesignerCompaction = readFileSync(path.join(__dirname, 'trip-designer/compaction.md'), 'utf-8');
 const tripDesignerProfileExtraction = readFileSync(path.join(__dirname, 'trip-designer/profile-extraction.md'), 'utf-8');
+const helpAgentSystem = readFileSync(path.join(__dirname, 'help-agent/system.md'), 'utf-8');
 
 /**
  * Pre-loaded prompts for Trip Designer Agent
@@ -30,6 +32,12 @@ export const PROMPTS = {
     system: tripDesignerSystem,
 
     /**
+     * Minimal system prompt for initial context (new itineraries)
+     * Reduced token count for first message
+     */
+    systemMinimal: tripDesignerSystemMinimal,
+
+    /**
      * Context compaction prompt
      * Used when conversation history needs to be condensed to save tokens
      */
@@ -41,6 +49,14 @@ export const PROMPTS = {
      */
     profileExtraction: tripDesignerProfileExtraction,
   },
+
+  helpAgent: {
+    /**
+     * System prompt for Help Agent
+     * Helps users understand the application and transitions to Trip Designer
+     */
+    system: helpAgentSystem,
+  },
 };
 
 /**
@@ -48,5 +64,11 @@ export const PROMPTS = {
  * These are the constants previously exported from services/trip-designer/prompts.ts
  */
 export const TRIP_DESIGNER_SYSTEM_PROMPT = PROMPTS.tripDesigner.system;
+export const TRIP_DESIGNER_SYSTEM_PROMPT_MINIMAL = PROMPTS.tripDesigner.systemMinimal;
 export const COMPACTION_SYSTEM_PROMPT = PROMPTS.tripDesigner.compaction;
 export const PROFILE_EXTRACTION_PROMPT = PROMPTS.tripDesigner.profileExtraction;
+
+/**
+ * Direct access to Help Agent prompts
+ */
+export const HELP_AGENT_SYSTEM_PROMPT = PROMPTS.helpAgent.system;

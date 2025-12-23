@@ -155,7 +155,10 @@ export function createApiServer(config: {
   const tripDesignerRouter = createTripDesignerRouter(
     tripDesignerService,
     knowledgeService,
-    itineraryService
+    itineraryService,
+    segmentService,
+    dependencyService,
+    travelAgentFacade
   );
 
   app.use('/api/v1/itineraries', collectionManagerRouter);

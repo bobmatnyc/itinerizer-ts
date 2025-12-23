@@ -1,46 +1,63 @@
 # Agent Memory: ops
-<!-- Last Updated: 2025-12-20T21:15:00.000000+00:00Z -->
+<!-- Last Updated: 2025-12-22T00:00:00.000000+00:00Z -->
 
-## Dual Deployment Architecture
+## Unified SvelteKit Architecture
 
-This project has **two parallel deployment targets**:
+This project has **two interfaces** sharing the same core library:
+
+### Web Application (SvelteKit)
+- **Local**: SvelteKit dev server on port 5176 (frontend + API routes)
+- **Production**: Vercel (frontend + API routes)
+- **API Routes**: `/api/v1/*` served by SvelteKit
+- **Storage**: JSON files (local) or Vercel Blob (production)
+
+### CLI (TypeScript)
+- **Direct imports**: Uses `src/` library without HTTP
+- **Storage**: JSON files in `./data/` directory
+- **Build**: `npm run build` → `dist/index.js`
+- **Usage**: `npx itinerizer [command]`
 
 | Mode | API Server | Frontend | Storage | Vector DB |
 |------|------------|----------|---------|-----------|
-| **Local** | Express (:5177) | Vite (:5176) | JSON files | Vectra |
+| **Local** | SvelteKit routes (:5176) | SvelteKit (:5176) | JSON files | Vectra |
 | **Vercel** | SvelteKit routes | SvelteKit | Blob | Disabled |
+| **CLI** | No HTTP (direct imports) | N/A | JSON files | Vectra |
+
+**No Express server** - all HTTP API routes are handled by SvelteKit at `/api/v1/*`.
 
 ## Local Development
 
-### Default Ports
-- **Frontend (Svelte)**: `5176`
-- **API (Express)**: `5177`
+### Default Port
+- **SvelteKit (Frontend + API)**: `5176`
 
 ### Start Commands
 ```bash
-# Terminal 1: API Server
-npx tsx src/server/index.ts
-
-# Terminal 2: Frontend
+# Single server for frontend AND API
 cd viewer-svelte && npm run dev
 
-# Or use concurrently (if configured)
+# Alternative from root
 npm run viewer
 ```
 
 ### Config Files
 | File | Purpose |
 |------|---------|
-| `viewer-svelte/vite.config.ts` | Frontend port (5176) |
-| `viewer-svelte/.env` | `VITE_API_URL=http://localhost:5177` |
-| `viewer-svelte/src/lib/api.ts` | API URL default |
-| `.itinerizer/config.yaml` | API keys (OpenRouter, SerpAPI) |
-| `src/server/index.ts` | Express API entry point |
+| `viewer-svelte/vite.config.ts` | SvelteKit port (5176) |
+| `viewer-svelte/.env` | OpenRouter API key, local config |
+| `viewer-svelte/src/lib/api.ts` | API client (uses relative paths) |
+| `.itinerizer/config.yaml` | CLI-only config (not used by web) |
 
-### API Key Loading Priority
+### API Key Loading
+
+**Web Application**:
+- User provides OpenRouter API key in browser (stored in localStorage)
+- API key passed from client to server on each request
+- No server-side API key storage required
+
+**CLI**:
 1. `.itinerizer/config.yaml` → `openrouter.apiKey`
 2. `OPENROUTER_API_KEY` environment variable
-3. If neither: Server runs read-only (import disabled)
+3. If neither: CLI features disabled
 
 ### Local Storage Paths
 ```
@@ -110,14 +127,20 @@ if (apiKey) {
 }
 ```
 
-### API Route Mapping
+### API Routes (SvelteKit)
 
-| Express (Local) | SvelteKit (Vercel) |
-|-----------------|-------------------|
-| `GET /api/health` | `GET /api/health` |
-| `GET /api/itineraries` | `GET /api/v1/itineraries` |
-| `POST /api/chat/sessions` | `POST /api/v1/designer/sessions` |
-| `POST /api/import` | `POST /api/v1/import` |
+All routes are under `/api/v1/*` in both local and production:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/v1/itineraries` | List itineraries (filtered by userId) |
+| `GET /api/v1/itineraries/[id]` | Get single itinerary |
+| `POST /api/v1/itineraries` | Create itinerary |
+| `PUT /api/v1/itineraries/[id]` | Update itinerary |
+| `DELETE /api/v1/itineraries/[id]` | Delete itinerary |
+| `POST /api/v1/designer/sessions` | Create Trip Designer session |
+| `POST /api/v1/designer/sessions/[id]/messages` | Send message to session |
+| `GET /api/v1/designer/sessions/[id]/messages/stream` | Stream session messages (SSE) |
 
 ### Debugging Vercel
 
@@ -126,7 +149,20 @@ if (apiKey) {
 3. **Blob errors**: Check BLOB_READ_WRITE_TOKEN is set
 4. **API 500s**: Check hooks.server.ts error handling
 
-## CLI Publishing (Future)
+## CLI Architecture
+
+The CLI uses the **core library directly** without HTTP requests:
+
+```typescript
+// CLI imports services directly from src/
+import { ItineraryService } from '../services/index.js';
+import { createItineraryStorage } from '../storage/index.js';
+
+// No HTTP - direct function calls
+const storage = createItineraryStorage();
+const service = new ItineraryService(storage);
+const result = await service.getItineraries();
+```
 
 ### Build CLI
 ```bash
@@ -157,8 +193,9 @@ npx tsx scripts/validate-itineraries.ts
 ## Troubleshooting
 
 ### Local API Returns 404
-- Check if Express server is running on 5177
-- Verify `VITE_API_URL` in `viewer-svelte/.env`
+- Check if SvelteKit dev server is running on port 5176
+- Verify API routes exist in `viewer-svelte/src/routes/api/v1/`
+- Check browser console for CORS or network errors
 
 ### Vercel Blob Save Fails
 - Verify `BLOB_READ_WRITE_TOKEN` in Vercel env vars

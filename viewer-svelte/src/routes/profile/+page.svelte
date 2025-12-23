@@ -76,10 +76,16 @@
         saveSuccess = false;
       }, 3000);
 
-      // If onboarding, redirect to itineraries after save
+      // If onboarding, redirect to help for first-time users
       if (isOnboarding) {
         setTimeout(() => {
-          goto('/itineraries');
+          const hasSeenHelp = localStorage.getItem('itinerizer_has_seen_help');
+          if (!hasSeenHelp) {
+            localStorage.setItem('itinerizer_has_seen_help', 'true');
+            goto('/help');
+          } else {
+            goto('/itineraries');
+          }
         }, 1500);
       }
     } catch (err) {
@@ -99,7 +105,13 @@
 
   function handleSkip() {
     // Allow users to skip API key setup during onboarding
-    goto('/itineraries');
+    const hasSeenHelp = localStorage.getItem('itinerizer_has_seen_help');
+    if (!hasSeenHelp) {
+      localStorage.setItem('itinerizer_has_seen_help', 'true');
+      goto('/help');
+    } else {
+      goto('/itineraries');
+    }
   }
 
   // Mask API key for display

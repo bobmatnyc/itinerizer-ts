@@ -226,9 +226,9 @@ Future optimizations:
 
 To use the Trip Designer API:
 
-1. **Start the server:**
+1. **Start the SvelteKit server:**
    ```bash
-   npm run server
+   cd viewer-svelte && npm run dev
    ```
 
 2. **Configure API key:**
@@ -246,13 +246,14 @@ To use the Trip Designer API:
    npx tsx examples/trip-designer-api-demo.ts
 
    # Or use curl
-   curl -X POST http://localhost:5177/api/chat/sessions \
+   curl -X POST http://localhost:5176/api/chat/sessions \
      -H "Content-Type: application/json" \
      -d '{"itineraryId":"your-itinerary-id"}'
    ```
 
-4. **Build frontend:**
-   - Use fetch or axios to call endpoints
+4. **Frontend integration:**
+   - SvelteKit routes handle both frontend and API
+   - Use fetch to call `/api/v1/*` endpoints
    - Display agent responses in chat UI
    - Render structured questions as forms
    - Show real-time updates with EventSource

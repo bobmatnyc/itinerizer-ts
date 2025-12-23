@@ -23,20 +23,26 @@ import type {
 } from '../../domain/types/trip-designer.js';
 import { SessionManager, InMemorySessionStorage } from './session.js';
 import type { SessionStorage } from './session.js';
-import { ALL_TOOLS } from './tools.js';
-import { TRIP_DESIGNER_SYSTEM_PROMPT, COMPACTION_SYSTEM_PROMPT } from '../../prompts/index.js';
+import { ALL_TOOLS, ESSENTIAL_TOOLS, HELP_AGENT_TOOLS } from './tools.js';
+import { TRIP_DESIGNER_SYSTEM_PROMPT, TRIP_DESIGNER_SYSTEM_PROMPT_MINIMAL, COMPACTION_SYSTEM_PROMPT, HELP_AGENT_SYSTEM_PROMPT } from '../../prompts/index.js';
+import type { TripDesignerMode } from '../../domain/types/trip-designer.js';
 import { ToolExecutor } from './tool-executor.js';
 import type { KnowledgeService } from '../knowledge.service.js';
+import type { WeaviateKnowledgeService } from '../weaviate-knowledge.service.js';
 import type { TravelAgentFacade } from '../travel-agent-facade.service.js';
+import { isWeaviateKnowledgeService } from '../knowledge-factory.js';
 import { summarizeItineraryMinimal, summarizeItinerary } from './itinerary-summarizer.js';
 
 /**
  * Default model for Trip Designer
+ * Note: Using claude-sonnet-4 for best coding/tool use performance
+ * Previously used claude-3.5-sonnet:online but :online suffix can cause issues
  */
-const DEFAULT_MODEL = 'anthropic/claude-3.5-sonnet:online';
+const DEFAULT_MODEL = 'anthropic/claude-sonnet-4';
 
 /**
- * Claude 3.5 Sonnet pricing (USD per 1M tokens)
+ * Claude Sonnet 4 pricing (USD per 1M tokens)
+ * See: https://openrouter.ai/anthropic/claude-sonnet-4
  */
 const CLAUDE_PRICING = {
   inputCostPer1M: 3.0,
@@ -68,7 +74,7 @@ export class TripDesignerService {
     segmentService?: unknown;
     dependencyService?: unknown;
   };
-  private knowledgeService?: KnowledgeService;
+  private knowledgeService?: KnowledgeService | WeaviateKnowledgeService;
   private knowledgeInitialized = false;
   private travelAgentFacade?: TravelAgentFacade;
 
@@ -82,7 +88,7 @@ export class TripDesignerService {
       itineraryService?: unknown;
       segmentService?: unknown;
       dependencyService?: unknown;
-      knowledgeService?: KnowledgeService;
+      knowledgeService?: KnowledgeService | WeaviateKnowledgeService;
       travelAgentFacade?: TravelAgentFacade;
     }
   ) {
@@ -120,11 +126,49 @@ export class TripDesignerService {
   }
 
   /**
-   * Create a new trip planning session
+   * Truncate tool result to prevent token bloat
+   * Limits result size to maxChars to avoid overwhelming context
+   */
+  private truncateToolResult(result: unknown, maxChars: number = 2000): string {
+    const jsonStr = JSON.stringify(result);
+    if (jsonStr.length <= maxChars) {
+      return jsonStr;
+    }
+
+    // Truncate and add indicator
+    return jsonStr.substring(0, maxChars) + '... [truncated]';
+  }
+
+  /**
+   * Get tools based on agent mode and message count
+   */
+  private getToolsForMode(agentMode: TripDesignerMode | undefined, isFirstMessage: boolean): ChatCompletionTool[] {
+    // Help mode only has the switch_to_trip_designer tool
+    if (agentMode === 'help') {
+      return HELP_AGENT_TOOLS as ChatCompletionTool[];
+    }
+
+    // Trip designer mode: use essential tools for first message, all tools otherwise
+    const tools = isFirstMessage ? ESSENTIAL_TOOLS : ALL_TOOLS;
+    return tools as ChatCompletionTool[];
+  }
+
+  /**
+   * Get system prompt based on agent mode
+   */
+  private getSystemPromptForMode(agentMode: TripDesignerMode | undefined): string {
+    if (agentMode === 'help') {
+      return HELP_AGENT_SYSTEM_PROMPT;
+    }
+    return TRIP_DESIGNER_SYSTEM_PROMPT;
+  }
+
+  /**
+   * Create a new trip planning session or help session
    * If the itinerary already has content, injects a summary into the initial context
    */
-  async createSession(itineraryId: ItineraryId): Promise<Result<SessionId, StorageError>> {
-    const sessionResult = await this.sessionManager.createSession(itineraryId);
+  async createSession(itineraryId?: ItineraryId, mode: 'trip-designer' | 'help' = 'trip-designer'): Promise<Result<SessionId, StorageError>> {
+    const sessionResult = await this.sessionManager.createSession(itineraryId, mode);
     if (!sessionResult.success) {
       return sessionResult;
     }
@@ -181,6 +225,39 @@ Important: Since the itinerary already has content, skip any questions about inf
   }
 
   /**
+   * Create a new help session
+   * This session starts in help mode and can switch to trip designer mode
+   */
+  async createHelpSession(itineraryId: ItineraryId): Promise<Result<SessionId, StorageError>> {
+    const sessionResult = await this.sessionManager.createSession(itineraryId);
+    if (!sessionResult.success) {
+      return sessionResult;
+    }
+
+    const session = sessionResult.value;
+
+    // Set initial mode to help
+    session.agentMode = 'help';
+    await this.sessionManager.updateSession(session);
+
+    return ok(session.id);
+  }
+
+  /**
+   * Set the agent mode for an existing session
+   */
+  async setAgentMode(sessionId: SessionId, mode: TripDesignerMode): Promise<Result<void, StorageError>> {
+    const sessionResult = await this.sessionManager.getSession(sessionId);
+    if (!sessionResult.success) {
+      return sessionResult;
+    }
+
+    const session = sessionResult.value;
+    session.agentMode = mode;
+    return this.sessionManager.updateSession(session);
+  }
+
+  /**
    * Send a message and get agent response
    */
   async chat(
@@ -225,12 +302,16 @@ Important: Since the itinerary already has content, skip any questions about inf
     // Build messages for LLM with RAG context
     const messages = await this.buildMessagesWithRAG(session, userMessage);
 
+    // Get tools based on agent mode
+    const isFirstMessage = session.messages.filter(m => m.role === 'user').length === 1;
+    const tools = this.getToolsForMode(session.agentMode, isFirstMessage);
+
     // Call LLM with tools
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model || DEFAULT_MODEL,
         messages,
-        tools: ALL_TOOLS as ChatCompletionTool[],
+        tools: tools as ChatCompletionTool[],
         max_tokens: this.config.maxTokens,
         temperature: this.config.temperature,
       });
@@ -280,10 +361,19 @@ Important: Since the itinerary already has content, skip any questions about inf
 
         toolResults = executionResults;
 
-        // Collect modified segment IDs
+        // Collect modified segment IDs and check for mode switches
         for (const result of executionResults) {
           if (result.success && result.metadata?.segmentId) {
             segmentsModified.push(result.metadata.segmentId);
+          }
+          // Check if switch_to_trip_designer was called
+          if (result.success && typeof result.result === 'object' && result.result !== null) {
+            const resultObj = result.result as Record<string, unknown>;
+            if (resultObj.action === 'switch_agent' && resultObj.newMode === 'trip_designer') {
+              // Update session mode
+              session.agentMode = 'trip_designer';
+              await this.sessionManager.updateSession(session);
+            }
           }
         }
 
@@ -295,11 +385,11 @@ Important: Since the itinerary already has content, skip any questions about inf
           tokens: { input: inputTokens, output: outputTokens },
         });
 
-        // Add tool results as separate messages
+        // Add tool results as separate messages (truncated to save tokens)
         for (const result of toolResults) {
           await this.sessionManager.addMessage(sessionId, {
             role: 'tool',
-            content: JSON.stringify(result.result || { error: result.error }),
+            content: this.truncateToolResult(result.result || { error: result.error }),
             toolResults: [result],
           });
         }
@@ -322,6 +412,7 @@ Important: Since the itinerary already has content, skip any questions about inf
             },
             ...toolResultMessages,
           ],
+          tools, // Include tools so model can generate natural language responses or chain tool calls
           max_tokens: this.config.maxTokens,
           temperature: this.config.temperature,
         });
@@ -380,15 +471,35 @@ Important: Since the itinerary already has content, skip any questions about inf
     } catch (error) {
       // Handle API errors
       if (error instanceof Error) {
-        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        const errorMsg = error.message.toLowerCase();
+
+        // 401 - Invalid API key
+        if (errorMsg.includes('401') || errorMsg.includes('unauthorized')) {
           return err({
             type: 'llm_api_error',
-            error: 'Invalid API key',
+            error: 'Invalid OpenRouter API key. Please check your API key in Profile settings.',
             retryable: false,
           });
         }
 
-        if (error.message.includes('429') || error.message.includes('rate limit')) {
+        // 400 - Bad request (often means invalid API key or model)
+        if (errorMsg.includes('400')) {
+          if (errorMsg.includes('provider') || errorMsg.includes('model')) {
+            return err({
+              type: 'llm_api_error',
+              error: 'Invalid API key or model configuration. Please verify your OpenRouter API key in Profile settings and ensure it has credits.',
+              retryable: false,
+            });
+          }
+          return err({
+            type: 'llm_api_error',
+            error: `Bad request: ${error.message}. Please check your OpenRouter API key in Profile settings.`,
+            retryable: false,
+          });
+        }
+
+        // 429 - Rate limit
+        if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
           return err({
             type: 'rate_limit_exceeded',
             retryAfter: 60,
@@ -451,26 +562,38 @@ Important: Since the itinerary already has content, skip any questions about inf
     // Build messages for LLM with RAG context
     const messages = await this.buildMessagesWithRAG(session, userMessage);
 
+    // Get tools based on agent mode
+    const isFirstMessage = session.messages.filter(m => m.role === 'user').length === 1;
+    const tools = this.getToolsForMode(session.agentMode, isFirstMessage);
+
     try {
       // Call LLM with streaming enabled
+      console.log(`[chatStream] Calling LLM for session ${sessionId}, model: ${this.config.model || DEFAULT_MODEL}`);
       const stream = await this.client.chat.completions.create({
         model: this.config.model || DEFAULT_MODEL,
         messages,
-        tools: ALL_TOOLS as ChatCompletionTool[],
+        tools,
         max_tokens: this.config.maxTokens,
         temperature: this.config.temperature,
         stream: true,
       });
+      console.log(`[chatStream] Stream created, starting to read chunks...`);
 
       let fullContent = '';
       let toolCalls: ToolCall[] = [];
-      let currentToolCall: Partial<ToolCall> | null = null;
+      let toolCallsInProgress: Map<number, Partial<ToolCall>> = new Map();
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
+      let chunkCount = 0;
 
       // Stream the response
       for await (const chunk of stream) {
+        chunkCount++;
         const delta = chunk.choices[0]?.delta;
+        const finishReason = chunk.choices[0]?.finish_reason;
+
+        // Log ALL chunks with structure
+        console.log(`[chatStream] Chunk ${chunkCount}: content=${delta?.content?.length || 0}, tools=${delta?.tool_calls?.length || 0}, finish=${finishReason || 'none'}`);
 
         // Track token usage if available
         if (chunk.usage) {
@@ -483,80 +606,146 @@ Important: Since the itinerary already has content, skip any questions about inf
         // Handle text content
         if (delta.content) {
           fullContent += delta.content;
+          console.log(`[chatStream] Yielding text: ${delta.content.length} chars`);
           yield { type: 'text', content: delta.content };
         }
 
-        // Handle tool calls
+        // Handle tool calls - accumulate by index
         if (delta.tool_calls) {
+          console.log(`[chatStream] Raw tool_calls delta:`, JSON.stringify(delta.tool_calls, null, 2));
+
           for (const toolCallDelta of delta.tool_calls) {
-            if (toolCallDelta.index !== undefined) {
-              // New tool call or continuation
-              if (!currentToolCall || toolCallDelta.id) {
-                // Start new tool call
-                currentToolCall = {
-                  id: toolCallDelta.id || '',
-                  type: 'function',
-                  function: {
-                    name: toolCallDelta.function?.name || '',
-                    arguments: toolCallDelta.function?.arguments || '',
-                  },
-                };
-              } else if (currentToolCall.function) {
-                // Append to existing tool call
-                if (toolCallDelta.function?.arguments) {
-                  currentToolCall.function.arguments += toolCallDelta.function.arguments;
-                }
+            const index = toolCallDelta.index;
+            if (index === undefined) {
+              console.log(`[chatStream] WARNING: tool call delta missing index:`, JSON.stringify(toolCallDelta));
+              continue;
+            }
+
+            console.log(`[chatStream] Processing tool call delta at index ${index}:`, JSON.stringify(toolCallDelta));
+
+            // Get or create tool call at this index
+            let toolCall = toolCallsInProgress.get(index);
+
+            if (!toolCall) {
+              // Start new tool call
+              toolCall = {
+                id: toolCallDelta.id || '',
+                type: 'function',
+                function: {
+                  name: toolCallDelta.function?.name || '',
+                  arguments: toolCallDelta.function?.arguments || '',
+                },
+              };
+              toolCallsInProgress.set(index, toolCall);
+              console.log(`[chatStream] Started tool call at index ${index}: ${toolCall.function?.name}, initial args: "${toolCall.function?.arguments}"`);
+            } else {
+              // Append to existing tool call
+              if (toolCallDelta.id) {
+                toolCall.id = toolCallDelta.id;
+              }
+              if (toolCall.function) {
                 if (toolCallDelta.function?.name) {
-                  currentToolCall.function.name += toolCallDelta.function.name;
+                  toolCall.function.name += toolCallDelta.function.name;
+                  console.log(`[chatStream] Appended to tool name at index ${index}: ${toolCall.function.name}`);
+                }
+                if (toolCallDelta.function?.arguments) {
+                  const beforeLen = toolCall.function.arguments.length;
+                  toolCall.function.arguments += toolCallDelta.function.arguments;
+                  console.log(`[chatStream] Appended ${toolCallDelta.function.arguments.length} chars to tool call ${index}, before: ${beforeLen}, after: ${toolCall.function.arguments.length}, content: "${toolCallDelta.function.arguments}"`);
                 }
               }
             }
+
+            console.log(`[chatStream] Tool call at index ${index} after processing:`, JSON.stringify(toolCall));
           }
         }
 
-        // Check if tool call is complete (next chunk doesn't have tool_calls)
-        const nextHasToolCalls = chunk.choices[0]?.finish_reason === 'tool_calls';
-        if (nextHasToolCalls && currentToolCall && currentToolCall.id && currentToolCall.function) {
-          const completeToolCall = currentToolCall as ToolCall;
-          toolCalls.push(completeToolCall);
+        // When stream finishes with tool_calls, finalize all accumulated tool calls
+        if (finishReason === 'tool_calls') {
+          console.log(`[chatStream] Stream finished with tool_calls, finalizing ${toolCallsInProgress.size} tool calls`);
+          console.log(`[chatStream] Tool calls map contents:`, Array.from(toolCallsInProgress.entries()).map(([idx, tc]) => ({
+            index: idx,
+            id: tc.id,
+            name: tc.function?.name,
+            argsLength: tc.function?.arguments?.length || 0,
+            args: tc.function?.arguments,
+          })));
 
-          // Parse arguments and emit tool_call event
-          try {
-            const args = JSON.parse(completeToolCall.function.arguments);
+          for (const [index, toolCall] of toolCallsInProgress.entries()) {
+            console.log(`[chatStream] Finalizing tool call at index ${index}:`, JSON.stringify(toolCall));
+
+            if (toolCall.id && toolCall.function) {
+              const completeToolCall = toolCall as ToolCall;
+              toolCalls.push(completeToolCall);
+              console.log(`[chatStream] Finalized tool call: ${completeToolCall.function.name}, args length: ${completeToolCall.function.arguments.length}, args: "${completeToolCall.function.arguments}"`);
+
+              // Parse arguments and emit tool_call event
+              // Note: Some tools like get_itinerary have no parameters (empty arguments is valid)
+              let args: any = {};
+              const argsStr = completeToolCall.function.arguments || '';
+              if (argsStr.trim().length > 0) {
+                try {
+                  args = JSON.parse(argsStr);
+                } catch (parseError) {
+                  console.error(`[chatStream] Failed to parse tool arguments for ${completeToolCall.function.name}:`, parseError);
+                  console.error(`[chatStream] Arguments were: "${argsStr}"`);
+                }
+              }
+              yield {
+                type: 'tool_call',
+                name: completeToolCall.function.name,
+                arguments: args,
+              };
+            } else {
+              console.error(`[chatStream] Tool call at index ${index} is incomplete:`, {
+                hasId: !!toolCall.id,
+                hasFunction: !!toolCall.function,
+                toolCall: JSON.stringify(toolCall)
+              });
+            }
+          }
+          toolCallsInProgress.clear();
+        }
+      }
+
+      console.log(`[chatStream] Stream ended, received ${chunkCount} chunks, content length: ${fullContent.length}, toolCalls: ${toolCalls.length}`);
+
+      // Finalize any remaining tool calls (shouldn't happen if finish_reason was set correctly)
+      if (toolCallsInProgress.size > 0) {
+        console.log(`[chatStream] Finalizing ${toolCallsInProgress.size} remaining tool calls after stream end`);
+        for (const [index, toolCall] of toolCallsInProgress.entries()) {
+          if (toolCall.id && toolCall.function) {
+            const completeToolCall = toolCall as ToolCall;
+            toolCalls.push(completeToolCall);
+            console.log(`[chatStream] Finalized remaining tool call: ${completeToolCall.function.name}, args length: ${completeToolCall.function.arguments.length}`);
+
+            // Note: Some tools like get_itinerary have no parameters (empty arguments is valid)
+            let args: any = {};
+            const argsStr = completeToolCall.function.arguments || '';
+            if (argsStr.trim().length > 0) {
+              try {
+                args = JSON.parse(argsStr);
+              } catch (parseError) {
+                console.error(`[chatStream] Failed to parse tool arguments for ${completeToolCall.function.name}:`, parseError);
+                console.error(`[chatStream] Arguments were:`, argsStr);
+              }
+            }
             yield {
               type: 'tool_call',
               name: completeToolCall.function.name,
               arguments: args,
             };
-          } catch {
-            // Invalid JSON, skip
           }
-
-          currentToolCall = null;
         }
-      }
-
-      // Finalize any remaining tool call
-      if (currentToolCall && currentToolCall.id && currentToolCall.function) {
-        const completeToolCall = currentToolCall as ToolCall;
-        toolCalls.push(completeToolCall);
-
-        try {
-          const args = JSON.parse(completeToolCall.function.arguments);
-          yield {
-            type: 'tool_call',
-            name: completeToolCall.function.name,
-            arguments: args,
-          };
-        } catch {
-          // Invalid JSON, skip
-        }
+        toolCallsInProgress.clear();
       }
 
       // Handle tool calls if any
       let segmentsModified: SegmentId[] = [];
 
       if (toolCalls.length > 0) {
+        console.log(`[chatStream] ====== TOOL EXECUTION PHASE ======`);
+        console.log(`[chatStream] Executing ${toolCalls.length} tool calls: ${toolCalls.map(tc => tc.function.name).join(', ')}`);
         // Add assistant message with tool calls
         await this.sessionManager.addMessage(sessionId, {
           role: 'assistant',
@@ -575,6 +764,21 @@ Important: Since the itinerary already has content, skip any questions about inf
           )
         );
 
+        // Count successes/failures and log errors
+        const successCount = executionResults.filter(r => r.success).length;
+        const failureCount = executionResults.length - successCount;
+        console.log(`[chatStream] Tool results: ${successCount} success, ${failureCount} failure`);
+
+        // Log detailed error information for failures
+        for (let i = 0; i < executionResults.length; i++) {
+          const result = executionResults[i];
+          const toolCall = toolCalls[i];
+          if (!result.success) {
+            console.error(`[chatStream] Tool "${toolCall.function.name}" failed:`, result.error);
+            console.error(`[chatStream] Tool arguments:`, toolCall.function.arguments);
+          }
+        }
+
         // Emit tool results
         for (let i = 0; i < executionResults.length; i++) {
           const result = executionResults[i];
@@ -591,23 +795,47 @@ Important: Since the itinerary already has content, skip any questions about inf
           if (result.success && result.metadata?.segmentId) {
             segmentsModified.push(result.metadata.segmentId);
           }
+          // Check if switch_to_trip_designer was called
+          if (result.success && typeof result.result === 'object' && result.result !== null) {
+            const resultObj = result.result as Record<string, unknown>;
+            if (resultObj.action === 'switch_agent' && resultObj.newMode === 'trip_designer') {
+              // Update session mode
+              session.agentMode = 'trip_designer';
+              await this.sessionManager.updateSession(session);
+            }
+          }
         }
 
-        // Add tool results as messages
+        // Add tool results as messages (truncated to save tokens)
         for (const result of executionResults) {
           await this.sessionManager.addMessage(sessionId, {
             role: 'tool',
-            content: JSON.stringify(result.result || { error: result.error }),
+            content: this.truncateToolResult(result.result || { error: result.error }),
             toolResults: [result],
           });
         }
 
         // Make second call to get natural language response
+        console.log(`[chatStream] ====== SECOND STREAM PHASE ======`);
+        console.log(`[chatStream] Starting second stream to get natural language response...`);
         const toolResultMessages: ChatCompletionMessageParam[] = executionResults.map((result) => ({
           role: 'tool' as const,
           tool_call_id: result.toolCallId,
           content: JSON.stringify(result.result || { error: result.error }),
         }));
+
+        // Log tool result sizes for debugging
+        console.log(`[chatStream] Tool result sizes:`, toolResultMessages.map((msg, i) => ({
+          index: i,
+          toolCallId: (msg as { tool_call_id?: string }).tool_call_id?.substring(0, 20),
+          contentLength: typeof msg.content === 'string' ? msg.content.length : 0,
+        })));
+
+        // Calculate total context size
+        const baseMessagesSize = JSON.stringify(messages).length;
+        const toolResultsSize = JSON.stringify(toolResultMessages).length;
+        const totalContextSize = baseMessagesSize + toolResultsSize;
+        console.log(`[chatStream] Context sizes: base=${baseMessagesSize}, toolResults=${toolResultsSize}, total=${totalContextSize}`);
 
         const finalStream = await this.client.chat.completions.create({
           model: this.config.model || DEFAULT_MODEL,
@@ -626,15 +854,50 @@ Important: Since the itinerary already has content, skip any questions about inf
               })),
             },
             ...toolResultMessages,
+            // Add a prompt to guide the model to respond naturally based on tool results
+            {
+              role: 'user' as const,
+              content: 'Now please synthesize the tool results and respond to my original request with helpful, specific information. Do NOT call any more tools - just provide a conversational response based on what you learned.',
+            },
           ],
+          // Note: Intentionally NOT passing tools here to force a text response
+          // Tool chaining is not implemented in the second stream processing loop
           max_tokens: this.config.maxTokens,
           temperature: this.config.temperature,
           stream: true,
         });
 
+        console.log(`[chatStream] Second stream created WITHOUT tools (forcing text response)`);
+
         let finalContent = '';
+        let finalChunkCount = 0;
         for await (const chunk of finalStream) {
-          const delta = chunk.choices[0]?.delta;
+          finalChunkCount++;
+          const choice = chunk.choices[0];
+          const delta = choice?.delta;
+          const finishReason = choice?.finish_reason;
+
+          // Log second stream chunks with full details
+          console.log(`[chatStream] Second stream chunk ${finalChunkCount}: content=${delta?.content?.length || 0}, finish=${finishReason || 'none'}, role=${delta?.role || 'none'}`);
+
+          // If no content, log the full chunk to diagnose issues
+          if (!delta?.content && finalChunkCount <= 5) {
+            console.log(`[chatStream] Second stream chunk ${finalChunkCount} RAW:`, JSON.stringify({
+              id: chunk.id,
+              model: chunk.model,
+              choices: chunk.choices?.map(c => ({
+                index: c.index,
+                delta: c.delta,
+                finish_reason: c.finish_reason,
+              })),
+              usage: chunk.usage,
+            }));
+          }
+
+          // Log if there are unexpected tool calls in the response
+          if (delta?.tool_calls) {
+            console.warn(`[chatStream] WARNING: Second stream returned tool_calls (unexpected):`, JSON.stringify(delta.tool_calls));
+          }
 
           // Track token usage from second call
           if (chunk.usage) {
@@ -644,8 +907,19 @@ Important: Since the itinerary already has content, skip any questions about inf
 
           if (delta?.content) {
             finalContent += delta.content;
+            console.log(`[chatStream] Yielding text from second stream: ${delta.content.length} chars`);
             yield { type: 'text', content: delta.content };
           }
+        }
+        console.log(`[chatStream] ====== FINALIZING ======`);
+        console.log(`[chatStream] Second stream ended, received ${finalChunkCount} chunks, finalContent length: ${finalContent.length}`);
+
+        // Handle empty second stream response
+        if (finalContent.length === 0) {
+          console.warn(`[chatStream] WARNING: Second stream returned empty content! Generating fallback response.`);
+          // Provide a fallback message so user isn't left with nothing
+          finalContent = "I've processed your request. Let me know if you need anything else!";
+          yield { type: 'text', content: finalContent };
         }
 
         // Add final assistant message
@@ -675,6 +949,7 @@ Important: Since the itinerary already has content, skip any questions about inf
         const totalCost = inputCost + outputCost;
 
         // Emit done event
+        console.log(`[chatStream] ====== EMITTING DONE EVENT ======`);
         yield {
           type: 'done',
           itineraryUpdated: segmentsModified.length > 0,
@@ -690,6 +965,7 @@ Important: Since the itinerary already has content, skip any questions about inf
             total: totalCost,
           },
         };
+        console.log(`[chatStream] ====== STREAM COMPLETE ======`);
       } else {
         // No tool calls, just a message
         await this.sessionManager.addMessage(sessionId, {
@@ -735,12 +1011,21 @@ Important: Since the itinerary already has content, skip any questions about inf
       }
     } catch (error) {
       // Handle API errors
+      console.error(`[chatStream] Error in stream:`, error);
       let errorMessage = 'Unknown error';
 
       if (error instanceof Error) {
-        if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-          errorMessage = 'Invalid API key';
-        } else if (error.message.includes('429') || error.message.includes('rate limit')) {
+        const errorMsg = error.message.toLowerCase();
+
+        if (errorMsg.includes('401') || errorMsg.includes('unauthorized')) {
+          errorMessage = 'Invalid OpenRouter API key. Please check your API key in Profile settings.';
+        } else if (errorMsg.includes('400')) {
+          if (errorMsg.includes('provider') || errorMsg.includes('model')) {
+            errorMessage = 'Invalid API key or model configuration. Please verify your OpenRouter API key in Profile settings and ensure it has credits.';
+          } else {
+            errorMessage = `Bad request: ${error.message}. Please check your OpenRouter API key in Profile settings.`;
+          }
+        } else if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
           errorMessage = 'Rate limit exceeded. Please try again later.';
         } else {
           errorMessage = error.message;
@@ -926,9 +1211,14 @@ Recent conversation continues below...`,
   }
 
   /**
-   * Retrieve RAG context for a user query
+   * Retrieve RAG context for a user query with KB-first flow
+   * For Weaviate: Uses searchWithFallback
+   * For Vectra: Uses retrieveContext
    */
-  private async retrieveRAGContext(query: string): Promise<string | null> {
+  private async retrieveRAGContext(
+    query: string,
+    session?: TripDesignerSession
+  ): Promise<string | null> {
     if (!this.knowledgeService || !this.knowledgeInitialized) {
       await this.ensureKnowledgeInitialized();
     }
@@ -938,12 +1228,47 @@ Recent conversation continues below...`,
     }
 
     try {
-      const result = await this.knowledgeService.retrieveContext(query, {
-        type: 'chat', // Focus on chat messages for now
-      });
+      // Get itinerary context if available
+      let itinerary: any = undefined;
+      if (session && this.deps.itineraryService) {
+        const itineraryService = this.deps.itineraryService as any;
+        const itineraryResult = await itineraryService.get(session.itineraryId);
+        if (itineraryResult.success) {
+          itinerary = itineraryResult.value;
+        }
+      }
 
-      if (result.success && result.value.documents.length > 0) {
-        return result.value.context;
+      // Use KB-first search for Weaviate
+      if (isWeaviateKnowledgeService(this.knowledgeService)) {
+        const searchResult = await this.knowledgeService.searchWithFallback(query, {
+          itinerary,
+          destinationName: itinerary?.destinations?.[0]?.name,
+          travelDate: itinerary ? new Date(itinerary.startDate) : undefined,
+        });
+
+        if (searchResult.success && searchResult.value.results.length > 0) {
+          // Format results as context
+          const results = searchResult.value.results;
+          const contextParts = results.map((r, i) => {
+            return `[${i + 1}] [${r.category}] ${r.rawContent} (relevance: ${(r.relevanceScore * 100).toFixed(0)}%)`;
+          });
+
+          return `Knowledge Base Results (${searchResult.value.source}):\n${contextParts.join('\n')}`;
+        }
+
+        // If fallback flag is set, indicate web search should be used
+        if (searchResult.success && searchResult.value.kbFallback) {
+          return null; // Let OpenRouter :online handle web search
+        }
+      } else {
+        // Fallback to Vectra retrieveContext
+        const result = await this.knowledgeService.retrieveContext(query, {
+          type: 'chat',
+        });
+
+        if (result.success && result.value.documents.length > 0) {
+          return result.value.context;
+        }
       }
     } catch (error) {
       console.warn('RAG context retrieval failed:', error);
@@ -969,19 +1294,32 @@ Recent conversation continues below...`,
     }
 
     try {
-      // Store both messages in batch
-      await this.knowledgeService.storeMessages([
-        {
-          content: userMessage,
-          role: 'user',
+      // Store conversation based on knowledge service type
+      if (isWeaviateKnowledgeService(this.knowledgeService)) {
+        // For Weaviate, store as structured knowledge
+        const conversationText = `User: ${userMessage}\n\nAssistant: ${assistantMessage}`;
+        await this.knowledgeService.storeKnowledge({
+          content: conversationText,
+          category: 'tip',
+          source: 'trip_designer',
+        }, {
           sessionId,
-        },
-        {
-          content: assistantMessage,
-          role: 'assistant',
-          sessionId,
-        },
-      ]);
+        });
+      } else {
+        // For Vectra, store both messages in batch
+        await this.knowledgeService.storeMessages([
+          {
+            content: userMessage,
+            role: 'user',
+            sessionId,
+          },
+          {
+            content: assistantMessage,
+            role: 'assistant',
+            sessionId,
+          },
+        ]);
+      }
     } catch (error) {
       console.warn('Failed to store conversation in knowledge graph:', error);
     }
@@ -989,9 +1327,38 @@ Recent conversation continues below...`,
 
   /**
    * Build messages array for LLM from session
+   * Uses minimal prompt for first message to reduce token count
+   * Uses Help agent prompt when in help mode
    */
-  private async buildMessages(session: TripDesignerSession): Promise<ChatCompletionMessageParam[]> {
-    let systemPrompt = TRIP_DESIGNER_SYSTEM_PROMPT;
+  private async buildMessages(
+    session: TripDesignerSession,
+    options?: { useMinimalPrompt?: boolean }
+  ): Promise<ChatCompletionMessageParam[]> {
+    // Select base system prompt based on agent mode
+    let systemPrompt = this.getSystemPromptForMode(session.agentMode);
+    let hasItineraryContent = false;
+
+    // For help mode, we don't need itinerary context in the system prompt
+    if (session.agentMode === 'help') {
+      const messages: ChatCompletionMessageParam[] = [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
+      ];
+
+      // Add conversation history
+      for (const message of session.messages) {
+        if (message.role === 'user' || message.role === 'assistant' || message.role === 'system') {
+          messages.push({
+            role: message.role,
+            content: message.content,
+          });
+        }
+      }
+
+      return messages;
+    }
 
     // Check if the itinerary has content and inject context
     if (this.deps.itineraryService) {
@@ -1002,6 +1369,7 @@ Recent conversation continues below...`,
 
         // If itinerary has segments or substantial metadata, include detailed summary
         if (itinerary.segments.length > 0 || itinerary.title !== 'New Itinerary') {
+          hasItineraryContent = true;
           const summary = summarizeItinerary(itinerary);
 
           systemPrompt = `${TRIP_DESIGNER_SYSTEM_PROMPT}
@@ -1015,6 +1383,11 @@ ${summary}
 The user wants to modify or extend this itinerary. Help them make changes while preserving the existing structure and respecting their stated preferences.`;
         }
       }
+    }
+
+    // Use minimal prompt for first message of NEW itinerary to save tokens
+    if (options?.useMinimalPrompt && !hasItineraryContent) {
+      systemPrompt = TRIP_DESIGNER_SYSTEM_PROMPT_MINIMAL;
     }
 
     const messages: ChatCompletionMessageParam[] = [
@@ -1039,16 +1412,26 @@ The user wants to modify or extend this itinerary. Help them make changes while 
 
   /**
    * Build messages with RAG context injected
+   * Determines whether to use minimal prompt based on message count
    */
   private async buildMessagesWithRAG(
     session: TripDesignerSession,
     currentUserMessage: string
   ): Promise<ChatCompletionMessageParam[]> {
-    // Get base messages (now async with itinerary context)
-    const messages = await this.buildMessages(session);
+    // Use minimal prompt only for the very first user message (context message)
+    const isFirstMessage = session.messages.filter(m => m.role === 'user').length === 1;
+    const useMinimalPrompt = isFirstMessage;
 
-    // Try to retrieve RAG context
-    const ragContext = await this.retrieveRAGContext(currentUserMessage);
+    // Get base messages (now async with itinerary context)
+    const messages = await this.buildMessages(session, { useMinimalPrompt });
+
+    // Skip RAG on first message to save tokens
+    if (useMinimalPrompt) {
+      return messages;
+    }
+
+    // Try to retrieve RAG context (pass session for itinerary context)
+    const ragContext = await this.retrieveRAGContext(currentUserMessage, session);
 
     if (ragContext) {
       // Inject RAG context into system prompt
@@ -1140,16 +1523,33 @@ Use this relevant knowledge to inform your responses, but prioritize the current
   /**
    * Estimate total context tokens for a session
    * This matches the logic in SessionManager.shouldCompact()
+   *
+   * IMPORTANT: Accounts for:
+   * - System prompt (~5-7k tokens with tool definitions)
+   * - Itinerary context (~1-2k tokens)
+   * - RAG context (0-2k tokens)
+   * - All message content (including tool results)
    */
   private estimateSessionTokens(session: TripDesignerSession): number {
-    const systemPromptTokens = 3000; // System prompt + itinerary context + RAG
+    // System prompt includes tool definitions, which are substantial
+    const systemPromptTokens = 7000; // More accurate estimate for full system prompt + tools + itinerary
 
     let messageTokens = 0;
     for (const msg of session.messages) {
       if (msg.tokens) {
+        // Use actual tracked tokens if available
         messageTokens += (msg.tokens.input || 0) + (msg.tokens.output || 0);
       } else {
+        // More accurate estimation: ~4 chars per token
         messageTokens += Math.ceil(msg.content.length / 4);
+      }
+
+      // Account for tool results which can be large even after truncation
+      if (msg.toolResults && msg.toolResults.length > 0) {
+        for (const toolResult of msg.toolResults) {
+          const resultJson = JSON.stringify(toolResult.result || {});
+          messageTokens += Math.ceil(resultJson.length / 4);
+        }
       }
     }
 

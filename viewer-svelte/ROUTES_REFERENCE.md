@@ -69,26 +69,26 @@ for await (const event of apiClient.sendChatMessageStream(sessionId, message)) {
 
 ## Environment Configuration
 
-Set the API base URL via environment variable:
+No API URL needed - SvelteKit serves both frontend and API.
 
 ```bash
-# .env.local
-VITE_API_URL=http://localhost:5177
+# .env.local (optional)
+OPENROUTER_API_KEY=your-key-here  # For LLM features
 ```
 
-Default: `http://localhost:5177`
+API routes are available at `http://localhost:5176/api/v1/*`
 
 ## Development
 
 ```bash
-# Start mock server (supports both /api/v1/* and legacy /api/*)
-npm run mock-server
-
-# Start Svelte dev server
+# Start SvelteKit dev server (handles frontend + API)
 npm run dev
 
 # Type check
 npm run check
+
+# Preview production build
+npm run preview
 ```
 
 ## Migration Notes

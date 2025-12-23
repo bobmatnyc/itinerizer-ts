@@ -27,6 +27,9 @@ export interface ItineraryStorage {
   /** List all itinerary summaries (id, title, status, dates) */
   list(): Promise<Result<ItinerarySummary[], StorageError>>;
 
+  /** List itineraries for a specific user */
+  listByUser(userEmail: string): Promise<Result<ItinerarySummary[], StorageError>>;
+
   /** Check if an itinerary exists */
   exists(id: ItineraryId): Promise<boolean>;
 }
@@ -51,4 +54,6 @@ export interface ItinerarySummary {
   segmentCount: number;
   /** Last updated timestamp */
   updatedAt: Date;
+  /** User who created the itinerary */
+  createdBy?: string;
 }

@@ -31,14 +31,18 @@ function getAuthMode(): 'password' | 'open' {
 	return import.meta.env.PROD ? 'password' : 'open';
 }
 
+const USER_EMAIL_COOKIE_NAME = 'itinerizer_user_email';
+
 /**
  * POST /api/auth/login
  *
  * Request body:
+ * - email: string (required - user's email address)
  * - password?: string (required in password mode, ignored in open mode)
  *
  * Response:
- * - 200: { success: true, mode: 'password'|'open' }
+ * - 200: { success: true, mode: 'password'|'open', email: string }
+ * - 400: { error: 'Email is required' }
  * - 401: { error: 'Invalid password' }
  */
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -46,7 +50,26 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		const body = await request.json();
-		const { password } = body;
+		const { email, password } = body;
+
+		// Validate email is provided
+		if (!email || typeof email !== 'string' || !email.trim()) {
+			return new Response(
+				JSON.stringify({ error: 'Email is required' }),
+				{ status: 400, headers: { 'Content-Type': 'application/json' } }
+			);
+		}
+
+		// Basic email format validation
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email.trim())) {
+			return new Response(
+				JSON.stringify({ error: 'Invalid email format' }),
+				{ status: 400, headers: { 'Content-Type': 'application/json' } }
+			);
+		}
+
+		const normalizedEmail = email.trim().toLowerCase();
 
 		if (authMode === 'password') {
 			// Password mode: validate against AUTH_PASSWORD
@@ -77,8 +100,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			maxAge: 60 * 60 * 24 * 7 // 7 days
 		});
 
+		// Set user email cookie (readable by client)
+		cookies.set(USER_EMAIL_COOKIE_NAME, normalizedEmail, {
+			path: '/',
+			httpOnly: false, // Allow client-side access
+			secure: import.meta.env.PROD,
+			sameSite: 'lax',
+			maxAge: 60 * 60 * 24 * 7 // 7 days
+		});
+
 		return new Response(
-			JSON.stringify({ success: true, mode: authMode }),
+			JSON.stringify({ success: true, mode: authMode, email: normalizedEmail }),
 			{ status: 200, headers: { 'Content-Type': 'application/json' } }
 		);
 	} catch (error) {

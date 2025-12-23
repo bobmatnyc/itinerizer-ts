@@ -79,6 +79,8 @@ export class BlobItineraryStorage implements ItineraryStorage {
    * Save an itinerary (create or update)
    */
   async save(itinerary: Itinerary): Promise<Result<Itinerary, StorageError>> {
+    const key = this.getKey(itinerary.id);
+
     try {
       // Update timestamp
       const updatedItinerary: Itinerary = {
@@ -86,7 +88,6 @@ export class BlobItineraryStorage implements ItineraryStorage {
         updatedAt: new Date(),
       };
 
-      const key = this.getKey(itinerary.id);
       const data = this.serialize(updatedItinerary);
 
       // Delete existing blob if it exists (required for updates)
@@ -254,6 +255,7 @@ export class BlobItineraryStorage implements ItineraryStorage {
               travelerCount: itinerary.travelers.length,
               segmentCount: itinerary.segments.length,
               updatedAt: itinerary.updatedAt,
+              createdBy: itinerary.createdBy,
             });
           }
         } catch {
@@ -272,6 +274,26 @@ export class BlobItineraryStorage implements ItineraryStorage {
         })
       );
     }
+  }
+
+  /**
+   * List itineraries for a specific user
+   * Returns summaries filtered by createdBy, sorted by updatedAt descending
+   */
+  async listByUser(userEmail: string): Promise<Result<ItinerarySummary[], StorageError>> {
+    const listResult = await this.list();
+
+    if (!listResult.success) {
+      return listResult;
+    }
+
+    // Filter by user email (case-insensitive)
+    const normalizedEmail = userEmail.toLowerCase().trim();
+    const userItineraries = listResult.value.filter(
+      (summary) => summary.createdBy?.toLowerCase().trim() === normalizedEmail
+    );
+
+    return ok(userItineraries);
   }
 
   /**

@@ -99,6 +99,11 @@ export interface TripProfile {
 }
 
 /**
+ * Trip Designer mode - determines which system prompt and tools to use
+ */
+export type TripDesignerMode = 'trip_designer' | 'help';
+
+/**
  * Trip designer session
  */
 export interface TripDesignerSession {
@@ -108,6 +113,8 @@ export interface TripDesignerSession {
   tripProfile: TripProfile;
   createdAt: Date;
   lastActiveAt: Date;
+  /** Current mode - defaults to 'trip_designer' */
+  agentMode?: TripDesignerMode;
   metadata: {
     messageCount: number;
     totalTokens: number;
