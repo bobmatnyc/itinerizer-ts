@@ -13,9 +13,11 @@
     importPDF,
     createItinerary,
     deleteItinerary,
-  } from '$lib/stores/itineraries';
-  import { pendingPrompt, chatMessages } from '$lib/stores/chat';
+  } from '$lib/stores/itineraries.svelte';
+  import { pendingPrompt, chatMessages, chatSessionId, isStreaming, resetChat } from '$lib/stores/chat.svelte';
   import { visualizationStore } from '$lib/stores/visualization.svelte';
+  import { hasAIAccess } from '$lib/stores/settings.svelte';
+  import { navigationStore } from '$lib/stores/navigation.svelte';
   import Header from '$lib/components/Header.svelte';
   import ImportModal from '$lib/components/ImportModal.svelte';
   import TextImportModal from '$lib/components/TextImportModal.svelte';
@@ -30,13 +32,10 @@
   import HelpView from '$lib/components/HelpView.svelte';
   import HomeView from '$lib/components/HomeView.svelte';
   import ImportView from '$lib/components/ImportView.svelte';
+  import NewTripHelperView from '$lib/components/NewTripHelperView.svelte';
   import VisualizationPane from '$lib/components/VisualizationPane.svelte';
   import VisualizationTimeline from '$lib/components/VisualizationTimeline.svelte';
-  import type { ItineraryListItem as ItineraryListItemType } from '$lib/types';
-
-  type MainView = 'home' | 'itinerary-detail' | 'import' | 'help';
-  type LeftPaneTab = 'chat' | 'itineraries';
-  type DetailTab = 'itinerary' | 'calendar' | 'map' | 'travelers' | 'docs' | 'faq';
+  import type { Itinerary, ItineraryListItem as ItineraryListItemType } from '$lib/types';
 
   interface AgentConfig {
     mode: 'trip-designer' | 'help';
@@ -44,23 +43,8 @@
     showTokenStats: boolean;
   }
 
-  let mainView = $state<MainView>('home');
-  let leftPaneTab = $state<LeftPaneTab>('chat');
-  let detailTab = $state<DetailTab>('itinerary');
+  // Resize state (kept local)
   let leftPaneWidth = $state(350);
-  let importModalOpen = $state(false);
-  let textImportModalOpen = $state(false);
-  let editModalOpen = $state(false);
-  let editingItinerary = $state<ItineraryListItemType | null>(null);
-
-  // Agent configuration for ChatPanel
-  let agentConfig = $state<AgentConfig>({
-    mode: 'trip-designer',
-    placeholderText: 'Type a message... (Shift+Enter for new line)',
-    showTokenStats: true
-  });
-
-  // Resize state
   let isResizing = $state(false);
   let resizeStartX = $state(0);
   let resizeStartWidth = $state(0);
@@ -69,44 +53,21 @@
   let isPaneVisible = $derived(visualizationStore.isPaneVisible);
   let historyLength = $derived(visualizationStore.history.length);
 
-  // Check URL parameters and update view state
+  // Check if user has AI access
+  let aiAccessAvailable = $derived(hasAIAccess());
+
+  // Agent configuration derived from navigation store
+  let agentConfig = $derived<AgentConfig>({
+    mode: navigationStore.agentMode,
+    placeholderText: navigationStore.agentMode === 'help'
+      ? 'Ask me anything about Itinerizer...'
+      : 'Type a message... (Shift+Enter for new line)',
+    showTokenStats: navigationStore.agentMode === 'trip-designer'
+  });
+
+  // Sync navigation from URL parameters
   $effect(() => {
-    const mode = $page.url.searchParams.get('mode');
-    const view = $page.url.searchParams.get('view');
-    const id = $page.url.searchParams.get('id');
-
-    // Handle help mode
-    if (mode === 'help') {
-      mainView = 'help';
-      detailTab = 'docs';
-      agentConfig = {
-        mode: 'help',
-        placeholderText: 'Ask me anything about Itinerizer...',
-        showTokenStats: false
-      };
-    }
-    // Handle import view
-    else if (view === 'import') {
-      mainView = 'import';
-      leftPaneTab = 'itineraries';
-    }
-    // Handle itinerary detail view
-    else if (id && $selectedItinerary?.id === id) {
-      mainView = 'itinerary-detail';
-    }
-    // Default to home
-    else if (!id && !view && !mode) {
-      mainView = 'home';
-    }
-
-    // Configure agent for trip designer
-    if (mode !== 'help') {
-      agentConfig = {
-        mode: 'trip-designer',
-        placeholderText: 'Type a message... (Shift+Enter for new line)',
-        showTokenStats: true
-      };
-    }
+    navigationStore.syncFromUrl($page.url.searchParams);
   });
 
   onMount(() => {
@@ -138,6 +99,15 @@
     };
   });
 
+  // Helper function to check if itinerary has meaningful content
+  function hasItineraryContent(itinerary: Itinerary | null): boolean {
+    if (!itinerary) return false;
+    const hasSegments = itinerary.segments && itinerary.segments.length > 0;
+    const hasDestinations = itinerary.destinations && itinerary.destinations.length > 0;
+    const hasDates = !!(itinerary.startDate || itinerary.endDate);
+    return hasSegments || hasDestinations || hasDates;
+  }
+
   // Auto-select first itinerary when loaded
   $effect(() => {
     if ($itineraries.length > 0 && !$selectedItinerary) {
@@ -145,38 +115,75 @@
     }
   });
 
-  // Auto-switch to itinerary view after first chat message response
+  // When there are no itineraries, show home view and keep on chat tab
   $effect(() => {
-    // When chat messages arrive and we're on the home view, switch to itinerary view
-    if (mainView === 'home' && $chatMessages.length > 0 && $selectedItinerary) {
-      mainView = 'itinerary-detail';
+    if (!$itinerariesLoading && $itineraries.length === 0) {
+      navigationStore.goHome();
+    }
+  });
+
+  // Auto-switch to helper view or itinerary view when planning starts
+  $effect(() => {
+    // Check if we're in a state that needs view switching
+    const isOnHomeView = navigationStore.mainView === 'home';
+    const hasSelectedItinerary = !!$selectedItinerary;
+    const hasActivity = $chatMessages.length > 0 || $isStreaming;
+
+    if (isOnHomeView && hasSelectedItinerary && hasActivity) {
+      // Determine if itinerary has meaningful content
+      const hasContent = hasItineraryContent($selectedItinerary);
+
+      if (!hasContent) {
+        // Show helper view for empty itineraries
+        console.log('[Auto-switch] Switching to new-trip-helper view (empty itinerary)');
+        navigationStore.goToNewTripHelper();
+      } else {
+        // Show itinerary detail for itineraries with content
+        console.log('[Auto-switch] Switching to itinerary-detail view (has content)');
+        navigationStore.goToItineraryDetail();
+      }
+    }
+  });
+
+  // Auto-switch from helper view to detail view when itinerary has content
+  $effect(() => {
+    // If we're on helper view and itinerary has meaningful content, switch to detail view
+    if (navigationStore.mainView === 'new-trip-helper' && $selectedItinerary) {
+      const hasContent = hasItineraryContent($selectedItinerary);
+
+      if (hasContent) {
+        console.log('[Auto-switch] Switching from helper to itinerary-detail (itinerary has content)');
+        navigationStore.goToItineraryDetail();
+      }
     }
   });
 
   function handleImportClick() {
-    importModalOpen = true;
+    if (!aiAccessAvailable) return;
+    navigationStore.openImportModal();
   }
 
   function handleTextImportClick() {
-    textImportModalOpen = true;
+    if (!aiAccessAvailable) return;
+    navigationStore.openTextImportModal();
   }
 
   async function handleBuildClick() {
     try {
-      // Create a new blank itinerary
+      // Create a new blank itinerary WITHOUT dates
+      // The trip designer will ask about dates during discovery
       const newItinerary = await createItinerary({
         title: 'New Itinerary',
         description: '',
-        startDate: new Date().toISOString(),
-        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week default
+        // No startDate/endDate - trip designer will collect these
       });
 
       // Select the new itinerary
+      // Note: Chat session persists per itinerary - use Clear button to reset conversation
       selectItinerary(newItinerary.id);
 
-      // Switch to chat tab and itinerary detail view
-      leftPaneTab = 'chat';
-      mainView = 'itinerary-detail';
+      // Switch to chat tab and new-trip-helper view
+      navigationStore.goToItinerary(false);
     } catch (error) {
       console.error('Failed to create itinerary:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create new itinerary. Please try again.';
@@ -185,26 +192,36 @@
   }
 
   async function handleQuickPrompt(prompt: string) {
-    // Set the pending prompt first
+    console.log('[handleQuickPrompt] 📍 START - Received prompt:', prompt);
+    console.log('[handleQuickPrompt] Current selectedItinerary:', $selectedItinerary?.id);
+    console.log('[handleQuickPrompt] Current pendingPrompt before set:', pendingPrompt);
+
+    // Set the pending prompt FIRST - this persists across session resets
     pendingPrompt.set(prompt);
+    console.log('[handleQuickPrompt] ✅ pendingPrompt set to:', prompt);
 
     // If no itinerary is selected, create one first
     if (!$selectedItinerary) {
+      console.log('[handleQuickPrompt] No itinerary selected, creating new one...');
       await handleBuildClick();
+      console.log('[handleQuickPrompt] ✅ Itinerary created, selectedItinerary:', $selectedItinerary?.id);
+      console.log('[handleQuickPrompt] ChatPanel should mount and pick up pendingPrompt');
     }
 
-    // Switch to chat view with the itinerary
-    leftPaneTab = 'chat';
-    mainView = 'itinerary-detail';
+    // Always switch to itinerary detail view when using quick prompts
+    // This shows the itinerary being built in real-time
+    console.log('[handleQuickPrompt] Switching to itinerary-detail view');
+    navigationStore.goToItineraryDetail();
+
+    console.log('[handleQuickPrompt] 📍 END - pendingPrompt should still be:', prompt);
   }
 
   function handleHomeClick() {
-    mainView = 'home';
+    navigationStore.goHome();
   }
 
   function handleHelpClick() {
-    mainView = 'help';
-    detailTab = 'docs';
+    navigationStore.goToHelp();
   }
 
   async function handleImport(file: File, model: string | undefined) {
@@ -221,29 +238,38 @@
 
   function handleSelect(id: string) {
     selectItinerary(id);
-    mainView = 'itinerary-detail';
+    // Determine if itinerary has content and navigate accordingly
+    const itinerary = $itineraries.find(i => i.id === id);
+    if (itinerary) {
+      const hasContent = hasItineraryContent(itinerary as any);
+      navigationStore.goToItinerary(hasContent);
+    } else {
+      navigationStore.goToItineraryDetail();
+    }
   }
 
   function handleEdit(itinerary: ItineraryListItemType) {
-    editingItinerary = itinerary;
-    editModalOpen = true;
+    navigationStore.openEditModal(itinerary);
   }
 
   function handleEditManually(itinerary: any) {
     // Select the itinerary and open edit modal
-    editingItinerary = itinerary as ItineraryListItemType;
-    editModalOpen = true;
+    navigationStore.openEditModal(itinerary);
   }
 
   function handleEditWithPrompt(itinerary: any) {
     // Select the itinerary
     selectItinerary(itinerary.id);
     // Switch to chat tab and detail view
-    leftPaneTab = 'chat';
-    mainView = 'itinerary-detail';
+    navigationStore.setLeftPaneTab('chat');
+    navigationStore.goToItineraryDetail();
   }
 
   async function handleDelete(itinerary: any) {
+    // Confirm before deleting
+    const confirmed = confirm(`Are you sure you want to delete "${itinerary.title}"?\n\nThis action cannot be undone.`);
+    if (!confirmed) return;
+
     try {
       await deleteItinerary(itinerary.id);
     } catch (error) {
@@ -266,13 +292,13 @@
   <Header />
 
   <!-- Import Modal (PDF) -->
-  <ImportModal bind:open={importModalOpen} onImport={handleImport} />
+  <ImportModal bind:open={navigationStore.importModalOpen} onImport={handleImport} />
 
   <!-- Text Import Modal -->
-  <TextImportModal bind:open={textImportModalOpen} onSuccess={handleTextImportSuccess} />
+  <TextImportModal bind:open={navigationStore.textImportModalOpen} onSuccess={handleTextImportSuccess} />
 
   <!-- Edit Modal -->
-  <EditItineraryModal bind:open={editModalOpen} itinerary={editingItinerary} />
+  <EditItineraryModal bind:open={navigationStore.editModalOpen} itinerary={navigationStore.editingItinerary} />
 
   <!-- Main Content Area -->
   <div class="main-content">
@@ -281,15 +307,15 @@
       <!-- Tab Navigation -->
       <div class="left-pane-tabs">
         <button
-          class="tab-button {leftPaneTab === 'chat' ? 'active' : ''}"
-          onclick={() => leftPaneTab = 'chat'}
+          class="tab-button {navigationStore.leftPaneTab === 'chat' ? 'active' : ''}"
+          onclick={() => navigationStore.setLeftPaneTab('chat')}
           type="button"
         >
           💬 Chat
         </button>
         <button
-          class="tab-button {leftPaneTab === 'itineraries' ? 'active' : ''}"
-          onclick={() => leftPaneTab = 'itineraries'}
+          class="tab-button {navigationStore.leftPaneTab === 'itineraries' ? 'active' : ''}"
+          onclick={() => navigationStore.setLeftPaneTab('itineraries')}
           type="button"
         >
           📋 Itineraries
@@ -297,7 +323,7 @@
       </div>
 
       <!-- Tab Content -->
-      {#if leftPaneTab === 'chat'}
+      {#if navigationStore.leftPaneTab === 'chat'}
         <!-- Chat Tab: Full-height ChatPanel -->
         <div class="chat-tab-content">
           {#if $selectedItinerary}
@@ -316,10 +342,24 @@
       {:else}
         <!-- Itineraries Tab: Header + List + Create Button -->
         <div class="left-pane-header">
-          <button class="minimal-button" onclick={handleImportClick} type="button">
+          <button
+            class="minimal-button"
+            class:ai-disabled={!aiAccessAvailable}
+            onclick={handleImportClick}
+            disabled={!aiAccessAvailable}
+            title={!aiAccessAvailable ? 'API key required - visit Profile to add one' : 'Import PDF'}
+            type="button"
+          >
             Import PDF
           </button>
-          <button class="minimal-button" onclick={handleTextImportClick} type="button">
+          <button
+            class="minimal-button"
+            class:ai-disabled={!aiAccessAvailable}
+            onclick={handleTextImportClick}
+            disabled={!aiAccessAvailable}
+            title={!aiAccessAvailable ? 'API key required - visit Profile to add one' : 'Import Text'}
+            type="button"
+          >
             Import Text
           </button>
           <button class="minimal-button" onclick={handleBuildClick} type="button">
@@ -385,13 +425,19 @@
     <div class="right-pane-wrapper">
       <!-- Main Content Area -->
       <div class="right-pane-content" class:with-viz={isPaneVisible}>
-        {#if mainView === 'home'}
+        {#if navigationStore.mainView === 'home'}
           <!-- Home View: Welcome and Quick Prompts -->
           <HomeView onQuickPromptClick={handleQuickPrompt} />
-        {:else if mainView === 'import'}
+        {:else if navigationStore.mainView === 'new-trip-helper'}
+          <!-- New Trip Helper View: Guidance for creating a trip -->
+          <NewTripHelperView
+            onPromptSelect={handleQuickPrompt}
+            destination={$selectedItinerary?.destinations?.[0]?.name || $selectedItinerary?.title}
+          />
+        {:else if navigationStore.mainView === 'import'}
           <!-- Import View: Upload/Paste Flow -->
           <ImportView models={$models} onSuccess={handleTextImportSuccess} />
-        {:else if mainView === 'help'}
+        {:else if navigationStore.mainView === 'help'}
           <!-- Help View: Documentation and FAQ -->
           <MainPane
             title="Help & Documentation"
@@ -399,11 +445,12 @@
               { id: 'docs', label: 'Documentation', icon: '📚' },
               { id: 'faq', label: 'FAQ', icon: '❓' }
             ]}
-            bind:activeTab={detailTab}
+            activeTab={navigationStore.detailTab}
+            onTabChange={(tab) => navigationStore.setDetailTab(tab)}
           >
-            <HelpView activeTab={detailTab} />
+            <HelpView activeTab={navigationStore.detailTab} />
           </MainPane>
-        {:else if mainView === 'itinerary-detail' && $selectedItinerary}
+        {:else if navigationStore.mainView === 'itinerary-detail' && $selectedItinerary}
           <!-- Itinerary Detail View with Tabs -->
           <MainPane
             title={$selectedItinerary.title}
@@ -413,7 +460,8 @@
               { id: 'map', label: 'Map' },
               { id: 'travelers', label: 'Travelers' }
             ]}
-            bind:activeTab={detailTab}
+            activeTab={navigationStore.detailTab}
+            onTabChange={(tab) => navigationStore.setDetailTab(tab)}
           >
             {#snippet actions()}
               <button
@@ -439,18 +487,18 @@
               </button>
             {/snippet}
 
-            {#if detailTab === 'itinerary'}
+            {#if navigationStore.detailTab === 'itinerary'}
               <ItineraryDetail
                 itinerary={$selectedItinerary}
                 onEditManually={handleEditManually}
                 onEditWithPrompt={handleEditWithPrompt}
                 onDelete={handleDelete}
               />
-            {:else if detailTab === 'calendar'}
+            {:else if navigationStore.detailTab === 'calendar'}
               <CalendarView itinerary={$selectedItinerary} />
-            {:else if detailTab === 'map'}
+            {:else if navigationStore.detailTab === 'map'}
               <MapView itinerary={$selectedItinerary} />
-            {:else if detailTab === 'travelers'}
+            {:else if navigationStore.detailTab === 'travelers'}
               <TravelersView itinerary={$selectedItinerary} />
             {/if}
           </MainPane>
@@ -707,6 +755,20 @@
   :global(.minimal-button:disabled) {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  :global(.minimal-button.ai-disabled) {
+    position: relative;
+    opacity: 0.5;
+    background-color: #f9fafb;
+  }
+
+  :global(.minimal-button.ai-disabled::after) {
+    content: '🔒';
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    font-size: 0.75rem;
   }
 
   :global(.delete-button) {
