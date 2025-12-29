@@ -19,6 +19,33 @@ import type { KnowledgeService } from '../knowledge.service.js';
 import type { WeaviateKnowledgeService } from '../weaviate-knowledge.service.js';
 import { isWeaviateKnowledgeService } from '../knowledge-factory.js';
 import { summarizeItineraryForTool } from './itinerary-summarizer.js';
+import { parseLocalDate, parseLocalDateTime } from '../../utils/date-parser.js';
+import { GeocodingService } from '../geocoding.service.js';
+import {
+  addFlightArgsSchema,
+  addHotelArgsSchema,
+  addActivityArgsSchema,
+  addTransferArgsSchema,
+  addMeetingArgsSchema,
+  addTravelerArgsSchema,
+  updateItineraryArgsSchema,
+  updatePreferencesArgsSchema,
+  getSegmentArgsSchema,
+  updateSegmentArgsSchema,
+  deleteSegmentArgsSchema,
+  moveSegmentArgsSchema,
+  reorderSegmentsArgsSchema,
+  searchWebArgsSchema,
+  searchFlightsArgsSchema,
+  searchHotelsArgsSchema,
+  searchTransfersArgsSchema,
+  storeTravelIntelligenceArgsSchema,
+  retrieveTravelIntelligenceArgsSchema,
+  switchToTripDesignerArgsSchema,
+  getDistanceArgsSchema,
+  showRouteArgsSchema,
+  geocodeLocationArgsSchema,
+} from '../../domain/schemas/index.js';
 
 /**
  * Travel intelligence entry for knowledge base storage
@@ -44,6 +71,7 @@ export interface ToolExecutorDependencies {
   segmentService?: SegmentService;
   dependencyService?: DependencyService;
   knowledgeService?: KnowledgeService | WeaviateKnowledgeService;
+  geocodingService?: GeocodingService;
 }
 
 /**
@@ -100,7 +128,7 @@ export class ToolExecutor {
           break;
 
         case 'get_segment':
-          result = await this.handleGetSegment(itineraryId, args.segmentId);
+          result = await this.handleGetSegment(itineraryId, args);
           break;
 
         case 'update_itinerary':
@@ -109,6 +137,10 @@ export class ToolExecutor {
 
         case 'update_preferences':
           result = await this.handleUpdatePreferences(itineraryId, args);
+          break;
+
+        case 'add_traveler':
+          result = await this.handleAddTraveler(itineraryId, args);
           break;
 
         case 'add_flight':
@@ -132,23 +164,23 @@ export class ToolExecutor {
           break;
 
         case 'update_segment':
-          result = await this.handleUpdateSegment(itineraryId, args.segmentId, args.updates);
+          result = await this.handleUpdateSegment(itineraryId, args);
           break;
 
         case 'delete_segment':
-          result = await this.handleDeleteSegment(itineraryId, args.segmentId);
+          result = await this.handleDeleteSegment(itineraryId, args);
           break;
 
         case 'move_segment':
-          result = await this.handleMoveSegment(itineraryId, args.segmentId, args.newStartTime);
+          result = await this.handleMoveSegment(itineraryId, args);
           break;
 
         case 'reorder_segments':
-          result = await this.handleReorderSegments(itineraryId, args.segmentIds);
+          result = await this.handleReorderSegments(itineraryId, args);
           break;
 
         case 'search_web':
-          result = await this.handleSearchWeb(args.query);
+          result = await this.handleSearchWeb(args);
           break;
 
         case 'search_flights':
@@ -173,6 +205,19 @@ export class ToolExecutor {
 
         case 'switch_to_trip_designer':
           result = await this.handleSwitchToTripDesigner(context.sessionId, args);
+          break;
+
+        // Geography tools
+        case 'get_distance':
+          result = await this.handleGetDistance(args);
+          break;
+
+        case 'show_route':
+          result = await this.handleShowRoute(args);
+          break;
+
+        case 'geocode_location':
+          result = await this.handleGeocodeLocation(args);
           break;
 
         default:
@@ -227,12 +272,19 @@ export class ToolExecutor {
   /**
    * Get segment handler
    */
-  private async handleGetSegment(itineraryId: ItineraryId, segmentId: SegmentId): Promise<unknown> {
+  private async handleGetSegment(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = getSegmentArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid get_segment arguments: ${validation.error.message}`);
+    }
+
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
 
-    const result = await this.deps.segmentService.get(itineraryId, segmentId);
+    const { segmentId } = validation.data;
+    const result = await this.deps.segmentService.get(itineraryId, segmentId as SegmentId);
     if (!result.success) {
       throw new Error(`Failed to get segment: ${result.error.message}`);
     }
@@ -243,7 +295,14 @@ export class ToolExecutor {
   /**
    * Update itinerary handler
    */
-  private async handleUpdateItinerary(itineraryId: ItineraryId, params: any): Promise<unknown> {
+  private async handleUpdateItinerary(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = updateItineraryArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid update_itinerary arguments: ${validation.error.message}`);
+    }
+
+    const params = validation.data;
     if (!this.deps.itineraryService) {
       throw new Error('ItineraryService not configured');
     }
@@ -260,12 +319,47 @@ export class ToolExecutor {
       updates.description = params.description;
     }
 
-    // Update dates
+    // Update dates with validation
     if (params.startDate) {
-      updates.startDate = new Date(params.startDate);
+      const startDate = parseLocalDate(params.startDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize to start of day for comparison
+
+      const startDateNormalized = new Date(startDate);
+      startDateNormalized.setHours(0, 0, 0, 0); // Normalize parsed date too
+
+      // Validate: start date must be at least 1 day in the future (tomorrow or later)
+      if (startDateNormalized <= today) {
+        // Calculate suggested dates
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const nextYear = new Date(startDate);
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+
+        const tripDuration = params.endDate
+          ? Math.ceil((parseLocalDate(params.endDate).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+          : 7; // Default 7 days if no end date
+
+        const suggestedEndTomorrow = new Date(tomorrow);
+        suggestedEndTomorrow.setDate(suggestedEndTomorrow.getDate() + tripDuration);
+
+        const suggestedEndNextYear = new Date(nextYear);
+        suggestedEndNextYear.setDate(suggestedEndNextYear.getDate() + tripDuration);
+
+        throw new Error(
+          `Trip start date cannot be in the past. The date you provided (${params.startDate}) has already passed. ` +
+          `Please choose dates in the future. Suggestions:\n` +
+          `1. Start tomorrow: ${tomorrow.toISOString().split('T')[0]} to ${suggestedEndTomorrow.toISOString().split('T')[0]}\n` +
+          `2. Same dates next year: ${nextYear.toISOString().split('T')[0]} to ${suggestedEndNextYear.toISOString().split('T')[0]}\n\n` +
+          `Would you like me to update the trip with one of these date ranges?`
+        );
+      }
+
+      updates.startDate = startDate;
     }
     if (params.endDate) {
-      updates.endDate = new Date(params.endDate);
+      updates.endDate = parseLocalDate(params.endDate);
     }
 
     // Update destinations
@@ -313,13 +407,25 @@ export class ToolExecutor {
       throw new Error(`Failed to update itinerary: ${result.error.message}`);
     }
 
-    return { success: true, updated: Object.keys(updates) };
+    return {
+      success: true,
+      updated: Object.keys(updates),
+      // Signal that itinerary metadata changed (destinations, dates, title, etc.)
+      itineraryChanged: true
+    };
   }
 
   /**
    * Handle update_preferences tool call
    */
-  private async handleUpdatePreferences(itineraryId: ItineraryId, params: any): Promise<unknown> {
+  private async handleUpdatePreferences(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = updatePreferencesArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid update_preferences arguments: ${validation.error.message}`);
+    }
+
+    const params = validation.data;
     if (!this.deps.itineraryService) {
       throw new Error('ItineraryService not configured');
     }
@@ -336,6 +442,12 @@ export class ToolExecutor {
     const tripPreferences: any = itinerary.tripPreferences || {};
 
     // Update each preference field if provided
+    if (params.travelerType) {
+      tripPreferences.travelerType = params.travelerType;
+    }
+    if (params.tripPurpose) {
+      tripPreferences.tripPurpose = params.tripPurpose;
+    }
     if (params.travelStyle) {
       tripPreferences.travelStyle = params.travelStyle;
     }
@@ -347,6 +459,13 @@ export class ToolExecutor {
     }
     if (params.budgetFlexibility !== undefined) {
       tripPreferences.budgetFlexibility = params.budgetFlexibility;
+    }
+    if (params.budget) {
+      tripPreferences.budget = {
+        amount: params.budget.amount,
+        currency: params.budget.currency,
+        period: params.budget.period,
+      };
     }
     if (params.dietaryRestrictions) {
       tripPreferences.dietaryRestrictions = params.dietaryRestrictions;
@@ -388,13 +507,105 @@ export class ToolExecutor {
   }
 
   /**
-   * Ensure draft itinerary is persisted before adding content
+   * Handle add_traveler tool call
+   */
+  private async handleAddTraveler(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = addTravelerArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid add_traveler arguments: ${validation.error.message}`);
+    }
+
+    const params = validation.data;
+    if (!this.deps.itineraryService) {
+      throw new Error('ItineraryService not configured');
+    }
+
+    // Get current itinerary
+    const itinResult = await this.deps.itineraryService.get(itineraryId);
+    if (!itinResult.success) {
+      throw new Error(`Failed to get itinerary: ${itinResult.error.message}`);
+    }
+
+    const itinerary = itinResult.value;
+
+    // Import generateTravelerId from branded types
+    const { generateTravelerId } = await import('../../domain/types/branded.js');
+    const { TravelerType } = await import('../../domain/types/common.js');
+
+    // Map type string to TravelerType enum
+    const typeMap: Record<string, string> = {
+      adult: TravelerType.ADULT,
+      child: TravelerType.CHILD,
+      infant: TravelerType.INFANT,
+      senior: TravelerType.SENIOR,
+    };
+
+    // Create new Traveler object
+    const newTraveler: any = {
+      id: generateTravelerId(),
+      type: typeMap[params.type] || TravelerType.ADULT,
+      firstName: params.firstName,
+      lastName: params.lastName || '',
+      middleName: params.middleName,
+      email: params.email,
+      phone: params.phone,
+      loyaltyPrograms: [],
+      specialRequests: [],
+      metadata: {
+        relationship: params.relationship,
+        isPrimary: params.isPrimary || false,
+        age: params.age,
+      },
+    };
+
+    // Parse dateOfBirth if provided
+    if (params.dateOfBirth) {
+      newTraveler.dateOfBirth = parseLocalDate(params.dateOfBirth);
+    }
+
+    // Add to itinerary travelers array
+    if (!itinerary.travelers) {
+      itinerary.travelers = [];
+    }
+
+    itinerary.travelers.push(newTraveler);
+    itinerary.updatedAt = new Date();
+
+    // Save updated itinerary
+    const saveResult = await this.deps.itineraryService.update(itineraryId, {
+      travelers: itinerary.travelers,
+    });
+
+    if (!saveResult.success) {
+      throw new Error(`Failed to add traveler: ${saveResult.error.message}`);
+    }
+
+    // Build response message
+    const travelerName = params.lastName
+      ? `${params.firstName} ${params.lastName}`
+      : params.firstName;
+    const relationshipText = params.relationship ? ` (${params.relationship})` : '';
+    const isPrimaryText = params.isPrimary ? ' - Primary traveler' : '';
+
+    return {
+      success: true,
+      travelerId: newTraveler.id,
+      travelerName,
+      message: `Added ${travelerName}${relationshipText}${isPrimaryText} to the trip`,
+    };
+  }
+
+  /**
+   * Ensure itinerary exists before adding content
+   * Note: Itineraries created via API are already persisted
    */
   private async ensurePersisted(itineraryId: ItineraryId): Promise<void> {
-    if (this.deps.itineraryService?.isDraft(itineraryId)) {
-      const result = await this.deps.itineraryService.persistDraft(itineraryId);
+    // Verify itinerary exists (itineraries from API are already persisted)
+    if (this.deps.itineraryService) {
+      const result = await this.deps.itineraryService.getItinerary(itineraryId);
       if (!result.success) {
-        throw new Error(`Failed to persist draft: ${result.error.message}`);
+        throw new Error(`Itinerary not found: ${result.error.message}`);
       }
     }
   }
@@ -402,7 +613,13 @@ export class ToolExecutor {
   /**
    * Add flight handler
    */
-  private async handleAddFlight(itineraryId: ItineraryId, params: any): Promise<unknown> {
+  private async handleAddFlight(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = addFlightArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid flight arguments: ${validation.error.message}`);
+    }
+
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -410,11 +627,12 @@ export class ToolExecutor {
     // Persist draft if needed (first content being added)
     await this.ensurePersisted(itineraryId);
 
+    const params = validation.data;
     const segment: Omit<Segment, 'id'> = {
       type: SegmentType.FLIGHT,
       status: SegmentStatus.CONFIRMED,
-      startDatetime: new Date(params.departureTime),
-      endDatetime: new Date(params.arrivalTime),
+      startDatetime: parseLocalDateTime(params.departureTime),
+      endDatetime: parseLocalDateTime(params.arrivalTime),
       travelerIds: [],
       source: 'agent',
       sourceDetails: {
@@ -443,7 +661,13 @@ export class ToolExecutor {
   /**
    * Add hotel handler
    */
-  private async handleAddHotel(itineraryId: ItineraryId, params: any): Promise<unknown> {
+  private async handleAddHotel(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = addHotelArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid hotel arguments: ${validation.error.message}`);
+    }
+
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -451,8 +675,9 @@ export class ToolExecutor {
     // Persist draft if needed
     await this.ensurePersisted(itineraryId);
 
-    const checkInDate = new Date(params.checkInDate);
-    const checkOutDate = new Date(params.checkOutDate);
+    const params = validation.data;
+    const checkInDate = parseLocalDate(params.checkInDate);
+    const checkOutDate = parseLocalDate(params.checkOutDate);
     const checkInTime = params.checkInTime || '15:00';
     const checkOutTime = params.checkOutTime || '11:00';
 
@@ -501,7 +726,13 @@ export class ToolExecutor {
   /**
    * Add activity handler
    */
-  private async handleAddActivity(itineraryId: ItineraryId, params: any): Promise<unknown> {
+  private async handleAddActivity(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = addActivityArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid activity arguments: ${validation.error.message}`);
+    }
+
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -509,11 +740,12 @@ export class ToolExecutor {
     // Persist draft if needed
     await this.ensurePersisted(itineraryId);
 
-    const startTime = new Date(params.startTime);
+    const params = validation.data;
+    const startTime = parseLocalDateTime(params.startTime);
     let endTime: Date;
 
     if (params.endTime) {
-      endTime = new Date(params.endTime);
+      endTime = parseLocalDateTime(params.endTime);
     } else if (params.durationHours) {
       endTime = new Date(startTime.getTime() + params.durationHours * 60 * 60 * 1000);
     } else {
@@ -555,7 +787,13 @@ export class ToolExecutor {
   /**
    * Add transfer handler
    */
-  private async handleAddTransfer(itineraryId: ItineraryId, params: any): Promise<unknown> {
+  private async handleAddTransfer(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = addTransferArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid transfer arguments: ${validation.error.message}`);
+    }
+
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -563,7 +801,8 @@ export class ToolExecutor {
     // Persist draft if needed
     await this.ensurePersisted(itineraryId);
 
-    const pickupTime = new Date(params.pickupTime);
+    const params = validation.data;
+    const pickupTime = parseLocalDateTime(params.pickupTime);
     const durationMs = (params.estimatedDurationMinutes || 30) * 60 * 1000;
     const dropoffTime = new Date(pickupTime.getTime() + durationMs);
 
@@ -600,7 +839,13 @@ export class ToolExecutor {
   /**
    * Add meeting handler
    */
-  private async handleAddMeeting(itineraryId: ItineraryId, params: any): Promise<unknown> {
+  private async handleAddMeeting(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = addMeetingArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid meeting arguments: ${validation.error.message}`);
+    }
+
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -608,11 +853,13 @@ export class ToolExecutor {
     // Persist draft if needed
     await this.ensurePersisted(itineraryId);
 
+    const params = validation.data;
+
     const segment: Omit<Segment, 'id'> = {
       type: SegmentType.MEETING,
       status: SegmentStatus.CONFIRMED,
-      startDatetime: new Date(params.startTime),
-      endDatetime: new Date(params.endTime),
+      startDatetime: parseLocalDateTime(params.startTime),
+      endDatetime: parseLocalDateTime(params.endTime),
       travelerIds: [],
       source: 'agent',
       sourceDetails: {
@@ -640,11 +887,14 @@ export class ToolExecutor {
   /**
    * Update segment handler
    */
-  private async handleUpdateSegment(
-    itineraryId: ItineraryId,
-    segmentId: SegmentId,
-    updates: any
-  ): Promise<unknown> {
+  private async handleUpdateSegment(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = updateSegmentArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid update_segment arguments: ${validation.error.message}`);
+    }
+
+    const { segmentId, updates } = validation.data;
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -660,7 +910,14 @@ export class ToolExecutor {
   /**
    * Delete segment handler
    */
-  private async handleDeleteSegment(itineraryId: ItineraryId, segmentId: SegmentId): Promise<unknown> {
+  private async handleDeleteSegment(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = deleteSegmentArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid delete_segment arguments: ${validation.error.message}`);
+    }
+
+    const { segmentId } = validation.data;
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -676,11 +933,14 @@ export class ToolExecutor {
   /**
    * Move segment handler (with dependency cascade)
    */
-  private async handleMoveSegment(
-    itineraryId: ItineraryId,
-    segmentId: SegmentId,
-    newStartTime: string
-  ): Promise<unknown> {
+  private async handleMoveSegment(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = moveSegmentArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid move_segment arguments: ${validation.error.message}`);
+    }
+
+    const { segmentId, newStartTime } = validation.data;
     if (!this.deps.segmentService || !this.deps.dependencyService || !this.deps.itineraryService) {
       throw new Error('Required services not configured');
     }
@@ -735,10 +995,14 @@ export class ToolExecutor {
   /**
    * Reorder segments handler
    */
-  private async handleReorderSegments(
-    itineraryId: ItineraryId,
-    segmentIds: SegmentId[]
-  ): Promise<unknown> {
+  private async handleReorderSegments(itineraryId: ItineraryId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = reorderSegmentsArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid reorder_segments arguments: ${validation.error.message}`);
+    }
+
+    const { segmentIds } = validation.data;
     if (!this.deps.segmentService) {
       throw new Error('SegmentService not configured');
     }
@@ -757,7 +1021,14 @@ export class ToolExecutor {
    * 2. If insufficient results, indicate web search needed
    * 3. OpenRouter :online will handle actual web search
    */
-  private async handleSearchWeb(query: string): Promise<unknown> {
+  private async handleSearchWeb(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = searchWebArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid search_web arguments: ${validation.error.message}`);
+    }
+
+    const { query } = validation.data;
     const knowledgeService = this.deps.knowledgeService;
 
     // If no knowledge service, fall back to web search
@@ -824,33 +1095,51 @@ export class ToolExecutor {
   /**
    * Search flights handler (placeholder for SERP API)
    */
-  private async handleSearchFlights(params: any): Promise<unknown> {
+  private async handleSearchFlights(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = searchFlightsArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid search_flights arguments: ${validation.error.message}`);
+    }
+
     // TODO: Implement SERP API Google Flights search
     return {
       note: 'Flight search not yet implemented',
-      params,
+      params: validation.data,
     };
   }
 
   /**
    * Search hotels handler (placeholder for SERP API)
    */
-  private async handleSearchHotels(params: any): Promise<unknown> {
+  private async handleSearchHotels(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = searchHotelsArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid search_hotels arguments: ${validation.error.message}`);
+    }
+
     // TODO: Implement SERP API Google Hotels search
     return {
       note: 'Hotel search not yet implemented',
-      params,
+      params: validation.data,
     };
   }
 
   /**
    * Search transfers handler (placeholder for Rome2Rio)
    */
-  private async handleSearchTransfers(params: any): Promise<unknown> {
+  private async handleSearchTransfers(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = searchTransfersArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid search_transfers arguments: ${validation.error.message}`);
+    }
+
     // TODO: Implement Rome2Rio or SERP API transfer search
     return {
       note: 'Transfer search not yet implemented',
-      params,
+      params: validation.data,
     };
   }
 
@@ -858,7 +1147,14 @@ export class ToolExecutor {
    * Store travel intelligence in the knowledge base
    * Stores seasonal info, events, advisories, etc. for future retrieval
    */
-  private async handleStoreTravelIntelligence(params: any): Promise<unknown> {
+  private async handleStoreTravelIntelligence(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = storeTravelIntelligenceArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid store_travel_intelligence arguments: ${validation.error.message}`);
+    }
+
+    const params = validation.data;
     const intelligence: TravelIntelligence = {
       destination: params.destination,
       dates: params.dates,
@@ -989,8 +1285,14 @@ Stored: ${intelligence.storedAt.toISOString()}
    * Retrieve travel intelligence from the knowledge base
    * Queries stored seasonal info, events, advisories for a destination
    */
-  private async handleRetrieveTravelIntelligence(params: any): Promise<unknown> {
-    const { destination, dates, categories, query } = params;
+  private async handleRetrieveTravelIntelligence(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = retrieveTravelIntelligenceArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid retrieve_travel_intelligence arguments: ${validation.error.message}`);
+    }
+
+    const { destination, dates, categories, query } = validation.data;
 
     const knowledgeService = this.deps.knowledgeService;
 
@@ -1087,16 +1389,186 @@ Stored: ${intelligence.storedAt.toISOString()}
    * Handle switch to Trip Designer agent
    * This is a signal to the Trip Designer service to switch modes
    */
-  private async handleSwitchToTripDesigner(
-    sessionId: SessionId,
-    params: { initialContext?: string }
-  ): Promise<unknown> {
+  private async handleSwitchToTripDesigner(sessionId: SessionId, args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = switchToTripDesignerArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid switch_to_trip_designer arguments: ${validation.error.message}`);
+    }
+
+    const params = validation.data;
     return {
       success: true,
       action: 'switch_agent',
       newMode: 'trip_designer',
       initialContext: params.initialContext,
       message: 'Switching to Trip Designer mode. Ready to help plan your trip!',
+    };
+  }
+
+  // =============================================================================
+  // Geography Tool Handlers
+  // =============================================================================
+
+  /**
+   * Get geocoding service, creating one if not provided
+   */
+  private getGeocodingService(): GeocodingService {
+    if (this.deps.geocodingService) {
+      return this.deps.geocodingService;
+    }
+    // Create a default instance if not provided
+    return new GeocodingService();
+  }
+
+  /**
+   * Handle get_distance tool
+   * Calculate distance between two locations
+   */
+  private async handleGetDistance(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = getDistanceArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid get_distance arguments: ${validation.error.message}`);
+    }
+
+    const { from, to } = validation.data;
+    const geocodingService = this.getGeocodingService();
+
+    const distance = await geocodingService.getDistanceBetween(from, to);
+
+    if (!distance) {
+      return {
+        success: false,
+        error: `Could not calculate distance between "${from}" and "${to}". Location(s) could not be geocoded.`,
+      };
+    }
+
+    const recommendedMode = geocodingService.getRecommendedTravelMode(distance.kilometers);
+
+    return {
+      success: true,
+      from,
+      to,
+      distance: {
+        kilometers: distance.kilometers,
+        miles: distance.miles,
+      },
+      estimatedTime: {
+        driving: `${Math.floor(distance.estimatedDrivingMinutes / 60)}h ${distance.estimatedDrivingMinutes % 60}m`,
+        flying: `${Math.floor(distance.estimatedFlightMinutes / 60)}h ${distance.estimatedFlightMinutes % 60}m`,
+        drivingMinutes: distance.estimatedDrivingMinutes,
+        flyingMinutes: distance.estimatedFlightMinutes,
+      },
+      recommendedMode,
+      summary: `${from} to ${to}: ${distance.kilometers} km (${distance.miles} mi). ${recommendedMode === 'fly' ? 'Flying recommended' : recommendedMode === 'drive' ? 'Driving recommended' : 'Walking distance'}.`,
+    };
+  }
+
+  /**
+   * Handle show_route tool
+   * Calculate and display a route between multiple locations
+   */
+  private async handleShowRoute(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = showRouteArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid show_route arguments: ${validation.error.message}`);
+    }
+
+    const { locations, travelMode } = validation.data;
+
+    const geocodingService = this.getGeocodingService();
+
+    const route = await geocodingService.calculateRoute(locations);
+
+    if (!route) {
+      return {
+        success: false,
+        error: `Could not calculate route. One or more locations could not be geocoded.`,
+      };
+    }
+
+    // Build route summary
+    const routeSummary = route.segments.map((seg, i) => {
+      const mode = travelMode === 'fly' || (travelMode === 'mixed' && seg.distanceKm > 300)
+        ? 'fly'
+        : 'drive';
+      const timeMinutes = mode === 'fly'
+        ? Math.round((seg.distanceKm / 800) * 60) + 60
+        : seg.estimatedMinutes;
+      const hours = Math.floor(timeMinutes / 60);
+      const mins = timeMinutes % 60;
+
+      return {
+        leg: i + 1,
+        from: seg.from,
+        to: seg.to,
+        distance: `${seg.distanceKm} km`,
+        time: hours > 0 ? `${hours}h ${mins}m` : `${mins}m`,
+        mode,
+      };
+    });
+
+    // Create map visualization data
+    const mapVisualization = {
+      type: 'route' as const,
+      waypoints: route.waypoints.map(wp => ({
+        name: wp.name,
+        coordinates: { lat: wp.latitude, lng: wp.longitude },
+      })),
+      polyline: route.waypoints.map(wp => [wp.latitude, wp.longitude]),
+    };
+
+    return {
+      success: true,
+      route: {
+        locations: locations,
+        waypoints: route.waypoints,
+        totalDistance: {
+          kilometers: route.totalDistanceKm,
+          miles: route.totalDistanceMiles,
+        },
+        segments: routeSummary,
+      },
+      // This signals to the frontend to show a map
+      visualization: mapVisualization,
+      summary: `Route: ${locations.join(' → ')} (${route.totalDistanceKm} km total)`,
+    };
+  }
+
+  /**
+   * Handle geocode_location tool
+   * Get coordinates for a location
+   */
+  private async handleGeocodeLocation(args: unknown): Promise<unknown> {
+    // Validate arguments
+    const validation = geocodeLocationArgsSchema.safeParse(args);
+    if (!validation.success) {
+      throw new Error(`Invalid geocode_location arguments: ${validation.error.message}`);
+    }
+
+    const { location } = validation.data;
+    const geocodingService = this.getGeocodingService();
+
+    const result = await geocodingService.geocode(location);
+
+    if (!result) {
+      return {
+        success: false,
+        error: `Could not geocode "${location}". Location not found.`,
+      };
+    }
+
+    return {
+      success: true,
+      location,
+      coordinates: {
+        latitude: result.latitude,
+        longitude: result.longitude,
+      },
+      displayName: result.displayName,
+      confidence: result.confidence,
     };
   }
 }

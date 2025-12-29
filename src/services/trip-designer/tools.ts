@@ -508,10 +508,19 @@ export const UPDATE_PREFERENCES_TOOL: ToolDefinition = {
   type: 'function',
   function: {
     name: 'update_preferences',
-    description: 'Update traveler preferences for the trip such as travel style, pace, interests, dietary restrictions, and mobility needs. Use this when the user shares their preferences during discovery questions.',
+    description: 'Update traveler preferences for the trip such as traveler type, trip purpose, travel style, pace, interests, budget, dietary restrictions, and mobility needs. MUST be called after EVERY user response to structured questions to save their answers.',
     parameters: {
       type: 'object',
       properties: {
+        travelerType: {
+          type: 'string',
+          description: 'Who is traveling - traveler type',
+          enum: ['solo', 'couple', 'family', 'friends', 'business', 'group'],
+        },
+        tripPurpose: {
+          type: 'string',
+          description: 'Why they are traveling - trip purpose (e.g., "vacation", "business", "client_meetings", "conference", "wedding", "honeymoon")',
+        },
         travelStyle: {
           type: 'string',
           description: 'Travel style preference',
@@ -533,9 +542,28 @@ export const UPDATE_PREFERENCES_TOOL: ToolDefinition = {
           minimum: 1,
           maximum: 5,
         },
+        budget: {
+          type: 'object',
+          description: 'Budget details',
+          properties: {
+            amount: {
+              type: 'number',
+              description: 'Budget amount',
+            },
+            currency: {
+              type: 'string',
+              description: 'Currency code (ISO 4217, e.g., "USD", "EUR")',
+            },
+            period: {
+              type: 'string',
+              description: 'Budget period',
+              enum: ['per_day', 'per_person', 'total'],
+            },
+          },
+        },
         dietaryRestrictions: {
           type: 'string',
-          description: 'Dietary restrictions or preferences (e.g., "vegetarian", "vegan", "gluten-free", "none")',
+          description: 'Dietary restrictions or preferences (e.g., "vegetarian", "vegan", "gluten-free", "halal", "kosher", "none")',
         },
         mobilityRestrictions: {
           type: 'string',
@@ -894,6 +922,143 @@ export const SWITCH_TO_TRIP_DESIGNER_TOOL: ToolDefinition = {
 };
 
 /**
+ * Tool: get_distance
+ * Calculate distance between two locations
+ */
+export const GET_DISTANCE_TOOL: ToolDefinition = {
+  type: 'function',
+  function: {
+    name: 'get_distance',
+    description: 'Calculate the distance between two locations. Returns kilometers, miles, and estimated travel times for driving and flying. Use this when discussing travel between cities or planning route logistics.',
+    parameters: {
+      type: 'object',
+      properties: {
+        from: {
+          type: 'string',
+          description: 'Origin location name (city, airport, or address)',
+        },
+        to: {
+          type: 'string',
+          description: 'Destination location name (city, airport, or address)',
+        },
+      },
+      required: ['from', 'to'],
+    },
+  },
+};
+
+/**
+ * Tool: show_route
+ * Calculate and display a route between multiple locations
+ */
+export const SHOW_ROUTE_TOOL: ToolDefinition = {
+  type: 'function',
+  function: {
+    name: 'show_route',
+    description: 'Calculate a route between multiple locations and display it on a map. Use this when the user wants to visualize their travel path between cities. Returns a route with waypoints, total distance, and segment details.',
+    parameters: {
+      type: 'object',
+      properties: {
+        locations: {
+          type: 'array',
+          description: 'Array of location names in order of travel (e.g., ["Zagreb", "Plitvice Lakes", "Split", "Dubrovnik"])',
+          items: { type: 'string' },
+          minItems: 2,
+        },
+        travelMode: {
+          type: 'string',
+          description: 'Preferred travel mode for time estimates',
+          enum: ['drive', 'fly', 'mixed'],
+        },
+      },
+      required: ['locations'],
+    },
+  },
+};
+
+/**
+ * Tool: geocode_location
+ * Get coordinates for a location
+ */
+export const GEOCODE_LOCATION_TOOL: ToolDefinition = {
+  type: 'function',
+  function: {
+    name: 'geocode_location',
+    description: 'Get the latitude and longitude coordinates for a location. Use this when you need precise coordinates for mapping or calculations.',
+    parameters: {
+      type: 'object',
+      properties: {
+        location: {
+          type: 'string',
+          description: 'Location name to geocode (city, address, or landmark)',
+        },
+      },
+      required: ['location'],
+    },
+  },
+};
+
+/**
+ * Tool: add_traveler
+ * Add a traveler to the itinerary
+ */
+export const ADD_TRAVELER_TOOL: ToolDefinition = {
+  type: 'function',
+  function: {
+    name: 'add_traveler',
+    description: 'Add a traveler to the itinerary. Call this for each person traveling when their name or details are mentioned. Capture all travelers mentioned in conversation.',
+    parameters: {
+      type: 'object',
+      properties: {
+        firstName: {
+          type: 'string',
+          description: 'First name of the traveler (required)',
+        },
+        lastName: {
+          type: 'string',
+          description: 'Last name (optional if not provided)',
+        },
+        middleName: {
+          type: 'string',
+          description: 'Middle name (optional)',
+        },
+        email: {
+          type: 'string',
+          description: 'Email address (optional)',
+        },
+        phone: {
+          type: 'string',
+          description: 'Phone number (optional)',
+        },
+        type: {
+          type: 'string',
+          enum: ['adult', 'child', 'infant', 'senior'],
+          description: 'Traveler type - adult (18+), child (2-17), infant (under 2), senior (65+)',
+        },
+        age: {
+          type: 'number',
+          description: 'Age of traveler (especially important for children)',
+        },
+        dateOfBirth: {
+          type: 'string',
+          format: 'date',
+          description: 'Date of birth (YYYY-MM-DD format, optional)',
+        },
+        relationship: {
+          type: 'string',
+          description: 'Relationship to primary traveler (e.g., "partner", "spouse", "child", "friend", "parent", "sibling")',
+        },
+        isPrimary: {
+          type: 'boolean',
+          description: 'Whether this is the primary traveler (the user themselves). Set to true for the main user.',
+        },
+      },
+      required: ['firstName', 'type'],
+    },
+  },
+};
+
+/**
  * Help agent tools
  * Minimal set for answering help questions and switching to Trip Designer
  */
@@ -909,6 +1074,7 @@ export const ESSENTIAL_TOOLS: ToolDefinition[] = [
   GET_ITINERARY_TOOL,
   UPDATE_ITINERARY_TOOL,
   UPDATE_PREFERENCES_TOOL,
+  ADD_TRAVELER_TOOL,
   SEARCH_WEB_TOOL,
 ];
 
@@ -920,6 +1086,7 @@ export const ALL_TOOLS: ToolDefinition[] = [
   GET_SEGMENT_TOOL,
   UPDATE_ITINERARY_TOOL,
   UPDATE_PREFERENCES_TOOL,
+  ADD_TRAVELER_TOOL,
   ADD_FLIGHT_TOOL,
   ADD_HOTEL_TOOL,
   ADD_ACTIVITY_TOOL,
@@ -935,6 +1102,10 @@ export const ALL_TOOLS: ToolDefinition[] = [
   SEARCH_TRANSFERS_TOOL,
   STORE_TRAVEL_INTELLIGENCE_TOOL,
   RETRIEVE_TRAVEL_INTELLIGENCE_TOOL,
+  // Geography tools
+  GET_DISTANCE_TOOL,
+  SHOW_ROUTE_TOOL,
+  GEOCODE_LOCATION_TOOL,
 ];
 
 /**
@@ -945,6 +1116,7 @@ export const ToolName = {
   GET_SEGMENT: 'get_segment',
   UPDATE_ITINERARY: 'update_itinerary',
   UPDATE_PREFERENCES: 'update_preferences',
+  ADD_TRAVELER: 'add_traveler',
   ADD_FLIGHT: 'add_flight',
   ADD_HOTEL: 'add_hotel',
   ADD_ACTIVITY: 'add_activity',
@@ -961,6 +1133,10 @@ export const ToolName = {
   STORE_TRAVEL_INTELLIGENCE: 'store_travel_intelligence',
   RETRIEVE_TRAVEL_INTELLIGENCE: 'retrieve_travel_intelligence',
   SWITCH_TO_TRIP_DESIGNER: 'switch_to_trip_designer',
+  // Geography tools
+  GET_DISTANCE: 'get_distance',
+  SHOW_ROUTE: 'show_route',
+  GEOCODE_LOCATION: 'geocode_location',
 } as const;
 
 export type ToolName = (typeof ToolName)[keyof typeof ToolName];

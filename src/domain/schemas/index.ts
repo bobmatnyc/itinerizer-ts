@@ -74,3 +74,30 @@ export {
   type ItineraryOutput,
   type ItineraryUpdateInput,
 } from './itinerary.schema.js';
+
+// Tool argument schemas
+export {
+  addActivityArgsSchema,
+  addFlightArgsSchema,
+  addHotelArgsSchema,
+  addMeetingArgsSchema,
+  addTransferArgsSchema,
+  addTravelerArgsSchema,
+  deleteSegmentArgsSchema,
+  geocodeLocationArgsSchema,
+  getDistanceArgsSchema,
+  getSegmentArgsSchema,
+  moveSegmentArgsSchema,
+  reorderSegmentsArgsSchema,
+  retrieveTravelIntelligenceArgsSchema,
+  searchFlightsArgsSchema,
+  searchHotelsArgsSchema,
+  searchTransfersArgsSchema,
+  searchWebArgsSchema,
+  showRouteArgsSchema,
+  storeTravelIntelligenceArgsSchema,
+  switchToTripDesignerArgsSchema,
+  updateItineraryArgsSchema,
+  updatePreferencesArgsSchema,
+  updateSegmentArgsSchema,
+} from './tool-args.schema.js';
