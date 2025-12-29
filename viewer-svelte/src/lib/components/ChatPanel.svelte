@@ -24,6 +24,8 @@
   import { visualizationStore } from '../stores/visualization.svelte';
   import { modal } from '$lib/stores/modal.svelte';
   import type { StructuredQuestion } from '../types';
+  import QuickResponses from './QuickResponses.svelte';
+  import { generateQuickResponses, shouldShowQuickResponses } from '../utils/quick-responses';
 
   /**
    * Agent configuration
@@ -706,6 +708,11 @@
   function formatCost(cost: number): string {
     return `$${cost.toFixed(4)}`;
   }
+
+  async function handleQuickResponse(responseText: string) {
+    message = responseText;
+    await handleSend();
+  }
 </script>
 
 <div class="chatpanel">
@@ -758,6 +765,19 @@
             {msg.content}
           </div>
           <div class="chatpanel-message-time">{formatTime(msg.timestamp)}</div>
+
+          {#if msg.role === 'assistant' && idx === $chatMessages.length - 1 && !$isStreaming}
+            {@const quickResponses = shouldShowQuickResponses(msg.content, !!($structuredQuestions && $structuredQuestions.length > 0))
+              ? generateQuickResponses(msg.content)
+              : null}
+            {#if quickResponses && quickResponses.length > 0}
+              <QuickResponses
+                responses={quickResponses}
+                disabled={$chatLoading}
+                onSelect={handleQuickResponse}
+              />
+            {/if}
+          {/if}
         </div>
       {/each}
 
