@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { models, importing } from '$lib/stores/itineraries';
+  import { models, importing } from '$lib/stores/itineraries.svelte';
+  import { toast } from '$lib/stores/toast.svelte';
 
   let {
     open = $bindable(false),
@@ -67,7 +68,7 @@
       closeModal();
     } catch (error) {
       console.error('Import failed:', error);
-      alert('Import failed. Check console for details.');
+      toast.error('Import failed. Check console for details.');
     }
   }
 </script>

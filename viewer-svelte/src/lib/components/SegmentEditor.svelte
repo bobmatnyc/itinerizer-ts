@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Segment, SegmentType, Location } from '$lib/types';
+  import { modal } from '$lib/stores/modal.svelte';
 
   let {
     segment,
@@ -248,8 +249,17 @@
     }
   }
 
-  function handleDelete() {
-    if (onDelete && confirm('Are you sure you want to delete this segment?')) {
+  async function handleDelete() {
+    if (!onDelete) return;
+
+    const confirmed = await modal.confirm({
+      title: 'Delete Segment',
+      message: 'Are you sure you want to delete this segment?',
+      confirmText: 'Delete',
+      destructive: true
+    });
+
+    if (confirmed) {
       onDelete();
     }
   }

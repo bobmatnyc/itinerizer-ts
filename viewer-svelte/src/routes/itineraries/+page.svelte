@@ -18,6 +18,8 @@
   import { visualizationStore } from '$lib/stores/visualization.svelte';
   import { hasAIAccess } from '$lib/stores/settings.svelte';
   import { navigationStore } from '$lib/stores/navigation.svelte';
+  import { toast } from '$lib/stores/toast.svelte';
+  import { modal } from '$lib/stores/modal.svelte';
   import Header from '$lib/components/Header.svelte';
   import ImportModal from '$lib/components/ImportModal.svelte';
   import TextImportModal from '$lib/components/TextImportModal.svelte';
@@ -187,7 +189,7 @@
     } catch (error) {
       console.error('Failed to create itinerary:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create new itinerary. Please try again.';
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   }
 
@@ -225,8 +227,14 @@
   }
 
   async function handleImport(file: File, model: string | undefined) {
-    await importPDF(file, model);
-    alert('Import successful!');
+    try {
+      await importPDF(file, model);
+      toast.success('Import successful!');
+    } catch (error) {
+      console.error('Import failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Import failed. Please try again.';
+      toast.error(errorMessage);
+    }
   }
 
   function handleTextImportSuccess(itineraryId: string) {
@@ -267,15 +275,22 @@
 
   async function handleDelete(itinerary: any) {
     // Confirm before deleting
-    const confirmed = confirm(`Are you sure you want to delete "${itinerary.title}"?\n\nThis action cannot be undone.`);
+    const confirmed = await modal.confirm({
+      title: 'Delete Itinerary',
+      message: `Delete "${itinerary.title}"? This cannot be undone.`,
+      confirmText: 'Delete',
+      destructive: true
+    });
+
     if (!confirmed) return;
 
     try {
       await deleteItinerary(itinerary.id);
+      toast.success('Itinerary deleted');
     } catch (error) {
       console.error('Failed to delete itinerary:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete itinerary. Please try again.';
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   }
 

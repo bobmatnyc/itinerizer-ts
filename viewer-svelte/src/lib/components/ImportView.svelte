@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { importPDF } from '$lib/stores/itineraries';
+  import { importPDF } from '$lib/stores/itineraries.svelte';
   import { settingsStore } from '$lib/stores/settings.svelte';
   import type { ModelConfig } from '$lib/types';
 

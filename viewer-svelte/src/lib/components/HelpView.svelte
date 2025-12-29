@@ -13,7 +13,7 @@
       items: [
         {
           title: 'Create Your First Itinerary',
-          content: 'Click "Build With AI" to start building your travel plan. Our AI Trip Designer will help you create a personalized itinerary based on your preferences.'
+          content: 'Click a quick prompt on the home screen, or switch to the Itineraries tab and click "Create New". The AI Trip Designer will guide you through planning your trip.'
         },
         {
           title: 'Import Existing Plans',
@@ -81,7 +81,7 @@
   const faqSections = [
     {
       question: 'How do I create a new itinerary?',
-      answer: 'Click "Build With AI" in the left sidebar. This will create a new blank itinerary and open the AI Trip Designer chat interface where you can describe your ideal trip.'
+      answer: 'Click one of the quick prompts on the home screen, or go to the Itineraries tab and click "Create New". The AI Trip Designer will open and guide you through planning your trip.'
     },
     {
       question: 'Can I import existing itineraries?',

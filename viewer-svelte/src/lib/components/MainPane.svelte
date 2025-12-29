@@ -11,6 +11,7 @@
     title?: string;
     tabs?: SubTab[];
     activeTab?: string;
+    onTabChange?: (tabId: string) => void;
     children?: Snippet;
     actions?: Snippet;
   }
@@ -18,14 +19,15 @@
   let {
     title,
     tabs = [],
-    activeTab = $bindable(''),
+    activeTab = '',
+    onTabChange,
     children,
     actions
   }: Props = $props();
 
   // Emit tab change event
   function handleTabClick(tabId: string) {
-    activeTab = tabId;
+    onTabChange?.(tabId);
   }
 </script>
 

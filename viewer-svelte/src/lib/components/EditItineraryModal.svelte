@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { ItineraryListItem } from '$lib/types';
-  import { updateItinerary } from '$lib/stores/itineraries';
+  import { updateItinerary } from '$lib/stores/itineraries.svelte';
 
   let {
     open = $bindable(false),

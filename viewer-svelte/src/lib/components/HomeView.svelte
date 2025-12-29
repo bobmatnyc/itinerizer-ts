@@ -1,6 +1,7 @@
 <script lang="ts">
   import { authStore } from '$lib/stores/auth.svelte';
-  import { itineraries } from '$lib/stores/itineraries';
+  import { itineraries } from '$lib/stores/itineraries.svelte';
+  import { hasAIAccess } from '$lib/stores/settings.svelte';
 
   let {
     onQuickPromptClick
@@ -46,7 +47,11 @@
     }
   ];
 
+  // Check if user has AI access
+  let aiAccessAvailable = $derived(hasAIAccess());
+
   function handlePromptClick(prompt: string) {
+    if (!aiAccessAvailable) return;
     onQuickPromptClick(prompt);
   }
 </script>
@@ -80,7 +85,10 @@
         {#each quickPrompts as prompt}
           <button
             class="prompt-button"
+            class:disabled={!aiAccessAvailable}
             onclick={() => handlePromptClick(prompt.text)}
+            disabled={!aiAccessAvailable}
+            title={!aiAccessAvailable ? 'API key required - visit Profile to add one' : ''}
             type="button"
           >
             <div class="prompt-icon">{prompt.icon}</div>
@@ -88,6 +96,9 @@
               <div class="prompt-text">{prompt.text}</div>
               <div class="prompt-description">{prompt.description}</div>
             </div>
+            {#if !aiAccessAvailable}
+              <div class="prompt-lock-icon">🔒</div>
+            {/if}
           </button>
         {/each}
       </div>
@@ -229,6 +240,7 @@
   }
 
   .prompt-button {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -241,11 +253,25 @@
     text-align: left;
   }
 
-  .prompt-button:hover {
+  .prompt-button:not(.disabled):hover {
     border-color: #3b82f6;
     background: #eff6ff;
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+  }
+
+  .prompt-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f9fafb;
+  }
+
+  .prompt-lock-icon {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.875rem;
+    opacity: 0.6;
   }
 
   .prompt-icon {

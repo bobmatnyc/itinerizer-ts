@@ -3,7 +3,8 @@
   import SegmentCard from './SegmentCard.svelte';
   import SegmentEditor from './SegmentEditor.svelte';
   import AddSegmentModal from './AddSegmentModal.svelte';
-  import { updateSegment, deleteSegment, addSegment } from '$lib/stores/itineraries';
+  import { updateSegment, deleteSegment, addSegment } from '$lib/stores/itineraries.svelte';
+  import { toast } from '$lib/stores/toast.svelte';
 
   let {
     itinerary,
@@ -48,9 +49,10 @@
     try {
       await updateSegment(itinerary.id, segmentData.id!, segmentData);
       editingSegmentId = null;
+      toast.success('Segment saved');
     } catch (error) {
       console.error('Failed to save segment:', error);
-      alert('Failed to save segment. Please try again.');
+      toast.error('Failed to save segment. Please try again.');
     }
   }
 
@@ -61,9 +63,10 @@
   async function handleDeleteSegment(segmentId: string) {
     try {
       await deleteSegment(itinerary.id, segmentId);
+      toast.success('Segment deleted');
     } catch (error) {
       console.error('Failed to delete segment:', error);
-      alert('Failed to delete segment. Please try again.');
+      toast.error('Failed to delete segment. Please try again.');
     }
   }
 
@@ -103,6 +106,53 @@
     }
     return itinerary.destinations.map((d) => d.city || d.name).join(', ');
   }
+
+  // Check if trip dates are in the past
+  let hasPastDates = $derived.by(() => {
+    if (!itinerary.endDate) return false;
+    const endDate = new Date(itinerary.endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return endDate < today;
+  });
+
+  // Extract destination from title (e.g., "Croatia Business Trip" → "Croatia")
+  function inferDestinationFromTitle(title: string | undefined): string | null {
+    if (!title || title === 'New Itinerary') return null;
+
+    const patterns = [
+      /^(.+?)\s+(business\s+)?trip$/i,           // "Croatia Business Trip" → "Croatia"
+      /^(.+?)\s+vacation$/i,                      // "Hawaii Vacation" → "Hawaii"
+      /^(.+?)\s+adventure$/i,                     // "Japan Adventure" → "Japan"
+      /^trip\s+to\s+(.+)$/i,                      // "Trip to Paris" → "Paris"
+      /^visit(?:ing)?\s+(.+)$/i,                  // "Visiting London" → "London"
+      /^(.+?)\s+getaway$/i,                       // "Paris Getaway" → "Paris"
+    ];
+
+    for (const pattern of patterns) {
+      const match = title.match(pattern);
+      if (match) {
+        const dest = match[1].trim();
+        if (!['new', 'my', 'our', 'the', 'a', 'an', 'weekend'].includes(dest.toLowerCase())) {
+          return dest;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Get first destination for background - prefer explicit, then infer from title
+  let destinationName = $derived(
+    itinerary?.destinations?.[0]?.name ||
+    itinerary?.destinations?.[0]?.city ||
+    inferDestinationFromTitle(itinerary?.title)
+  );
+
+  let backgroundUrl = $derived(
+    destinationName
+      ? `https://source.unsplash.com/1600x900/?${encodeURIComponent(destinationName)},travel,city`
+      : null
+  );
 
   // Group segments by date
   interface SegmentsByDay {
@@ -155,13 +205,35 @@
   });
 </script>
 
-<div class="h-full overflow-y-auto">
-  <!-- Itinerary Metadata -->
-  <div class="bg-minimal-card p-6">
+<div class="itinerary-detail" class:has-background={backgroundUrl}>
+  {#if backgroundUrl}
+    <div
+      class="destination-background"
+      style="background-image: url({backgroundUrl})"
+    ></div>
+    <div class="background-overlay"></div>
+  {/if}
+
+  <div class="detail-content h-full overflow-y-auto">
+    <!-- Itinerary Metadata -->
+    <div class="bg-minimal-card p-6">
     {#if formatDateRange()}
       <p class="text-minimal-text-muted text-sm mb-4">
         {formatDateRange()}
       </p>
+    {/if}
+
+    {#if hasPastDates}
+      <div class="past-dates-warning">
+        <span class="warning-icon">⚠️</span>
+        <div class="warning-content">
+          <p class="warning-title">Trip dates are in the past</p>
+          <p class="warning-message">
+            This itinerary is scheduled for {formatDateRange()}, which has already passed.
+            Would you like to update the dates?
+          </p>
+        </div>
+      </div>
     {/if}
 
     {#if itinerary.description}
@@ -246,6 +318,7 @@
       {/each}
     </div>
   </div>
+  </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
@@ -279,6 +352,98 @@
 {/if}
 
 <style>
+  .itinerary-detail {
+    position: relative;
+    height: 100%;
+  }
+
+  /* Destination background image - subtle, at top of container */
+  .destination-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+    opacity: 0.15;  /* Very subtle */
+    transition: opacity 1s ease-in-out;
+  }
+
+  /* Gradient overlay for smooth transition */
+  .background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(250, 250, 250, 0.5) 50%,
+      rgba(250, 250, 250, 1) 100%
+    );
+    z-index: 1;
+  }
+
+  /* Content appears above background */
+  .detail-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Enhance text contrast when background is present */
+  .has-background .bg-minimal-card {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+
+  .past-dates-warning {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .warning-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .warning-content {
+    flex: 1;
+  }
+
+  .warning-title {
+    font-weight: 600;
+    color: #92400e;
+    font-size: 0.875rem;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .warning-message {
+    color: #92400e;
+    font-size: 0.8125rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+
   .button-group {
     display: flex;
     gap: 0.5rem;

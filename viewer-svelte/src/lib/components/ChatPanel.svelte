@@ -8,6 +8,7 @@
     structuredQuestions,
     streamingContent,
     isStreaming,
+    isThinking,
     currentToolCall,
     itineraryUpdated,
     sessionTokens,
@@ -17,9 +18,11 @@
     sendMessageStreaming,
     sendContextMessage,
     resetChat,
-  } from '../stores/chat';
-  import { loadItinerary, selectedItinerary } from '../stores/itineraries';
-  import { settingsStore } from '../stores/settings.svelte';
+  } from '../stores/chat.svelte';
+  import { loadItinerary, selectedItinerary } from '../stores/itineraries.svelte';
+  import { settingsStore, hasAIAccess } from '../stores/settings.svelte';
+  import { visualizationStore } from '../stores/visualization.svelte';
+  import { modal } from '$lib/stores/modal.svelte';
   import type { StructuredQuestion } from '../types';
 
   /**
@@ -67,6 +70,22 @@
   let animatingOption = $state<{ label: string; description?: string } | null>(null);
   let isQuestionsHiding = $state(false);
 
+  // Get today's date in YYYY-MM-DD format for min attribute
+  function getTodayString(): string {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  }
+
+  // Check if user has AI access
+  let aiAccessAvailable = $derived(hasAIAccess());
+
+  // Dynamic placeholder based on whether structured questions are shown
+  let inputPlaceholder = $derived(
+    ($structuredQuestions && $structuredQuestions.length > 0)
+      ? 'Type here or select an option above...'
+      : (agent.placeholderText || 'Type a message... (Shift+Enter for new line)')
+  );
+
   // Helper to read API key directly from localStorage
   function getApiKeyFromStorage(): string | null {
     if (typeof window === 'undefined') return null;
@@ -88,14 +107,17 @@
 
   // Auto-create session on mount (only for trip-designer mode)
   onMount(async () => {
+    console.log('[ChatPanel] 🔄 onMount START - itineraryId:', itineraryId, 'mode:', agent.mode);
+
     // Always clear any previous errors on mount
     chatError.set(null);
 
-    if (agent.mode === 'trip-designer' && itineraryId && !$chatSessionId) {
+    if (agent.mode === 'trip-designer' && itineraryId) {
       const apiKey = getApiKeyFromStorage();
       console.log('[ChatPanel] onMount - API key check:', {
         hasKey: !!apiKey,
-        mode: agent.mode
+        mode: agent.mode,
+        itineraryId
       });
 
       if (!apiKey || apiKey.trim() === '') {
@@ -103,10 +125,29 @@
         return;
       }
 
+      // Check if there's a pending prompt BEFORE reset
+      console.log('[ChatPanel] onMount - pendingPrompt BEFORE reset:', $pendingPrompt);
+
+      // Always reset and create fresh session for this itinerary
+      // This handles case where component remounts with different itinerary
+      // while global stores still have old data
+      // CRITICAL: Pass true to delete backend session - prevents leaked context from orphaned sessions
+      // CRITICAL: AWAIT the reset to ensure backend session is deleted BEFORE creating new one
+      // NOTE: pendingPrompt should NOT be cleared by reset (see chat.svelte.ts line 520)
+      await resetChat(true);
+
+      // Verify pendingPrompt survived the reset
+      console.log('[ChatPanel] onMount - pendingPrompt AFTER reset:', $pendingPrompt);
+
+      visualizationStore.clearHistory();
+
       try {
         await createChatSession(itineraryId, agent.mode);
         previousItineraryId = itineraryId;
+        console.log('[ChatPanel] onMount - Session created, sessionId:', $chatSessionId);
+        console.log('[ChatPanel] onMount - pendingPrompt at session creation:', $pendingPrompt);
         await sendInitialContext();
+        console.log('[ChatPanel] 🔄 onMount END - ready for pending prompt effect to trigger');
       } catch (error) {
         console.error('Failed to initialize chat session:', error);
         // Don't set error for normal "session not found" - it will be created on first message
@@ -141,10 +182,11 @@
   });
 
   // Reset chat when itinerary changes (trip-designer mode only)
+  // This ensures each itinerary has a fresh chat session with proper context
   $effect(() => {
     if (agent.mode === 'trip-designer' && itineraryId && previousItineraryId && itineraryId !== previousItineraryId) {
       const apiKey = getApiKeyFromStorage();
-      console.log('[ChatPanel] $effect - API key check on itinerary change:', {
+      console.log('[ChatPanel] Itinerary changed - resetting session:', {
         hasKey: !!apiKey,
         oldItinerary: previousItineraryId,
         newItinerary: itineraryId
@@ -156,20 +198,37 @@
         return;
       }
 
-      resetChat();
-      createChatSession(itineraryId, agent.mode).then(() => {
-        previousItineraryId = itineraryId;
-        sendInitialContext();
-      }).catch((error) => {
-        console.error('Failed to reset chat for new itinerary:', error);
-        // Don't set error for normal "session not found" - it will be created on first message
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes('Session not found')) {
-          chatError.set(null); // Clear any error - session will be created on first message
-        } else {
-          chatError.set(`Failed to start chat session: ${errorMessage}`);
+      // Use IIFE to properly await async operations in $effect
+      (async () => {
+        // CRITICAL: Clear old session state completely AND delete backend session
+        // This ensures NO cached context from previous trip leaks into new session
+        // The deleteBackendSession=true parameter ensures orphaned sessions don't accumulate
+        // CRITICAL: AWAIT the reset to ensure backend session is deleted BEFORE creating new one
+        await resetChat(true);
+
+        // Clear visualization history when switching itineraries
+        visualizationStore.clearHistory();
+
+        // IMPORTANT: Force new backend session creation by NOT reusing session ID
+        // The backend TripDesignerService caches context in session.messages
+        // We need to ensure a completely fresh session with zero cached messages
+        try {
+          await createChatSession(itineraryId, agent.mode);
+          previousItineraryId = itineraryId;
+          console.log('[ChatPanel] New session created for itinerary:', itineraryId);
+          // Send initial context with itinerary details and user's name
+          await sendInitialContext();
+        } catch (error) {
+          console.error('Failed to reset chat for new itinerary:', error);
+          // Don't set error for normal "session not found" - it will be created on first message
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage.includes('Session not found')) {
+            chatError.set(null); // Clear any error - session will be created on first message
+          } else {
+            chatError.set(`Failed to start chat session: ${errorMessage}`);
+          }
         }
-      });
+      })();
     }
   });
 
@@ -178,6 +237,13 @@
     if (agent.mode !== 'trip-designer') return;
 
     const contextParts: string[] = [];
+
+    // IMPORTANT: Add user's preferred name FIRST so agent can use it in greeting
+    // This must come before other context to ensure agent sees it immediately
+    if (settingsStore.nickname || settingsStore.firstName) {
+      const name = settingsStore.nickname || settingsStore.firstName;
+      contextParts.push(`IMPORTANT: The user's preferred name is ${name}. Always greet them by name and use their name when appropriate in conversation.`);
+    }
 
     // Add current date for temporal awareness
     const now = new Date();
@@ -189,12 +255,6 @@
     });
     contextParts.push(`Today's date is ${currentDate}.`);
 
-    // Add user preferences
-    if (settingsStore.nickname || settingsStore.firstName) {
-      const name = settingsStore.nickname || settingsStore.firstName;
-      contextParts.push(`My name is ${name}.`);
-    }
-
     if (settingsStore.homeAirport) {
       contextParts.push(`My home airport is ${settingsStore.homeAirport}.`);
     }
@@ -205,16 +265,60 @@
       const description = $selectedItinerary.description;
       const startDate = $selectedItinerary.startDate;
       const endDate = $selectedItinerary.endDate;
+      const tripType = $selectedItinerary.tripType;
+      const segmentsCount = $selectedItinerary.segmentCount || 0;
+      const destinations = ($selectedItinerary as any).destinations || [];
 
       if (title) {
         contextParts.push(`Working on itinerary: "${title}".`);
+      }
+
+      // Add explicit destinations if available
+      if (destinations.length > 0) {
+        const destNames = destinations.map((d: any) => d.name || d.city).filter(Boolean);
+        if (destNames.length > 0) {
+          contextParts.push(`Destinations: ${destNames.join(', ')}.`);
+        }
+      }
+      // Otherwise, try to infer destination from title (e.g., "Croatia Business Trip" → Croatia)
+      else if (title && title !== 'New Itinerary') {
+        // Common patterns: "[Country/City] Trip", "[Country/City] Business Trip", "Trip to [Country/City]"
+        const patterns = [
+          /^(.+?)\s+(business\s+)?trip$/i,           // "Croatia Business Trip" → "Croatia"
+          /^(.+?)\s+vacation$/i,                      // "Hawaii Vacation" → "Hawaii"
+          /^(.+?)\s+adventure$/i,                     // "Japan Adventure" → "Japan"
+          /^trip\s+to\s+(.+)$/i,                      // "Trip to Paris" → "Paris"
+          /^visit(?:ing)?\s+(.+)$/i,                  // "Visiting London" → "London"
+          /^(.+?)\s+getaway$/i,                       // "Weekend Getaway" might not match, but "Paris Getaway" → "Paris"
+        ];
+
+        let inferredDestination: string | null = null;
+        for (const pattern of patterns) {
+          const match = title.match(pattern);
+          if (match) {
+            // Get the captured group (destination)
+            const dest = match[1].trim();
+            // Filter out generic words
+            if (!['new', 'my', 'our', 'the', 'a', 'an', 'weekend'].includes(dest.toLowerCase())) {
+              inferredDestination = dest;
+              break;
+            }
+          }
+        }
+
+        if (inferredDestination) {
+          contextParts.push(`IMPORTANT: Based on the title, this trip is to ${inferredDestination}. Please use ${inferredDestination} as the destination for all planning.`);
+        }
       }
       if (startDate && endDate) {
         const startDateObj = new Date(startDate);
         const endDateObj = new Date(endDate);
         const start = startDateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         const end = endDateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        contextParts.push(`Trip dates: ${start} to ${end}.`);
+
+        // Calculate trip duration
+        const durationDays = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
+        contextParts.push(`Trip dates: ${start} to ${end} (${durationDays} days).`);
 
         // Check if trip dates are in the past
         const today = new Date();
@@ -245,12 +349,25 @@
       if (description) {
         contextParts.push(`Description: ${description}`);
       }
+      if (tripType) {
+        contextParts.push(`Trip type: ${tripType}.`);
+      }
+
+      // Add segments summary if itinerary has content
+      if (segmentsCount > 0) {
+        contextParts.push(`Current itinerary has ${segmentsCount} segment${segmentsCount !== 1 ? 's' : ''} planned.`);
+      } else {
+        contextParts.push(`Itinerary is currently empty and ready to be planned.`);
+      }
     }
 
     // Send context as initial message if we have any
     if (contextParts.length > 0 && $chatMessages.length === 0) {
       const contextMessage = contextParts.join(' ');
+      console.log('[ChatPanel] Sending initial context:', contextMessage);
       await sendContextMessage(`Context: ${contextMessage}`);
+    } else if (contextParts.length > 0) {
+      console.log('[ChatPanel] Skipping context - chat already has messages');
     }
   }
 
@@ -265,6 +382,20 @@
           container.scrollTop = container.scrollHeight;
         }, 0);
       }
+    }
+  });
+
+  // Auto-scroll when structured questions appear or change
+  $effect(() => {
+    const container = messagesContainer;
+    if (container && $structuredQuestions && $structuredQuestions.length > 0) {
+      // Small delay to ensure DOM is updated with questions
+      setTimeout(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 100);
     }
   });
 
@@ -285,16 +416,33 @@
     }
   });
 
-  // Handle pending prompt injection from HomeView quick prompts
+  // Handle pending prompt injection from HomeView/NewTripHelperView quick prompts
+  // This effect runs whenever chatSessionId or pendingPrompt changes
   $effect(() => {
-    if ($chatSessionId && $pendingPrompt) {
-      const prompt = $pendingPrompt;
-      pendingPrompt.set(null); // Clear immediately to prevent re-send
+    // Debug: track what's happening
+    const hasSession = !!$chatSessionId;
+    const hasPending = !!$pendingPrompt;
+    console.log('[ChatPanel] Pending prompt check:', { hasSession, hasPending, prompt: $pendingPrompt });
 
-      // Small delay to ensure session is fully ready
-      setTimeout(() => {
-        sendMessageStreaming(prompt);
-      }, 100);
+    // Only send if BOTH session exists AND pending prompt exists
+    // This ensures we don't try to send before session is ready
+    if ($chatSessionId && $pendingPrompt) {
+      // Capture the prompt value before clearing it
+      const prompt = $pendingPrompt;
+      console.log('[ChatPanel] ✅ Sending pending prompt:', prompt);
+
+      // Clear immediately to prevent re-send when effect re-runs
+      pendingPrompt.set(null);
+
+      // Use queueMicrotask instead of setTimeout for faster, more predictable timing
+      // This runs after current synchronous code but before next render
+      queueMicrotask(async () => {
+        try {
+          await sendMessageStreaming(prompt);
+        } catch (error) {
+          console.error('[ChatPanel] Failed to send pending prompt:', error);
+        }
+      });
     }
   });
 
@@ -427,11 +575,29 @@
     dateRangeValues = new Map(dateRangeValues);
   }
 
+  function formatDateRange(start: string, end: string): string {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const startFormatted = startDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+    const endFormatted = endDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return `${startFormatted} - ${endFormatted}`;
+  }
+
   async function handleDateRangeSubmit(question: StructuredQuestion) {
     const range = dateRangeValues.get(question.id);
     if (!range || !range.start || !range.end) return;
 
-    message = `From ${range.start} to ${range.end}`;
+    // Format dates as readable string
+    message = formatDateRange(range.start, range.end);
     await handleSend();
     dateRangeValues.delete(question.id);
   }
@@ -543,7 +709,15 @@
 </script>
 
 <div class="chatpanel">
-  {#if $chatError}
+  {#if !aiAccessAvailable}
+    <div class="chatpanel-no-access">
+      <div class="chatpanel-no-access-icon">🔑</div>
+      <p class="chatpanel-no-access-text">AI features require an API key</p>
+      <p class="chatpanel-no-access-hint">
+        Add your OpenRouter API key in <a href="/profile" class="chatpanel-profile-link">Profile settings</a> to enable Trip Designer and other AI-powered features.
+      </p>
+    </div>
+  {:else if $chatError}
     <div class="chatpanel-error">
       <strong>Error:</strong>
       {$chatError}
@@ -578,7 +752,7 @@
         </p>
       </div>
     {:else}
-      {#each $chatMessages as msg}
+      {#each $chatMessages as msg, idx (msg.timestamp.getTime() + idx)}
         <div class="chatpanel-message chatpanel-message-{msg.role}">
           <div class="chatpanel-message-content">
             {msg.content}
@@ -594,6 +768,7 @@
           </div>
         </div>
       {/if}
+
 
       {#if $currentToolCall}
         <div class="chatpanel-message chatpanel-message-assistant">
@@ -611,22 +786,6 @@
               <div class="chatpanel-suspense-label">{getToolCallLabel($currentToolCall)}</div>
               <div class="chatpanel-suspense-progress">
                 <div class="chatpanel-suspense-bar"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      {/if}
-
-      {#if $chatLoading && !$currentToolCall && !$isStreaming}
-        <div class="chatpanel-message chatpanel-message-assistant">
-          <div class="chatpanel-suspense">
-            <div class="chatpanel-suspense-icon">💭</div>
-            <div class="chatpanel-suspense-content">
-              <div class="chatpanel-suspense-label">Thinking...</div>
-              <div class="chatpanel-suspense-dots">
-                <span></span>
-                <span></span>
-                <span></span>
               </div>
             </div>
           </div>
@@ -739,12 +898,17 @@
             {:else if question.type === 'date_range'}
               {#snippet _init()}{initializeDateRange(question.id)}{/snippet}
               {@render _init()}
+              {@const todayString = getTodayString()}
+              {@const startDate = dateRangeValues.get(question.id)?.start || ''}
+              {@const endDate = dateRangeValues.get(question.id)?.end || ''}
+              {@const canSubmit = startDate && endDate}
               <div class="chatpanel-date-range-question">
                 <label class="chatpanel-date-label">
                   <span>Start Date:</span>
                   <input
                     type="date"
-                    value={dateRangeValues.get(question.id)?.start || ''}
+                    value={startDate}
+                    min={todayString}
                     oninput={(e) => updateDateRangeStart(question.id, e.currentTarget.value)}
                     class="chatpanel-date-input"
                   />
@@ -753,7 +917,8 @@
                   <span>End Date:</span>
                   <input
                     type="date"
-                    value={dateRangeValues.get(question.id)?.end || ''}
+                    value={endDate}
+                    min={startDate || todayString}
                     oninput={(e) => updateDateRangeEnd(question.id, e.currentTarget.value)}
                     class="chatpanel-date-input"
                   />
@@ -761,13 +926,10 @@
                 <button
                   class="chatpanel-confirm-button"
                   onclick={() => handleDateRangeSubmit(question)}
-                  disabled={
-                    !dateRangeValues.get(question.id)?.start ||
-                    !dateRangeValues.get(question.id)?.end
-                  }
+                  disabled={!canSubmit}
                   type="button"
                 >
-                  Confirm
+                  Confirm Dates
                 </button>
               </div>
             {:else if question.type === 'text'}
@@ -861,6 +1023,13 @@
 
   <!-- Input container at bottom -->
   <div class="chatpanel-input-container">
+    <!-- Network progress bar (shown when thinking or streaming) -->
+    {#if $isThinking || $isStreaming}
+      <div class="network-progress-bar">
+        <div class="progress-bar-inner"></div>
+      </div>
+    {/if}
+
     <!-- Animating option indicator -->
     {#if animatingOption}
       <div class="chatpanel-animating-option">
@@ -873,22 +1042,46 @@
       </div>
     {/if}
 
-    <textarea
-      bind:value={message}
-      onkeydown={handleKeydown}
-      placeholder={agent.placeholderText || 'Type a message...'}
-      class="chatpanel-input"
-      rows="3"
-      disabled={disabled || $chatLoading}
-    ></textarea>
-    <button
-      onclick={handleSend}
-      disabled={disabled || $chatLoading || !message.trim()}
-      class="chatpanel-send-button"
-      type="button"
-    >
-      {$chatLoading ? 'Sending...' : 'Send'}
-    </button>
+    <!-- Input Row with Clear Button -->
+    <div class="chatpanel-input-row">
+      <!-- Clear Chat Button -->
+      <button
+        onclick={async () => {
+          const confirmed = await modal.confirm({
+            title: 'Clear Conversation',
+            message: 'Clear this conversation? This cannot be undone.',
+            confirmText: 'Clear',
+            destructive: true
+          });
+          if (confirmed) {
+            resetChat();
+          }
+        }}
+        disabled={!aiAccessAvailable || disabled || $chatMessages.length === 0}
+        class="chatpanel-clear-button"
+        type="button"
+        title="Clear conversation"
+      >
+        🗑️
+      </button>
+
+      <textarea
+        bind:value={message}
+        onkeydown={handleKeydown}
+        placeholder={inputPlaceholder}
+        class="chatpanel-input"
+        rows="3"
+        disabled={!aiAccessAvailable || disabled || $chatLoading}
+      ></textarea>
+      <button
+        onclick={handleSend}
+        disabled={!aiAccessAvailable || disabled || $chatLoading || !message.trim()}
+        class="chatpanel-send-button"
+        type="button"
+      >
+        {$chatLoading ? 'Sending...' : 'Send'}
+      </button>
+    </div>
   </div>
 
   <!-- Token stats (optional, shown for trip-designer) -->
@@ -912,6 +1105,42 @@
     background-color: #ffffff;
     border-top: 1px solid #e5e7eb;
     position: relative;
+  }
+
+  .chatpanel-no-access {
+    padding: 2rem 1.5rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-bottom: 2px solid #fbbf24;
+    text-align: center;
+  }
+
+  .chatpanel-no-access-icon {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .chatpanel-no-access-text {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #78350f;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .chatpanel-no-access-hint {
+    font-size: 0.9375rem;
+    color: #92400e;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .chatpanel-profile-link {
+    color: #1d4ed8;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .chatpanel-profile-link:hover {
+    text-decoration: underline;
   }
 
   .chatpanel-error {
@@ -1351,10 +1580,71 @@
     border-top: 1px solid #e5e7eb;
     background-color: #ffffff;
     flex-shrink: 0;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
     order: 3; /* Position after structured questions */
+  }
+
+  /* Network progress bar (thin animated line) */
+  .network-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #e5e7eb;
+    overflow: hidden;
+    z-index: 10;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    width: 30%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+    background-size: 200% 100%;
+    animation: progress-slide 1.5s ease-in-out infinite;
+    border-radius: 2px;
+  }
+
+  @keyframes progress-slide {
+    0% {
+      transform: translateX(-100%);
+    }
+    50% {
+      transform: translateX(250%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+
+  .chatpanel-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+  }
+
+  .chatpanel-clear-button {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    padding: 0.375rem;
+    background-color: transparent;
+    border: none;
+    font-size: 1.125rem;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 1;
+  }
+
+  .chatpanel-clear-button:hover:not(:disabled) {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  .chatpanel-clear-button:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
   }
 
   .chatpanel-animating-option {
@@ -1400,7 +1690,7 @@
 
   .chatpanel-input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 0.75rem 0.75rem 2.75rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
     font-size: 0.875rem;
@@ -1473,28 +1763,39 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
   }
 
   .chatpanel-date-label {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.375rem;
     font-size: 0.875rem;
-    color: #1f2937;
+    font-weight: 500;
+    color: #374151;
   }
 
   .chatpanel-date-input {
-    padding: 0.5rem;
+    padding: 0.625rem 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-family: inherit;
+    background-color: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .chatpanel-date-input:hover {
+    border-color: #9ca3af;
   }
 
   .chatpanel-date-input:focus {
     outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
   .chatpanel-text-question {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { SegmentType, Segment } from '$lib/types';
   import SegmentEditor from './SegmentEditor.svelte';
+  import { toast } from '$lib/stores/toast.svelte';
 
   let {
     open = $bindable(false),
@@ -28,9 +29,10 @@
       await onSegmentAdded(segmentData);
       open = false;
       selectedType = null;
+      toast.success('Segment added');
     } catch (error) {
       console.error('Failed to add segment:', error);
-      alert('Failed to add segment. Please try again.');
+      toast.error('Failed to add segment. Please try again.');
     } finally {
       saving = false;
     }
