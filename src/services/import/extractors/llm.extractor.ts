@@ -101,7 +101,8 @@ CRITICAL RULES:
 4. Set confidence based on data clarity (0.9+ for clear, 0.5-0.8 for partial)
 5. If no bookings found, return empty segments array with confidence 0
 6. Extract ALL prices and confirmation numbers
-7. For hotels: checkInDate/checkOutDate should match startDatetime/endDatetime dates`;
+7. For hotels: checkInDate/checkOutDate should match startDatetime/endDatetime dates
+8. ROUND TRIP FLIGHTS: Create TWO SEPARATE flight segments - one for outbound, one for return. Each segment should have its own flightNumber, origin, destination, and datetime. Do NOT combine them into a single segment.`;
 
 /**
  * LLM-based extractor for unstructured text

@@ -187,11 +187,11 @@
     importDialogOpen = true;
   }
 
-  function handleImportDialogComplete(itineraryId: string, itineraryName: string) {
+  async function handleImportDialogComplete(itineraryId: string, itineraryName: string) {
     // Reload itineraries to get the updated/new itinerary
-    loadItineraries();
+    await loadItineraries();
     // Select the imported itinerary
-    selectItinerary(itineraryId);
+    await selectItinerary(itineraryId);
     // Navigate to itinerary detail view
     navigationStore.goToItineraryDetail();
     // Show success message
