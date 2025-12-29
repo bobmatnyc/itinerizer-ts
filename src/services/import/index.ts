@@ -69,17 +69,33 @@ export class ImportService {
    */
   async import(request: ImportRequest): Promise<ImportResult> {
     try {
+      console.log('[ImportService] Starting import...');
+      console.log('[ImportService] Source:', request.source);
+      console.log('[ImportService] Filename:', request.filename);
+      console.log('[ImportService] MimeType:', request.mimeType);
+
       // Detect format
       const format = this.formatDetector.detect(request);
+      console.log('[ImportService] Detected format:', format);
 
       // Get appropriate parser
       const parser = this.parserRegistry.get(format);
+      console.log('[ImportService] Using parser:', parser.constructor.name);
 
       // Parse and extract
       const result = await parser.parse(request);
 
+      console.log('[ImportService] Import complete:', {
+        success: result.success,
+        format: result.format,
+        segments: result.segments.length,
+        confidence: result.confidence,
+        errors: result.errors,
+      });
+
       return result;
     } catch (error) {
+      console.error('[ImportService] Error during import:', error);
       return {
         success: false,
         format: 'unknown',

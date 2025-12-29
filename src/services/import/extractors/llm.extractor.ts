@@ -102,7 +102,8 @@ CRITICAL RULES:
 5. If no bookings found, return empty segments array with confidence 0
 6. Extract ALL prices and confirmation numbers
 7. For hotels: checkInDate/checkOutDate should match startDatetime/endDatetime dates
-8. ROUND TRIP FLIGHTS: Create TWO SEPARATE flight segments - one for outbound, one for return. Each segment should have its own flightNumber, origin, destination, and datetime. Do NOT combine them into a single segment.`;
+8. ROUND TRIP FLIGHTS: Create TWO SEPARATE flight segments - one for outbound, one for return. Each segment should have its own flightNumber, origin, destination, and datetime. Do NOT combine them into a single segment.
+9. PRICE FIELDS: Only include price/taxes/fees/totalPrice if BOTH amount AND currency are available. If price is missing or unclear, omit the entire price field.`;
 
 /**
  * LLM-based extractor for unstructured text
@@ -132,6 +133,11 @@ export class LLMExtractor {
    */
   async extract(text: string, format: ImportFormat): Promise<ImportResult> {
     try {
+      console.log('[LLMExtractor] Starting extraction...');
+      console.log('[LLMExtractor] Text length:', text.length);
+      console.log('[LLMExtractor] Format:', format);
+      console.log('[LLMExtractor] Model:', this.config.model);
+
       const response = await this.client.chat.completions.create({
         model: this.config.model!,
         messages: [
@@ -146,8 +152,12 @@ export class LLMExtractor {
         max_tokens: 4096,
       });
 
+      console.log('[LLMExtractor] LLM response received');
+      console.log('[LLMExtractor] Usage:', response.usage);
+
       const result = response.choices[0]?.message?.content;
       if (!result) {
+        console.log('[LLMExtractor] Empty response from LLM');
         return {
           success: false,
           format,
@@ -157,10 +167,20 @@ export class LLMExtractor {
         };
       }
 
+      console.log('[LLMExtractor] Raw LLM response:', result);
+
       const parsed = JSON.parse(result);
+      console.log('[LLMExtractor] Parsed response:', {
+        hasSegments: !!parsed.segments,
+        segmentCount: parsed.segments?.length || 0,
+        confidence: parsed.confidence,
+        summary: parsed.summary,
+      });
 
       // Validate and convert segments
       const segments = this.validateAndConvertSegments(parsed.segments || []);
+
+      console.log('[LLMExtractor] Validated segments:', segments.length);
 
       return {
         success: segments.length > 0,
@@ -171,6 +191,7 @@ export class LLMExtractor {
         rawText: text.substring(0, 1000), // Store sample for debugging
       };
     } catch (error) {
+      console.error('[LLMExtractor] Error during extraction:', error);
       return {
         success: false,
         format,
@@ -185,17 +206,27 @@ export class LLMExtractor {
    * Validate and convert segments from LLM response
    */
   private validateAndConvertSegments(segments: any[]): ExtractedSegment[] {
+    console.log('[LLMExtractor] Validating', segments.length, 'segments');
+
     return segments
-      .map((segment) => {
+      .map((segment, index) => {
         try {
+          console.log(`[LLMExtractor] Validating segment ${index}:`, {
+            type: segment.type,
+            hasStartDatetime: !!segment.startDatetime,
+            hasEndDatetime: !!segment.endDatetime,
+            confirmationNumber: segment.confirmationNumber,
+            flightNumber: segment.flightNumber,
+          });
+
           // Validate required fields
           if (!segment.type || !Object.values(SegmentType).includes(segment.type)) {
-            console.warn(`Invalid segment type: ${segment.type}`);
+            console.warn(`[LLMExtractor] Invalid segment type: ${segment.type}`);
             return null;
           }
 
           if (!segment.startDatetime || !segment.endDatetime) {
-            console.warn('Missing required datetime fields');
+            console.warn(`[LLMExtractor] Missing required datetime fields for segment ${index}`);
             return null;
           }
 
@@ -208,6 +239,50 @@ export class LLMExtractor {
             if (segment.checkOutDate) segment.checkOutDate = new Date(segment.checkOutDate);
           }
 
+          // Clean up price fields - remove if incomplete
+          // moneySchema requires both amount AND currency if present
+          if (segment.price) {
+            if (
+              typeof segment.price.amount !== 'number' ||
+              !segment.price.currency ||
+              segment.price.currency.trim() === ''
+            ) {
+              console.log(`[LLMExtractor] Removing incomplete price from segment ${index}:`, segment.price);
+              delete segment.price;
+            }
+          }
+
+          // Same for taxes, fees, totalPrice
+          if (segment.taxes) {
+            if (
+              typeof segment.taxes.amount !== 'number' ||
+              !segment.taxes.currency ||
+              segment.taxes.currency.trim() === ''
+            ) {
+              delete segment.taxes;
+            }
+          }
+
+          if (segment.fees) {
+            if (
+              typeof segment.fees.amount !== 'number' ||
+              !segment.fees.currency ||
+              segment.fees.currency.trim() === ''
+            ) {
+              delete segment.fees;
+            }
+          }
+
+          if (segment.totalPrice) {
+            if (
+              typeof segment.totalPrice.amount !== 'number' ||
+              !segment.totalPrice.currency ||
+              segment.totalPrice.currency.trim() === ''
+            ) {
+              delete segment.totalPrice;
+            }
+          }
+
           // Set default status
           if (!segment.status) {
             segment.status = SegmentStatus.CONFIRMED;
@@ -218,9 +293,10 @@ export class LLMExtractor {
             segment.confidence = 0.8;
           }
 
+          console.log(`[LLMExtractor] Segment ${index} validated successfully`);
           return segment as ExtractedSegment;
         } catch (error) {
-          console.warn('Failed to convert segment:', error);
+          console.warn(`[LLMExtractor] Failed to convert segment ${index}:`, error);
           return null;
         }
       })
