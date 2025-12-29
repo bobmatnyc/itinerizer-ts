@@ -3,6 +3,7 @@
   import SegmentCard from './SegmentCard.svelte';
   import SegmentEditor from './SegmentEditor.svelte';
   import AddSegmentModal from './AddSegmentModal.svelte';
+  import DestinationBackgroundSlideshow from './DestinationBackgroundSlideshow.svelte';
   import { updateSegment, deleteSegment, addSegment, updateItinerary } from '$lib/stores/itineraries.svelte';
   import { toast } from '$lib/stores/toast.svelte';
 
@@ -179,12 +180,6 @@
     inferDestinationFromTitle(itinerary?.title)
   );
 
-  let backgroundUrl = $derived(
-    destinationName
-      ? `https://source.unsplash.com/1600x900/?${encodeURIComponent(destinationName)},travel,city`
-      : null
-  );
-
   // Group segments by date
   interface SegmentsByDay {
     date: string;
@@ -236,13 +231,14 @@
   });
 </script>
 
-<div class="itinerary-detail" class:has-background={backgroundUrl}>
-  {#if backgroundUrl}
-    <div
-      class="destination-background"
-      style="background-image: url({backgroundUrl})"
-    ></div>
-    <div class="background-overlay"></div>
+<div class="itinerary-detail" class:has-background={destinationName}>
+  {#if destinationName}
+    <DestinationBackgroundSlideshow
+      destination={destinationName}
+      imageCount={5}
+      interval={8000}
+      opacity={0.15}
+    />
   {/if}
 
   <div class="detail-content h-full overflow-y-auto">
@@ -454,38 +450,7 @@
     height: 100%;
   }
 
-  /* Destination background image - subtle, at top of container */
-  .destination-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 300px;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: 0;
-    opacity: 0.15;  /* Very subtle */
-    transition: opacity 1s ease-in-out;
-  }
-
-  /* Gradient overlay for smooth transition */
-  .background-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 300px;
-    background: linear-gradient(
-      to bottom,
-      transparent 0%,
-      rgba(250, 250, 250, 0.5) 50%,
-      rgba(250, 250, 250, 1) 100%
-    );
-    z-index: 1;
-  }
-
-  /* Content appears above background */
+  /* Content appears above background slideshow */
   .detail-content {
     position: relative;
     z-index: 2;
