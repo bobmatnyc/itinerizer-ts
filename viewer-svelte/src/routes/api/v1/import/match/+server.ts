@@ -6,10 +6,10 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { TripMatcher } from '../../../../../services/import/trip-matcher.js';
-import { ItineraryCollectionService } from '../../../../../services/itinerary-collection.service.js';
-import { createItineraryStorage } from '../../../../../storage/index.js';
-import type { ExtractedSegment } from '../../../../../services/import/types.js';
+import { TripMatcher } from '../../../../../../src/services/import/trip-matcher.js';
+import { ItineraryCollectionService } from '../../../../../../src/services/itinerary-collection.service.js';
+import { createItineraryStorage } from '../../../../../../src/storage/index.js';
+import type { ExtractedSegment } from '../../../../../../src/services/import/types.js';
 
 /**
  * POST /api/v1/import/match

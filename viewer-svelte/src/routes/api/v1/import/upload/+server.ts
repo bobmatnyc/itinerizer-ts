@@ -12,10 +12,10 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { ImportService } from '../../../../../services/import/index.js';
-import { ItineraryCollectionService } from '../../../../../services/itinerary-collection.service.js';
-import { SegmentService } from '../../../../../services/segment.service.js';
-import { createItineraryStorage } from '../../../../../storage/index.js';
+import { ImportService } from '../../../../../../src/services/import/index.js';
+import { ItineraryCollectionService } from '../../../../../../src/services/itinerary-collection.service.js';
+import { SegmentService } from '../../../../../../src/services/segment.service.js';
+import { createItineraryStorage } from '../../../../../../src/storage/index.js';
 import { OPENROUTER_API_KEY } from '$env/static/private';
 
 /**
