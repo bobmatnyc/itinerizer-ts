@@ -13,11 +13,11 @@
     ondelete?: (itinerary: ItineraryListItem) => void;
   } = $props();
 
-  // Format date for display
+  // Format date for display - use UTC to avoid timezone issues
   function formatDate(dateStr?: string): string {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   }
 
   // Get date range display

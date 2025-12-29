@@ -126,16 +126,17 @@
     showDeleteConfirm = false;
   }
 
-  // Format date range
+  // Format date range - use UTC to avoid timezone issues
   function formatDateRange(): string {
     if (!itinerary.startDate) return '';
     const start = new Date(itinerary.startDate);
     const end = itinerary.endDate ? new Date(itinerary.endDate) : null;
+    const options: Intl.DateTimeFormatOptions = { timeZone: 'UTC' };
 
     if (end) {
-      return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+      return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
     }
-    return start.toLocaleDateString();
+    return start.toLocaleDateString('en-US', options);
   }
 
   // Get destinations string
@@ -217,10 +218,12 @@
     const result: SegmentsByDay[] = Array.from(grouped.entries())
       .map(([dateKey, segments]) => {
         const date = new Date(dateKey);
+        // Use UTC timezone to avoid off-by-one-day issues when dateKey is "YYYY-MM-DD"
         const dateDisplay = date.toLocaleDateString('en-US', {
           weekday: 'long',
           month: 'short',
           day: 'numeric',
+          timeZone: 'UTC',
         });
 
         return {
