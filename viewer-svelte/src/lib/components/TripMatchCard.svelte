@@ -53,22 +53,24 @@
     </div>
   </div>
 
-  <div class="match-score">
-    <div class="score-bar-container">
-      <div
-        class="score-bar"
-        style="width: {scorePercentage}%; background-color: {scoreColor};"
-      ></div>
+  {#if match.matchScore > 0}
+    <div class="match-score">
+      <div class="score-bar-container">
+        <div
+          class="score-bar"
+          style="width: {scorePercentage}%; background-color: {scoreColor};"
+        ></div>
+      </div>
+      <span class="score-text">{scorePercentage}% match</span>
     </div>
-    <span class="score-text">{scorePercentage}% match</span>
-  </div>
 
-  {#if match.matchReasons.length > 0}
-    <div class="match-reasons">
-      {#each match.matchReasons as reason}
-        <span class="reason-tag">{reason}</span>
-      {/each}
-    </div>
+    {#if match.matchReasons.length > 0}
+      <div class="match-reasons">
+        {#each match.matchReasons as reason}
+          <span class="reason-tag">{reason}</span>
+        {/each}
+      </div>
+    {/if}
   {/if}
 </button>
 

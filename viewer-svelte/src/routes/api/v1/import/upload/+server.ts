@@ -75,7 +75,42 @@ export const POST: RequestHandler = async ({ request, url }) => {
         }
       );
 
-      return json(result);
+      // Also fetch all user itineraries to show as fallback options
+      const allTripsResult = await itineraryCollection.listItinerariesByUser(userId);
+      const allItineraries = allTripsResult.success ? allTripsResult.value : [];
+
+      // Convert unmatched itineraries to TripMatch format (with 0 score)
+      const matchedIds = new Set((result.tripMatches || []).map(m => m.itineraryId));
+      const unmatchedSummaries = allItineraries.filter(trip => !matchedIds.has(trip.id));
+
+      // Load full data for unmatched trips to get destinations
+      const unmatchedItineraries = await Promise.all(
+        unmatchedSummaries.map(async (summary) => {
+          // Load full itinerary from storage to get destination info
+          const fullTrip = await storage.load(summary.id);
+          const destination = fullTrip.success
+            ? fullTrip.value.destinations?.[0]?.name || 'Not set'
+            : 'Not set';
+
+          return {
+            itineraryId: summary.id,
+            itineraryName: summary.title,
+            destination,
+            dateRange: {
+              start: summary.startDate?.toISOString() || 'Not set',
+              end: summary.endDate?.toISOString() || 'Not set'
+            },
+            matchScore: 0,
+            matchReasons: []
+          };
+        })
+      );
+
+      // Return matches first, then all other itineraries
+      return json({
+        ...result,
+        tripMatches: [...(result.tripMatches || []), ...unmatchedItineraries]
+      });
     }
 
     // Otherwise, just parse without matching

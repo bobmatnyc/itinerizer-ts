@@ -355,15 +355,38 @@
               <h3 class="selection-title">Add to Trip</h3>
 
               {#if tripMatches.length > 0}
-                <div class="trip-matches">
-                  {#each tripMatches as match (match.itineraryId)}
-                    <TripMatchCard
-                      {match}
-                      selected={selectedTripId === match.itineraryId}
-                      onSelect={() => handleSelectTrip(match.itineraryId)}
-                    />
-                  {/each}
-                </div>
+                <!-- Matched Trips (score > 0) -->
+                {@const matchedTrips = tripMatches.filter(m => m.matchScore > 0)}
+                {@const unmatchedTrips = tripMatches.filter(m => m.matchScore === 0)}
+
+                {#if matchedTrips.length > 0}
+                  <p class="subsection-label">Suggested Matches</p>
+                  <div class="trip-matches">
+                    {#each matchedTrips as match (match.itineraryId)}
+                      <TripMatchCard
+                        {match}
+                        selected={selectedTripId === match.itineraryId}
+                        onSelect={() => handleSelectTrip(match.itineraryId)}
+                      />
+                    {/each}
+                  </div>
+                {/if}
+
+                <!-- All Other Trips -->
+                {#if unmatchedTrips.length > 0}
+                  {#if matchedTrips.length > 0}
+                    <p class="subsection-label mt-4">Other Trips</p>
+                  {/if}
+                  <div class="trip-matches">
+                    {#each unmatchedTrips as match (match.itineraryId)}
+                      <TripMatchCard
+                        {match}
+                        selected={selectedTripId === match.itineraryId}
+                        onSelect={() => handleSelectTrip(match.itineraryId)}
+                      />
+                    {/each}
+                  </div>
+                {/if}
 
                 <div class="divider">
                   <span class="divider-text">or</span>
@@ -713,6 +736,19 @@
     font-weight: 600;
     color: #1f2937;
     margin: 0 0 1rem 0;
+  }
+
+  .subsection-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .subsection-label.mt-4 {
+    margin-top: 1.5rem;
   }
 
   .trip-matches {
