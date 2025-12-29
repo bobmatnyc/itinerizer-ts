@@ -13,16 +13,13 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { ImportService } from '../../../../../../../src/services/import/index.js';
-import { ItineraryCollectionService } from '../../../../../../../src/services/itinerary-collection.service.js';
-import { SegmentService } from '../../../../../../../src/services/segment.service.js';
-import { createItineraryStorage } from '../../../../../../../src/storage/index.js';
 import { OPENROUTER_API_KEY } from '$env/static/private';
 
 /**
  * POST /api/v1/import/upload
  * Upload file and extract booking data with optional trip matching
  */
-export const POST: RequestHandler = async ({ request, url }) => {
+export const POST: RequestHandler = async ({ request, url, locals }) => {
   try {
     // Check API key
     if (!OPENROUTER_API_KEY) {
@@ -46,10 +43,8 @@ export const POST: RequestHandler = async ({ request, url }) => {
     // Read file content
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Initialize storage and services for trip matching
-    const storage = createItineraryStorage();
-    const itineraryCollection = new ItineraryCollectionService(storage);
-    const segmentService = new SegmentService(storage);
+    // Use services from locals (properly initialized in hooks.server.ts with correct storage path)
+    const { storage, collectionService: itineraryCollection, segmentService } = locals.services;
 
     // Initialize import service with trip matching support
     const importService = new ImportService({

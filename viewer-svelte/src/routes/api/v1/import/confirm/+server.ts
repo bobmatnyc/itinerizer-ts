@@ -7,9 +7,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { ImportService } from '../../../../../../../src/services/import/index.js';
-import { ItineraryCollectionService } from '../../../../../../../src/services/itinerary-collection.service.js';
-import { SegmentService } from '../../../../../../../src/services/segment.service.js';
-import { createItineraryStorage } from '../../../../../../../src/storage/index.js';
 import { OPENROUTER_API_KEY } from '$env/static/private';
 import type { ExtractedSegment } from '../../../../../../../src/services/import/types.js';
 
@@ -40,7 +37,7 @@ import type { ExtractedSegment } from '../../../../../../../src/services/import/
  *   deduplication: { added: number, skipped: number, duplicates: string[] }
  * }
  */
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
   try {
     // Check API key
     if (!OPENROUTER_API_KEY) {
@@ -66,10 +63,8 @@ export const POST: RequestHandler = async ({ request }) => {
       return error(400, 'userId is required');
     }
 
-    // Initialize services
-    const storage = createItineraryStorage();
-    const itineraryCollection = new ItineraryCollectionService(storage);
-    const segmentService = new SegmentService(storage);
+    // Use services from locals (properly initialized in hooks.server.ts with correct storage path)
+    const { storage, collectionService: itineraryCollection, segmentService } = locals.services;
 
     const importService = new ImportService({
       apiKey: OPENROUTER_API_KEY,
@@ -124,8 +119,8 @@ export const POST: RequestHandler = async ({ request }) => {
     const result = await importService.confirmImport(segments, itineraryId);
 
     // Get itinerary name for response
-    const itineraryResult = await itineraryCollection.getItinerary(itineraryId);
-    const itineraryName = itineraryResult.success ? itineraryResult.value.title : 'Unknown';
+    const itinerarySummaryResult = await itineraryCollection.getItinerarySummary(itineraryId);
+    const itineraryName = itinerarySummaryResult.success ? itinerarySummaryResult.value.title : 'Unknown';
 
     return json({
       ...result,
