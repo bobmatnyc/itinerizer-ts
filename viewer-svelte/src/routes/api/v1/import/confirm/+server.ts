@@ -49,10 +49,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // Parse request body
     const body = await request.json();
-    const { segments, itineraryId, createNew, tripName, userId } = body as {
+    const { segments, itineraryId, createNew, name, tripName, userId } = body as {
       segments: ExtractedSegment[];
       itineraryId?: string;
       createNew?: boolean;
+      name?: string; // Support both 'name' and 'tripName'
       tripName?: string;
       userId: string;
     };
@@ -78,13 +79,14 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // If creating new trip
     if (createNew) {
-      if (!tripName) {
-        return error(400, 'tripName is required when creating new trip');
+      const newTripName = name || tripName; // Support both 'name' and 'tripName'
+      if (!newTripName) {
+        return error(400, 'name or tripName is required when creating new trip');
       }
 
       // Create new itinerary
       const createResult = await itineraryCollection.createItinerary({
-        title: tripName,
+        title: newTripName,
         createdBy: userId,
       });
 
@@ -114,7 +116,16 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const result = await importService.confirmImport(segments, itineraryId);
 
-    return json(result);
+    // Get itinerary name for response
+    const itineraryResult = await itineraryCollection.getItinerary(itineraryId);
+    const itineraryName = itineraryResult.success ? itineraryResult.value.title : 'Unknown';
+
+    return json({
+      ...result,
+      action: 'added_to_existing',
+      itineraryId,
+      itineraryName,
+    });
   } catch (err) {
     console.error('Import confirmation error:', err);
     return error(500, err instanceof Error ? err.message : 'Failed to confirm import');

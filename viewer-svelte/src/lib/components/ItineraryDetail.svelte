@@ -4,6 +4,7 @@
   import SegmentEditor from './SegmentEditor.svelte';
   import AddSegmentModal from './AddSegmentModal.svelte';
   import DestinationBackgroundSlideshow from './DestinationBackgroundSlideshow.svelte';
+  import ImportDialog from './ImportDialog.svelte';
   import { updateSegment, deleteSegment, addSegment, updateItinerary } from '$lib/stores/itineraries.svelte';
   import { toast } from '$lib/stores/toast.svelte';
 
@@ -24,6 +25,7 @@
   let showDeleteConfirm = $state(false);
   let editingSegmentId = $state<string | null>(null);
   let showAddSegmentModal = $state(false);
+  let showImportDialog = $state(false);
 
   // Manual edit mode state
   let isEditingMetadata = $state(false);
@@ -108,6 +110,11 @@
 
   function handleDeleteClick() {
     showDeleteConfirm = true;
+  }
+
+  function handleImportComplete(itineraryId: string, itineraryName: string) {
+    showImportDialog = false;
+    toast.success(`Segments imported to ${itineraryName}`);
   }
 
   function handleConfirmDelete() {
@@ -253,6 +260,13 @@
           type="button"
         >
           ✏️ Edit Details
+        </button>
+        <button
+          class="minimal-button"
+          onclick={() => showImportDialog = true}
+          type="button"
+        >
+          📥 Import
         </button>
       </div>
     {/if}
@@ -654,3 +668,12 @@
   itineraryId={itinerary.id}
   onSegmentAdded={handleAddSegment}
 />
+
+<!-- Import Dialog -->
+{#if showImportDialog}
+  <ImportDialog
+    bind:open={showImportDialog}
+    preselectedItineraryId={itinerary.id}
+    onComplete={handleImportComplete}
+  />
+{/if}
