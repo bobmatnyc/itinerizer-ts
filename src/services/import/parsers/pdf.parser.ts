@@ -3,7 +3,7 @@
  * @module services/import/parsers/pdf
  */
 
-import * as pdfParse from 'pdf-parse';
+import pdfParse from 'pdf-parse';
 import type { IParser, ImportRequest, ImportResult, ImportFormat } from '../types.js';
 import type { LLMExtractor } from '../extractors/llm.extractor.js';
 
