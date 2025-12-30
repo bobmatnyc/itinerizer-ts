@@ -180,8 +180,14 @@
 
       const result = await response.json();
 
+      // Check if extraction succeeded
+      if (!result.success || !result.segments || result.segments.length === 0) {
+        const errorMsg = result.errors?.join(', ') || 'No booking information found in the uploaded file';
+        throw new Error(errorMsg);
+      }
+
       // Store extracted data
-      segments = result.segments || [];
+      segments = result.segments;
       tripMatches = result.tripMatches || [];
       confidence = result.confidence || 0;
       summary = result.summary || '';
