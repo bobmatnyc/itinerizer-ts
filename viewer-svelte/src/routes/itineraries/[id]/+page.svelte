@@ -172,7 +172,7 @@
   <!-- Fixed Header -->
   <Header />
 
-  <!-- Main Content Area: 2-Pane Layout -->
+  <!-- Main Content Area: 2-Pane or 3-Pane Layout (depending on edit mode) -->
   <div class="main-content">
     <!-- Left Pane: Itinerary List -->
     <div class="itinerary-list-pane">
@@ -227,6 +227,26 @@
         {/if}
       </div>
     </div>
+
+    <!-- Middle Pane: Chat (conditional, only in AI edit mode) -->
+    {#if showChatSidebar}
+      <div class="chat-sidebar" style="width: {leftPaneWidth}px">
+        <ChatPanel
+          mode={agentConfig.mode}
+          placeholderText={agentConfig.placeholderText}
+          showTokenStats={agentConfig.showTokenStats}
+        />
+      </div>
+
+      <!-- Resize handle between chat and detail -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="resize-handle"
+        onmousedown={startResize}
+        role="separator"
+        aria-orientation="vertical"
+      ></div>
+    {/if}
 
     <!-- Right Pane: Detail View -->
     <div class="detail-pane">
@@ -336,6 +356,35 @@
     background-color: #ffffff;
     border-right: 1px solid #e5e7eb;
     overflow: hidden;
+  }
+
+  /* Middle Pane: Chat Sidebar (conditional) */
+  .chat-sidebar {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+
+  /* Resize Handle */
+  .resize-handle {
+    width: 4px;
+    cursor: col-resize;
+    background-color: transparent;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+  }
+
+  .resize-handle:hover,
+  .resize-handle:focus {
+    background-color: #d1d5db;
+    outline: none;
+  }
+
+  .resize-handle:active {
+    background-color: #9ca3af;
   }
 
   .list-header {
@@ -477,6 +526,17 @@
       border-right: none;
       border-bottom: 1px solid #e5e7eb;
       max-height: 30%;
+    }
+
+    .chat-sidebar {
+      width: 100% !important;
+      border-right: none;
+      border-bottom: 1px solid #e5e7eb;
+      max-height: 40%;
+    }
+
+    .resize-handle {
+      display: none;
     }
 
     .detail-pane {
