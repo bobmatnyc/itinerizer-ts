@@ -140,7 +140,7 @@ function formatPreferences(itinerary: Itinerary): string[] {
 }
 
 /**
- * Summarize segments with brief details
+ * Summarize segments with brief details (legacy, kept for compatibility)
  */
 function summarizeSegmentDetails(segments: Segment[], maxCount: number = 8): string[] {
   const details: string[] = [];
@@ -171,6 +171,78 @@ function summarizeSegmentDetails(segments: Segment[], maxCount: number = 8): str
   }
 
   return details;
+}
+
+/**
+ * Summarize segments grouped by type with CONFIRMED status
+ * This makes it crystal clear to the LLM that these are existing bookings
+ */
+function summarizeConfirmedSegments(segments: Segment[]): string[] {
+  const lines: string[] = [];
+
+  // Group segments by type
+  const flights = segments.filter(s => s.type === 'FLIGHT') as import('./../../domain/types/segment.js').FlightSegment[];
+  const hotels = segments.filter(s => s.type === 'HOTEL') as import('./../../domain/types/segment.js').HotelSegment[];
+  const activities = segments.filter(s => s.type === 'ACTIVITY');
+  const other = segments.filter(s => s.type !== 'FLIGHT' && s.type !== 'HOTEL' && s.type !== 'ACTIVITY');
+
+  // Flights
+  if (flights.length > 0) {
+    lines.push('**✈️ FLIGHTS (CONFIRMED - DO NOT SUGGEST)**');
+    for (const flight of flights) {
+      const date = formatDate(new Date(flight.startDatetime));
+      const route = `${flight.origin?.code || flight.origin?.name || 'Unknown'} → ${flight.destination?.code || flight.destination?.name || 'Unknown'}`;
+      const flightNum = flight.flightNumber ? ` (${flight.carrier} ${flight.flightNumber})` : '';
+      const cabin = flight.cabinClass ? ` - ${flight.cabinClass}` : '';
+      lines.push(`  ✓ ${date}: ${route}${flightNum}${cabin}`);
+    }
+    lines.push('');
+  }
+
+  // Hotels
+  if (hotels.length > 0) {
+    lines.push('**🏨 HOTELS (CONFIRMED - DO NOT SUGGEST)**');
+    for (const hotel of hotels) {
+      const checkIn = formatDate(new Date(hotel.checkInDate));
+      const checkOut = hotel.checkOutDate ? formatDate(new Date(hotel.checkOutDate)) : 'Unknown';
+      const name = hotel.property?.name || 'Unknown hotel';
+      const location = hotel.location?.address?.city || hotel.location?.name || '';
+
+      let nights = 1;
+      if (hotel.checkOutDate && hotel.checkInDate) {
+        nights = Math.ceil((hotel.checkOutDate.getTime() - hotel.checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      lines.push(`  ✓ ${name}${location ? ` (${location})` : ''}`);
+      lines.push(`    ${checkIn} → ${checkOut} (${nights} night${nights > 1 ? 's' : ''})`);
+    }
+    lines.push('');
+  }
+
+  // Activities
+  if (activities.length > 0) {
+    lines.push('**🎯 ACTIVITIES (CONFIRMED - DO NOT SUGGEST)**');
+    for (const activity of activities) {
+      const date = formatDate(new Date(activity.startDatetime));
+      const name = activity.metadata?.name || activity.name || 'Activity';
+      const location = activity.metadata?.location || '';
+      lines.push(`  ✓ ${date}: ${name}${location ? ` at ${location}` : ''}`);
+    }
+    lines.push('');
+  }
+
+  // Other segments
+  if (other.length > 0) {
+    lines.push('**📋 OTHER BOOKINGS (CONFIRMED)**');
+    for (const seg of other) {
+      const date = formatDate(new Date(seg.startDatetime));
+      const name = seg.metadata?.name || seg.type;
+      lines.push(`  ✓ ${date}: ${name}`);
+    }
+    lines.push('');
+  }
+
+  return lines;
 }
 
 /**
@@ -561,23 +633,26 @@ export function summarizeItinerary(itinerary: Itinerary): string {
     lines.push(`**Budget**: ${itinerary.totalPrice.amount} ${itinerary.totalPrice.currency}`);
   }
 
-  // Segments summary
+  // Segments summary - SHOW AS CONFIRMED BOOKINGS
   if (itinerary.segments.length > 0) {
     const segmentCounts = summarizeSegments(itinerary.segments);
     const countsStr = formatSegmentCounts(segmentCounts);
 
     lines.push('');
-    lines.push(`**Segments**: ${countsStr} (${itinerary.segments.length} total)`);
+    lines.push(`**✅ ALREADY BOOKED**: ${countsStr} (${itinerary.segments.length} total)`);
+    lines.push('');
+    lines.push('**CRITICAL: These are CONFIRMED bookings. DO NOT offer to plan or suggest these items.**');
+    lines.push('');
 
-    // Show first few segments with details
-    const segmentDetails = summarizeSegmentDetails(itinerary.segments);
+    // Show segments grouped by type with CONFIRMED status
+    const segmentDetails = summarizeConfirmedSegments(itinerary.segments);
     lines.push(...segmentDetails);
 
     // PROMINENT: Show existing bookings to help AI infer preferences
     const bookings = formatExistingBookings(itinerary.segments);
     if (bookings.length > 0) {
       lines.push('');
-      lines.push('**⚠️ EXISTING BOOKINGS** (use to infer travel preferences):');
+      lines.push('**⚠️ INFERRED TRAVEL STYLE** (from existing bookings):');
       for (const booking of bookings) {
         lines.push(booking);
       }
