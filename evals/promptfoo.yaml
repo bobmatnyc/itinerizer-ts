@@ -1,0 +1,299 @@
+# Promptfoo Evaluation Config for Trip Designer
+# Tests: ONE question rule, JSON format, tool usage, context retention
+#
+# Run: OPENROUTER_API_KEY="your-key" npm run eval:promptfoo
+# View: npm run eval:promptfoo:view
+
+description: Trip Designer AI Quality Evaluation
+
+# Prompts - JavaScript function to properly construct chat messages
+prompts:
+  - file://evals/prompt.js
+
+# Providers (models to compare)
+# Uses OpenRouter native provider - set OPENROUTER_API_KEY env var
+providers:
+  - id: openrouter:anthropic/claude-3.5-haiku
+    label: claude-3.5-haiku
+    config:
+      temperature: 0.7
+      max_tokens: 4096
+
+  - id: openrouter:anthropic/claude-sonnet-4
+    label: claude-sonnet-4
+    config:
+      temperature: 0.7
+      max_tokens: 4096
+
+# Default test configuration
+defaultTest:
+  vars:
+    context: ""
+  options:
+    # Use OpenRouter for LLM rubric grading
+    provider: openrouter:anthropic/claude-3.5-haiku
+
+# Test cases organized by category
+tests:
+  # ============================================
+  # ONE QUESTION RULE TESTS
+  # ============================================
+  - description: "ONE_QUESTION: Initial trip request should ask exactly one question"
+    vars:
+      user_message: "I want to plan a 10-day trip to Japan"
+    assert:
+      - type: llm-rubric
+        value: |
+          The response MUST contain EXACTLY ONE structured question in the structuredQuestions array.
+          Check that:
+          1. The structuredQuestions array has exactly 1 element (not 0, not 2+)
+          2. The message text does NOT contain multiple questions
+          3. The message is short (1-2 sentences max)
+          Score 1 if these are met, 0 otherwise.
+
+      - type: javascript
+        value: |
+          // Extract JSON from response
+          const jsonMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) return false;
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            return parsed.structuredQuestions && parsed.structuredQuestions.length === 1;
+          } catch { return false; }
+
+  - description: "ONE_QUESTION: Should not ask compound questions"
+    vars:
+      user_message: "Planning a trip to Italy with my family"
+    assert:
+      - type: not-contains
+        value: "First,"
+      - type: not-contains
+        value: "Second,"
+      - type: not-contains
+        value: "1)"
+      - type: not-contains
+        value: "2)"
+      - type: llm-rubric
+        value: |
+          The response must NOT contain compound questions like "Who's traveling and what's your budget?"
+          It should ask about ONLY ONE topic (either travelers OR budget OR style, but not multiple).
+          Score 1 if single topic, 0 if multiple topics asked.
+
+  - description: "ONE_QUESTION: Follow-up should ask next question only"
+    vars:
+      user_message: "Just me, solo traveler"
+      context: |
+        Previous: User asked about 10-day Japan trip
+        AI asked: "Who's traveling?"
+    assert:
+      - type: javascript
+        value: |
+          const jsonMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) return false;
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            return parsed.structuredQuestions && parsed.structuredQuestions.length === 1;
+          } catch { return false; }
+
+  # ============================================
+  # JSON FORMAT COMPLIANCE TESTS
+  # ============================================
+  - description: "FORMAT: Response must be valid JSON in code fences"
+    vars:
+      user_message: "I want to visit Paris for a week"
+    assert:
+      - type: contains
+        value: "```json"
+      - type: contains
+        value: "```"
+      - type: javascript
+        value: |
+          const jsonMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) return true; // Will be caught by other assertions
+          try {
+            JSON.parse(jsonMatch[1]);
+            return true;
+          } catch { return false; }
+
+  - description: "FORMAT: Must have message and structuredQuestions fields"
+    vars:
+      user_message: "Planning honeymoon in Bali"
+    assert:
+      - type: javascript
+        value: |
+          const jsonMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) return false;
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            return 'message' in parsed && 'structuredQuestions' in parsed;
+          } catch { return false; }
+
+  - description: "FORMAT: structuredQuestions must have proper structure"
+    vars:
+      user_message: "Weekend getaway to wine country"
+    assert:
+      - type: javascript
+        value: |
+          const jsonMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) return false;
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            const q = parsed.structuredQuestions?.[0];
+            if (!q) return false;
+            // Must have id, type, question, and options (for choice types)
+            return q.id && q.type && q.question &&
+                   (q.type === 'text' || (q.options && q.options.length > 0));
+          } catch { return false; }
+
+  # ============================================
+  # MESSAGE LENGTH TESTS
+  # ============================================
+  - description: "LENGTH: Message should be short (under 200 chars)"
+    vars:
+      user_message: "I want to plan a trip to Greece"
+    assert:
+      - type: javascript
+        value: |
+          const jsonMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) return false;
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            // Message should be 1-2 sentences, roughly under 200 chars
+            return parsed.message && parsed.message.length < 250;
+          } catch { return false; }
+
+  - description: "LENGTH: No bullet lists or long suggestions in message"
+    vars:
+      user_message: "Trip to Thailand in December"
+    assert:
+      - type: not-contains
+        value: "•"
+      - type: not-contains
+        value: "\n- "
+      - type: llm-rubric
+        value: |
+          The message field should be a short conversational sentence (1-2 sentences).
+          It should NOT contain:
+          - Bullet points or numbered lists (like "1.", "2.", "•", or lines starting with "- ")
+          - Multiple paragraphs
+          - Detailed suggestions or itinerary outlines
+          NOTE: A dash used for emphasis in a sentence (like "great time - perfect weather") is fine.
+          Score 1 if message is concise (under 3 sentences), 0 if it contains lists or is too long.
+
+  # ============================================
+  # TOOL USAGE TESTS
+  # ============================================
+  - description: "TOOL: Should indicate tool call for destination mention"
+    vars:
+      user_message: "I want to plan a 2-week trip to Portugal starting January 5th"
+    assert:
+      - type: llm-rubric
+        value: |
+          When user provides destination AND dates, the AI should acknowledge these details.
+          Look for phrases like:
+          - "I've set up your [destination] trip"
+          - "I've noted [destination]"
+          - "Portugal trip from [dates]"
+          - Any acknowledgment that shows the destination and/or dates were received
+          Score 1 if the response shows awareness of destination/dates, 0 if completely ignored.
+
+  - description: "TOOL: Should not make up prices without searching"
+    vars:
+      user_message: "How much will flights to Tokyo cost?"
+    assert:
+      - type: not-contains
+        value: "$500"
+      - type: not-contains
+        value: "$800"
+      - type: not-contains
+        value: "$1000"
+      - type: llm-rubric
+        value: |
+          The AI should NOT quote specific prices without searching.
+          It should say something like "Let me search for current prices" or
+          "I'll need to check current rates" rather than making up numbers.
+          Score 1 if no fabricated prices, 0 if specific prices given without search.
+
+  # ============================================
+  # CONTEXT RETENTION TESTS
+  # ============================================
+  - description: "CONTEXT: Should acknowledge user-provided info"
+    vars:
+      user_message: "We're a family of 4 with two kids ages 8 and 12, planning a beach vacation"
+    assert:
+      - type: llm-rubric
+        value: |
+          The AI should:
+          1. Acknowledge the family/kids in some way (mention "family", "kids", or the ages)
+          2. NOT ask "Who's traveling?" or present traveler type options
+          3. Move to a different question (destination, origin, dates, budget, etc.)
+
+          The structuredQuestions should NOT have id="travelers" or ask about who's traveling.
+          Score 1 if family is acknowledged AND next question is about something else, 0 if asks redundant questions.
+
+  - description: "CONTEXT: Should skip questions for provided info"
+    vars:
+      user_message: "Couple traveling on a budget to Spain next March"
+    assert:
+      - type: llm-rubric
+        value: |
+          The user provided: couple (travelers), budget (style), Spain (destination), March (timing).
+          The AI should NOT ask about travelers or travel style since those were provided.
+          It should ask about something else like interests, specific dates, or origin.
+          Score 1 if no redundant questions, 0 if asks about already-provided info.
+
+  # ============================================
+  # EXISTING ITINERARY TESTS
+  # ============================================
+  - description: "EXISTING: Should offer modification options for existing trip"
+    vars:
+      user_message: "Hi, I want to work on my trip"
+      context: |
+        [Itinerary Context: 10-day Portugal trip, Jan 3-12 2025, with 2 flights and 3 hotels already booked]
+    assert:
+      - type: llm-rubric
+        value: |
+          When working with an existing itinerary, the AI should:
+          1. Acknowledge the existing trip details
+          2. NOT start discovery questions from scratch
+          3. Offer modification options (add activities, make changes, optimize, etc.)
+          Score 1 if it recognizes existing trip and offers relevant help, 0 if it starts over.
+
+  # ============================================
+  # QUESTION QUALITY TESTS
+  # ============================================
+  - description: "QUALITY: Options should have id, label, description"
+    vars:
+      user_message: "Planning a ski trip"
+    assert:
+      - type: javascript
+        value: |
+          const jsonMatch = output.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) return false;
+          try {
+            const parsed = JSON.parse(jsonMatch[1]);
+            const options = parsed.structuredQuestions?.[0]?.options;
+            if (!options || options.length === 0) return true; // text questions don't have options
+            return options.every(opt => opt.id && opt.label && opt.description);
+          } catch { return false; }
+
+  - description: "QUALITY: Should include 'Other/Specify' option for choice questions"
+    vars:
+      user_message: "Planning a ski trip"
+    assert:
+      - type: llm-rubric
+        value: |
+          For single_choice questions with limited predefined options, the AI should include
+          a final option like "Let me specify" or "Other" to give users flexibility.
+
+          If using a text type question (free-form input), that's also acceptable as it
+          inherently allows any input.
+
+          Score 1 if there's an escape hatch option OR if using text type, 0.5 if reasonable
+          fixed options but no escape.
+
+# Output configuration
+outputPath: evals/results/trip-designer-eval.json
+
+# Disable sharing (internal evaluation)
+sharing: false

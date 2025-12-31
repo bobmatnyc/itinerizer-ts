@@ -1,0 +1,14 @@
+{
+  "id": "0440ba21-21bb-4561-90cc-2ef559c6c6b7",
+  "version": 1,
+  "createdAt": "2025-12-24T02:54:39.941Z",
+  "updatedAt": "2025-12-24T02:54:39.943Z",
+  "title": "New Itinerary",
+  "status": "DRAFT",
+  "destinations": [],
+  "travelers": [],
+  "segments": [],
+  "tags": [],
+  "metadata": {},
+  "createdBy": "rob@matsuoka.com"
+}

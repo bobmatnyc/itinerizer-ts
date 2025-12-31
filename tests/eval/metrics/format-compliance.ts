@@ -1,11 +1,16 @@
 /**
  * Format compliance metrics for evaluating LLM responses
+ * Updated to match Trip Designer JSON format with structuredQuestions array
  */
 
-interface StructuredQuestions {
-  discovery?: string[];
-  refinement?: string[];
-  confirmation?: string[];
+interface TripDesignerResponse {
+  message?: string;
+  structuredQuestions?: Array<{
+    id: string;
+    type: string;
+    question: string;
+    options?: unknown[];
+  }>;
 }
 
 /**
@@ -54,63 +59,23 @@ export function evaluateJsonCompliance(response: string): number {
 }
 
 /**
- * Parse structured questions from response
+ * Parse Trip Designer JSON response
  */
-function parseStructuredQuestions(response: string): StructuredQuestions {
-  const questions: StructuredQuestions = {};
-
-  // Look for structured questions format
-  const discoveryMatch = response.match(
-    /discovery["\s:]*\[([^\]]*)\]/i
-  );
-  const refinementMatch = response.match(
-    /refinement["\s:]*\[([^\]]*)\]/i
-  );
-  const confirmationMatch = response.match(
-    /confirmation["\s:]*\[([^\]]*)\]/i
-  );
-
-  if (discoveryMatch) {
-    questions.discovery = extractQuestions(discoveryMatch[1]);
-  }
-  if (refinementMatch) {
-    questions.refinement = extractQuestions(refinementMatch[1]);
-  }
-  if (confirmationMatch) {
-    questions.confirmation = extractQuestions(confirmationMatch[1]);
+function parseTripDesignerResponse(
+  response: string
+): TripDesignerResponse | null {
+  // Extract JSON from ```json code fence
+  const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/);
+  if (!jsonMatch) {
+    return null;
   }
 
-  return questions;
-}
-
-/**
- * Extract individual questions from a string
- */
-function extractQuestions(text: string): string[] {
-  // Handle both JSON array format and quoted strings
   try {
-    // Try parsing as JSON array
-    const parsed = JSON.parse(`[${text}]`);
-    return parsed.filter((q: unknown) => typeof q === 'string' && q.trim());
+    const parsed = JSON.parse(jsonMatch[1]);
+    return parsed as TripDesignerResponse;
   } catch {
-    // Fallback: split by quotes
-    const questions = text
-      .split(/["']/)
-      .filter((q) => q.trim() && !q.match(/^\s*,\s*$/))
-      .map((q) => q.trim());
-    return questions;
+    return null;
   }
-}
-
-/**
- * Count total questions in response
- */
-function countQuestions(questions: StructuredQuestions): number {
-  let count = 0;
-  if (questions.discovery) count += questions.discovery.length;
-  if (questions.refinement) count += questions.refinement.length;
-  if (questions.confirmation) count += questions.confirmation.length;
-  return count;
 }
 
 /**
@@ -119,16 +84,22 @@ function countQuestions(questions: StructuredQuestions): number {
  * @returns 1.0 if exactly one question OR no questions (valid), 0.0 if multiple
  */
 export function evaluateOneQuestionRule(response: string): number {
-  const questions = parseStructuredQuestions(response);
-  const totalQuestions = countQuestions(questions);
+  const parsed = parseTripDesignerResponse(response);
+
+  if (!parsed) {
+    // No valid JSON found - neutral score
+    return 0.5;
+  }
+
+  const questionCount = parsed.structuredQuestions?.length ?? 0;
 
   // No questions is valid (agent providing info, not asking)
-  if (totalQuestions === 0) {
+  if (questionCount === 0) {
     return 1.0;
   }
 
   // Exactly one question is perfect
-  if (totalQuestions === 1) {
+  if (questionCount === 1) {
     return 1.0;
   }
 
@@ -141,12 +112,23 @@ export function evaluateOneQuestionRule(response: string): number {
  */
 export function getQuestionCount(response: string): {
   total: number;
-  byCategory: StructuredQuestions;
+  hasMessage: boolean;
+  hasStructuredQuestions: boolean;
 } {
-  const questions = parseStructuredQuestions(response);
+  const parsed = parseTripDesignerResponse(response);
+
+  if (!parsed) {
+    return {
+      total: 0,
+      hasMessage: false,
+      hasStructuredQuestions: false,
+    };
+  }
+
   return {
-    total: countQuestions(questions),
-    byCategory: questions,
+    total: parsed.structuredQuestions?.length ?? 0,
+    hasMessage: !!parsed.message,
+    hasStructuredQuestions: !!parsed.structuredQuestions,
   };
 }
 
@@ -188,40 +170,109 @@ export function evaluateMarkdownQuality(response: string): number {
 }
 
 /**
+ * Evaluate message length (should be short, under 250 chars)
+ */
+export function evaluateMessageLength(response: string): number {
+  const parsed = parseTripDesignerResponse(response);
+
+  if (!parsed || !parsed.message) {
+    return 0.5; // No message field
+  }
+
+  const messageLength = parsed.message.length;
+
+  // Perfect: under 200 chars
+  if (messageLength < 200) {
+    return 1.0;
+  }
+
+  // Good: under 250 chars
+  if (messageLength < 250) {
+    return 0.8;
+  }
+
+  // Acceptable: under 300 chars
+  if (messageLength < 300) {
+    return 0.6;
+  }
+
+  // Too long: 300+ chars
+  return 0.3;
+}
+
+/**
+ * Check if response has required fields (message and structuredQuestions)
+ */
+export function evaluateRequiredFields(response: string): number {
+  const parsed = parseTripDesignerResponse(response);
+
+  if (!parsed) {
+    return 0.0; // No valid JSON
+  }
+
+  const hasMessage = 'message' in parsed;
+  const hasStructuredQuestions = 'structuredQuestions' in parsed;
+
+  if (hasMessage && hasStructuredQuestions) {
+    return 1.0; // Perfect
+  }
+
+  if (hasMessage || hasStructuredQuestions) {
+    return 0.5; // Partial
+  }
+
+  return 0.0; // Neither field
+}
+
+/**
  * Comprehensive format compliance check
  */
 export function evaluateFormatCompliance(response: string): {
   jsonCompliance: number;
   oneQuestionCompliance: number;
   markdownQuality: number;
+  messageLengthCompliance: number;
+  requiredFieldsCompliance: number;
   overall: number;
   details: {
     hasValidJson: boolean;
     questionCount: number;
-    questionDetails: StructuredQuestions;
+    hasMessage: boolean;
+    hasStructuredQuestions: boolean;
   };
 } {
   const jsonCompliance = evaluateJsonCompliance(response);
   const oneQuestionCompliance = evaluateOneQuestionRule(response);
   const markdownQuality = evaluateMarkdownQuality(response);
+  const messageLengthCompliance = evaluateMessageLength(response);
+  const requiredFieldsCompliance = evaluateRequiredFields(response);
   const questionInfo = getQuestionCount(response);
 
   // Overall score: weighted average
-  // JSON compliance: 30%, One question rule: 40%, Markdown: 30%
+  // JSON compliance: 20%
+  // Required fields: 20%
+  // One question rule: 30%
+  // Message length: 20%
+  // Markdown: 10%
   const overall =
-    jsonCompliance * 0.3 +
-    oneQuestionCompliance * 0.4 +
-    markdownQuality * 0.3;
+    jsonCompliance * 0.2 +
+    requiredFieldsCompliance * 0.2 +
+    oneQuestionCompliance * 0.3 +
+    messageLengthCompliance * 0.2 +
+    markdownQuality * 0.1;
 
   return {
     jsonCompliance,
     oneQuestionCompliance,
     markdownQuality,
+    messageLengthCompliance,
+    requiredFieldsCompliance,
     overall,
     details: {
       hasValidJson: jsonCompliance >= 0.5,
       questionCount: questionInfo.total,
-      questionDetails: questionInfo.byCategory,
+      hasMessage: questionInfo.hasMessage,
+      hasStructuredQuestions: questionInfo.hasStructuredQuestions,
     },
   };
 }

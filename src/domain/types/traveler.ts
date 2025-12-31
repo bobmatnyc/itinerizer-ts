@@ -37,6 +37,10 @@ export interface TravelPreferences {
  * These are preferences that apply to the entire trip planning experience
  */
 export interface TripTravelerPreferences {
+  /** Traveler type - who is traveling */
+  travelerType?: 'solo' | 'couple' | 'family' | 'friends' | 'business' | 'group' | string;
+  /** Trip purpose - why they're traveling */
+  tripPurpose?: string; // e.g., 'vacation', 'business', 'client_meetings', 'conference', 'wedding'
   /** Travel style */
   travelStyle?: 'luxury' | 'moderate' | 'budget' | 'backpacker';
   /** Trip pacing preference */
@@ -45,6 +49,15 @@ export interface TripTravelerPreferences {
   interests?: string[]; // e.g., ['food', 'history', 'nature', 'nightlife']
   /** Budget flexibility (1-5 scale, 1 = very strict, 5 = very flexible) */
   budgetFlexibility?: number;
+  /** Budget details */
+  budget?: {
+    /** Budget amount */
+    amount?: number;
+    /** Currency code (ISO 4217) */
+    currency?: string;
+    /** Budget period (per_day, per_person, total) */
+    period?: 'per_day' | 'per_person' | 'total';
+  };
   /** Dietary restrictions for all travelers */
   dietaryRestrictions?: string;
   /** Mobility restrictions or accessibility needs */

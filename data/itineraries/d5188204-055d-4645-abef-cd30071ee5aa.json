@@ -1,0 +1,57 @@
+{
+  "id": "d5188204-055d-4645-abef-cd30071ee5aa",
+  "version": 6,
+  "createdAt": "2025-12-23T04:40:11.757Z",
+  "updatedAt": "2025-12-23T04:41:05.024Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo trip exploring authentic Japanese culture, focusing on Tokyo, Kyoto, and Takayama. Interests include temples, traditional gardens, and local dining experiences.",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "type": "FLIGHT",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T15:00:00.000Z",
+      "endDatetime": "2025-03-16T18:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T04:41:05.024Z"
+      },
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "UA870",
+      "origin": {
+        "name": "San Francisco International Airport",
+        "code": "SFO",
+        "city": "San Francisco",
+        "country": "United States",
+        "type": "AIRPORT"
+      },
+      "destination": {
+        "name": "Narita International Airport",
+        "code": "NRT",
+        "city": "Tokyo",
+        "country": "Japan",
+        "type": "AIRPORT"
+      },
+      "cabinClass": "ECONOMY",
+      "price": {
+        "amount": 1100,
+        "currency": "USD"
+      },
+      "notes": "Typical United Airlines transpacific flight. Arrival on March 16th due to international date line crossing.",
+      "metadata": {},
+      "id": "bb3a3dd0-8435-442e-a5e2-6362f931840d"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

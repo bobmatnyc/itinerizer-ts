@@ -1,0 +1,16 @@
+{
+  "id": "52555d69-2c07-4010-b80f-30c6d38bea0b",
+  "version": 2,
+  "createdAt": "2025-12-23T23:50:37.455Z",
+  "updatedAt": "2025-12-23T23:50:44.438Z",
+  "title": "Holiday Trip 2025",
+  "status": "DRAFT",
+  "startDate": "2025-12-23T17:00:00.000Z",
+  "endDate": "2025-12-30T17:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "test@example.com",
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}

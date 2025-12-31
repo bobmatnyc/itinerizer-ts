@@ -8,10 +8,14 @@
  */
 
 import { beforeAll } from 'vitest';
+import { config } from 'dotenv';
+
+// Load .env.test file
+config({ path: '.env.test' });
 
 const TEST_BASE_URL =
   process.env.ITINERIZER_TEST_BASE_URL || 'http://localhost:5176';
-const TEST_API_KEY = process.env.ITINERIZER_TEST_API_KEY;
+const TEST_API_KEY = process.env.ITINERIZER_TEST_API_KEY || process.env.OPENROUTER_API_KEY;
 
 /**
  * Check if test server is running

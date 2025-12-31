@@ -5,7 +5,7 @@
  * localStorage persistence, and SSR-safe operations.
  */
 
-import { clearItineraries } from './itineraries';
+import { eventBus } from './events';
 
 // SSR-safe localStorage access
 const isBrowser = typeof window !== 'undefined';
@@ -102,8 +102,8 @@ class AuthStore {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(USER_EMAIL_KEY);
     }
-    // Clear cached itinerary data
-    clearItineraries();
+    // Emit logout event for other stores to react
+    eventBus.emit({ type: 'auth:logout' });
   }
 
   /**

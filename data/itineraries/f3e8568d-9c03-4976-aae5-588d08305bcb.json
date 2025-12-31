@@ -1,0 +1,75 @@
+{
+  "id": "f3e8568d-9c03-4976-aae5-588d08305bcb",
+  "version": 7,
+  "createdAt": "2025-12-23T04:56:48.058Z",
+  "updatedAt": "2025-12-23T04:58:35.200Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo trip exploring Tokyo, Kyoto, and Takayama. Focus on traditional culture, temples, gardens, and local dining experiences.",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "id": "9d7b0a00-7eb1-46c2-8317-17aba496edec",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T15:00:00.000Z",
+      "endDatetime": "2025-03-16T18:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T04:57:36.024Z"
+      },
+      "notes": "Long-haul flight from San Francisco to Tokyo. Crosses international date line.",
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "UA869",
+      "origin": {
+        "name": "San Francisco International Airport",
+        "code": "SFO"
+      },
+      "destination": {
+        "name": "Narita International Airport",
+        "code": "NRT"
+      },
+      "cabinClass": "ECONOMY"
+    },
+    {
+      "type": "ACTIVITY",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-16T05:00:00.000Z",
+      "endDatetime": "2025-03-16T08:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T04:58:35.199Z"
+      },
+      "name": "teamLab Borderless Digital Art Museum",
+      "description": "Immersive digital art museum with interactive light and sound installations. Wear comfortable shoes and be prepared for a unique sensory experience.",
+      "location": {
+        "name": "teamLab Borderless, Odaiba, Tokyo",
+        "city": "Tokyo",
+        "country": "Japan",
+        "type": "ATTRACTION"
+      },
+      "category": "museum",
+      "price": {
+        "amount": 3200,
+        "currency": "JPY"
+      },
+      "notes": "Located in Odaiba. Advance ticket booking recommended. No photography restrictions.",
+      "metadata": {},
+      "id": "9adfbb4f-dca6-4947-930b-f0d3e6bc2427"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

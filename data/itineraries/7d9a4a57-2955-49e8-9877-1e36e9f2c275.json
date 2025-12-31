@@ -1,0 +1,17 @@
+{
+  "id": "7d9a4a57-2955-49e8-9877-1e36e9f2c275",
+  "version": 11,
+  "createdAt": "2025-12-21T18:17:42.109Z",
+  "updatedAt": "2025-12-21T19:59:43.684Z",
+  "title": "Tokyo & Kyoto Trip",
+  "description": "7-day trip split between Tokyo (3 days) and Kyoto (4 days)",
+  "status": "DRAFT",
+  "startDate": "2025-12-21T00:00:00.000Z",
+  "endDate": "2025-12-28T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "segments": [],
+  "tags": [],
+  "metadata": {},
+  "createdBy": "bob@matsuoka.com"
+}

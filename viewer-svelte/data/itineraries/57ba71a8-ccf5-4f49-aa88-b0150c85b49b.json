@@ -1,0 +1,52 @@
+{
+  "id": "57ba71a8-ccf5-4f49-aa88-b0150c85b49b",
+  "version": 2,
+  "createdAt": "2025-12-29T15:13:22.544Z",
+  "updatedAt": "2025-12-29T15:13:22.547Z",
+  "title": "St. Maarten (SXM) Jan 8-15",
+  "status": "DRAFT",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "masa@matsuoka.com",
+  "segments": [
+    {
+      "type": "FLIGHT",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-08T16:18:00.000Z",
+      "endDatetime": "2026-01-16T00:18:00.000Z",
+      "confirmationNumber": "KDNZEJ",
+      "bookingReference": "KDNZEJ",
+      "provider": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "airline": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "origin": {
+        "name": "New York, NY (JFK)",
+        "code": "JFK",
+        "city": "New York",
+        "country": "United States"
+      },
+      "destination": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM",
+        "city": "St. Maarten",
+        "country": "Sint Maarten"
+      },
+      "flightNumber": "B6887/B6788",
+      "cabinClass": "ECONOMY",
+      "notes": "Roundtrip flight for 2 adults",
+      "inferred": false,
+      "confidence": 0.8,
+      "source": "import",
+      "metadata": {},
+      "travelerIds": [],
+      "id": "58e8aa79-5fee-4f60-a462-0c9fef1b2297"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

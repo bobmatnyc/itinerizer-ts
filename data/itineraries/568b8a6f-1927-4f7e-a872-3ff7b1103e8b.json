@@ -1,0 +1,31 @@
+{
+  "id": "568b8a6f-1927-4f7e-a872-3ff7b1103e8b",
+  "version": 2,
+  "createdAt": "2025-12-23T04:28:57.134Z",
+  "updatedAt": "2025-12-23T04:29:03.579Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo cultural exploration of Japan, focusing on authentic experiences and local cuisine",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}"travelStyle": "moderate",
+    "interests": [
+      "food",
+      "culture",
+      "history"
+    ],
+    "budgetFlexibility": 3,
+    "origin": "San Francisco",
+    "activityPreferences": [
+      "local experiences",
+      "museums",
+      "food tours"
+    ]
+  }
+}

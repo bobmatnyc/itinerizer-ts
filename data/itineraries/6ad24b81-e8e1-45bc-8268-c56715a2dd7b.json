@@ -1,0 +1,62 @@
+{
+  "id": "6ad24b81-e8e1-45bc-8268-c56715a2dd7b",
+  "version": 64,
+  "createdAt": "2025-12-29T01:46:22.548Z",
+  "updatedAt": "2025-12-29T06:11:33.032Z",
+  "title": "St. Martin Vacation",
+  "description": "7-day Caribbean island vacation exploring St. Martin's beaches, cuisine, and culture",
+  "status": "DRAFT",
+  "startDate": "2026-01-08T17:00:00.000Z",
+  "endDate": "2026-01-15T17:00:00.000Z",
+  "destinations": [],
+  "travelers": [
+    {
+      "id": "df694704-a633-4bb1-a508-40f39429ef89",
+      "type": "ADULT",
+      "firstName": "Masa",
+      "lastName": "",
+      "loyaltyPrograms": [],
+      "specialRequests": [],
+      "metadata": {
+        "isPrimary": true
+      }
+    }
+  ],
+  "createdBy": "masa@matsuoka.com",
+  "segments": [
+    {
+      "id": "533452de-e1ae-4876-9801-4a4109a92b16",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-08T20:00:00.000Z",
+      "endDatetime": "2026-01-15T16:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-29T02:09:45.734Z"
+      },
+      "metadata": {},
+      "type": "HOTEL",
+      "property": {
+        "name": "Hotel L'Esplanade"
+      },
+      "location": {
+        "name": "Grand Case"
+      },
+      "checkInDate": "2026-01-08T20:00:00.000Z",
+      "checkOutDate": "2026-01-15T16:00:00.000Z",
+      "checkInTime": "15:00",
+      "checkOutTime": "11:00",
+      "roomType": "Romantic Suite",
+      "roomCount": 1,
+      "amenities": []
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}[]
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

@@ -97,7 +97,7 @@ instruction_reinforcement:
   - '[PM-INSTRUCTION] Remember to delegate all work to agents'
   - '[PM-INSTRUCTION] Do not use Edit, Write, or Bash tools directly'
   - '[PM-INSTRUCTION] Your role is orchestration and coordination'
-  test_mode: true
+  test_mode: false
 log_format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 log_level: INFO
 managed_path: /Users/masa/Projects/managed
@@ -195,3 +195,6 @@ updates:
   check_frequency: daily
 use_ai_trackdown_tools: false
 verbose: false
+skills:
+  agent_referenced: []
+  user_defined: []

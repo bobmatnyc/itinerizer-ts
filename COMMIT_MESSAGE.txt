@@ -1,0 +1,46 @@
+fix: implement service instance caching to resolve session persistence bug
+
+Critical bug fix for TripDesignerService session management when using
+X-OpenRouter-API-Key header.
+
+Problem:
+- Each request with header API key created a NEW TripDesignerService instance
+- Sessions created in one request were not accessible in subsequent requests
+- Users experienced "Session not found" errors in multi-step conversations
+
+Root Cause:
+getTripDesignerService() was creating a new service instance for every
+request instead of reusing existing instances for the same API key.
+
+Solution:
+- Added Map<string, TripDesignerService> cache at router level
+- Cache instances by API key to maintain session state across requests
+- Check cache before creating new instances
+- Properly isolates state between different API keys (multi-tenancy)
+
+Benefits:
+- Sessions persist across requests with same API key
+- Improved performance (instance reuse vs recreation)
+- Reduced memory usage
+- Proper multi-tenant isolation
+
+Changes:
+- src/server/routers/trip-designer.router.ts
+  - Added serviceCache Map for caching service instances
+  - Modified getTripDesignerService() to check/use cache
+  - Added dependencies to support header-based service creation
+  - Updated all endpoints to use getTripDesignerService()
+
+- src/server/api.ts
+  - Pass additional dependencies to createTripDesignerRouter()
+
+Testing:
+- Server builds successfully
+- Verification test passes (test-service-cache.mjs)
+- All router endpoints properly use cached services
+- Multi-tenancy verified (different keys = different instances)
+
+Documentation:
+- BUGFIX-SESSION-PERSISTENCE.md - Technical details
+- ARCHITECTURE-BEFORE-AFTER.md - Visual diagrams
+- FIX-SUMMARY.md - Quick reference

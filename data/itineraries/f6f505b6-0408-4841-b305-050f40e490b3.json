@@ -1,0 +1,82 @@
+{
+  "id": "f6f505b6-0408-4841-b305-050f40e490b3",
+  "version": 13,
+  "createdAt": "2025-12-31T13:59:39.353Z",
+  "updatedAt": "2025-12-31T14:12:25.082Z",
+  "title": "New York Winter Getaway",
+  "description": "Winter trip to New York City, exploring the city's winter attractions and experiences",
+  "status": "DRAFT",
+  "startDate": "2026-01-08T17:00:00.000Z",
+  "endDate": "2026-01-15T17:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "masa@matsuoka.com",
+  "segments": [
+    {
+      "id": "b978852a-5a04-41bc-a3da-0b9270cdb3e2",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-08T16:18:00.000Z",
+      "endDatetime": "2026-01-08T21:21:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "confirmationNumber": "KDNZEJ",
+      "bookingReference": "B6887",
+      "provider": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "notes": "Seat 2C",
+      "metadata": {},
+      "inferred": false,
+      "type": "FLIGHT",
+      "airline": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "flightNumber": "B6887",
+      "origin": {
+        "name": "New York, NY (JFK)",
+        "code": "JFK"
+      },
+      "destination": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM"
+      },
+      "cabinClass": "ECONOMY"
+    },
+    {
+      "id": "2ea285c6-8cd1-4744-ad15-d561377f8c89",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-15T20:43:00.000Z",
+      "endDatetime": "2026-01-16T00:18:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "confirmationNumber": "KDNZEJ",
+      "bookingReference": "B6788",
+      "provider": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "notes": "Seat 11A",
+      "metadata": {},
+      "inferred": false,
+      "type": "FLIGHT",
+      "airline": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "flightNumber": "B6788",
+      "origin": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM"
+      },
+      "destination": {
+        "name": "New York, NY (JFK)",
+        "code": "JFK"
+      },
+      "cabinClass": "ECONOMY"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

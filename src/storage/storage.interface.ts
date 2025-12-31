@@ -44,10 +44,10 @@ export interface ItinerarySummary {
   title: string;
   /** Current status */
   status: string;
-  /** Trip start date */
-  startDate: Date;
-  /** Trip end date */
-  endDate: Date;
+  /** Trip start date - optional, collected by trip designer */
+  startDate?: Date;
+  /** Trip end date - optional, collected by trip designer */
+  endDate?: Date;
   /** Number of travelers */
   travelerCount: number;
   /** Number of segments */

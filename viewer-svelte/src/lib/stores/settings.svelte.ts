@@ -182,3 +182,11 @@ class SettingsStore {
 
 // Export singleton instance
 export const settingsStore = new SettingsStore();
+
+/**
+ * Derived value for whether AI features are available
+ * AI features require a valid OpenRouter API key
+ */
+export function hasAIAccess(): boolean {
+  return !!settingsStore.openRouterKey?.trim();
+}

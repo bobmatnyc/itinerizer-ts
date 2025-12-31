@@ -7,13 +7,16 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			$services: path.resolve(__dirname, '../src/services'),
-			$domain: path.resolve(__dirname, '../src/domain')
+			$domain: path.resolve(__dirname, '../src/domain'),
+			$storage: path.resolve(__dirname, '../src/storage')
 		}
 	},
 	// Include markdown files as assets for ?raw imports
 	assetsInclude: ['**/*.md'],
 	server: {
 		port: 5176,
+		host: true,
+		allowedHosts: ['tripbot.ngrok.io'],
 		fs: {
 			// Allow serving files from the parent directory
 			allow: ['..']

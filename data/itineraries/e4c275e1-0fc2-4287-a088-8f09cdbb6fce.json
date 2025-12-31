@@ -1,0 +1,63 @@
+{
+  "id": "e4c275e1-0fc2-4287-a088-8f09cdbb6fce",
+  "version": 5,
+  "createdAt": "2025-12-29T17:36:41.954Z",
+  "updatedAt": "2025-12-29T17:47:58.081Z",
+  "title": "St. Maarten Getaway",
+  "status": "DRAFT",
+  "startDate": "2026-01-08T17:00:00.000Z",
+  "endDate": "2026-01-15T17:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "masa@matsuoka.com",
+  "segments": [
+    {
+      "id": "cb247355-b9bc-49e7-934b-adfe760ba4e2",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-08T16:18:00.000Z",
+      "endDatetime": "2026-01-16T00:18:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "confirmationNumber": "KDNZEJ",
+      "bookingReference": "KDNZEJ",
+      "provider": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "notes": "Roundtrip flight for 2 adults",
+      "metadata": {},
+      "inferred": false,
+      "type": "FLIGHT",
+      "airline": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "flightNumber": "B6887/B6788",
+      "origin": {
+        "name": "New York, NY (JFK)",
+        "code": "JFK"
+      },
+      "destination": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM"
+      },
+      "cabinClass": "ECONOMY"
+    }
+  ],
+  "tags": [],
+  "metadata": {},
+  "tripPreferences": {
+    "travelerType": "couple"
+  }
+}       "code": "JFK"
+      },
+      "destination": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM"
+      },
+      "cabinClass": "ECONOMY"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

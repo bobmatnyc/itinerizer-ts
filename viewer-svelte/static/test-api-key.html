@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Key Validation Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      line-height: 1.6;
+    }
+    .test-section {
+      background: #f5f5f5;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .result {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 4px;
+    }
+    .success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    pre {
+      background: white;
+      padding: 0.75rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Key Validation Test</h1>
+  <p>This page tests the API key validation fix in ChatBox.svelte</p>
+
+  <div class="test-section">
+    <h2>Step 1: Set API Key in localStorage</h2>
+    <button onclick="setApiKey()">Set Test API Key</button>
+    <button onclick="clearApiKey()">Clear API Key</button>
+    <div id="setResult"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Step 2: Check localStorage</h2>
+    <button onclick="checkLocalStorage()">Check localStorage</button>
+    <div id="checkResult"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Step 3: Test API Key Retrieval</h2>
+    <button onclick="testApiKeyRetrieval()">Test getApiKeyFromStorage()</button>
+    <div id="retrievalResult"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Step 4: Navigate to App</h2>
+    <p>After setting the API key, navigate to the main app and check the browser console for debug logs:</p>
+    <ul>
+      <li>Look for <code>[ChatBox] onMount - API key check</code></li>
+      <li>Verify <code>hasKey: true</code></li>
+      <li>Verify no "No OpenRouter API key configured" error appears</li>
+    </ul>
+    <button onclick="goToApp()">Go to App</button>
+  </div>
+
+  <script>
+    function setApiKey() {
+      const settings = {
+        firstName: 'Test',
+        lastName: 'User',
+        nickname: 'Tester',
+        openRouterKey: 'sk-or-v1-test-key-12345-67890',
+        homeAirport: 'SFO'
+      };
+      localStorage.setItem('itinerizer_settings', JSON.stringify(settings));
+
+      const resultDiv = document.getElementById('setResult');
+      resultDiv.className = 'result success';
+      resultDiv.innerHTML = `<strong>✅ Success!</strong> API key set in localStorage<br>Key: ${settings.openRouterKey}`;
+    }
+
+    function clearApiKey() {
+      localStorage.removeItem('itinerizer_settings');
+      localStorage.removeItem('itinerizer_api_key');
+
+      const resultDiv = document.getElementById('setResult');
+      resultDiv.className = 'result success';
+      resultDiv.innerHTML = '<strong>✅ Cleared!</strong> All API keys removed from localStorage';
+    }
+
+    function checkLocalStorage() {
+      const settings = localStorage.getItem('itinerizer_settings');
+      const legacyKey = localStorage.getItem('itinerizer_api_key');
+
+      const resultDiv = document.getElementById('checkResult');
+
+      if (settings) {
+        try {
+          const parsed = JSON.parse(settings);
+          resultDiv.className = 'result success';
+          resultDiv.innerHTML = `
+            <strong>✅ Settings found!</strong>
+            <pre>${JSON.stringify(parsed, null, 2)}</pre>
+          `;
+        } catch (e) {
+          resultDiv.className = 'result error';
+          resultDiv.innerHTML = `<strong>❌ Error:</strong> Invalid JSON in localStorage<br>${e.message}`;
+        }
+      } else if (legacyKey) {
+        resultDiv.className = 'result success';
+        resultDiv.innerHTML = `<strong>✅ Legacy key found!</strong><br>Key: ${legacyKey}`;
+      } else {
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = '<strong>❌ No API key found</strong> in localStorage';
+      }
+    }
+
+    function testApiKeyRetrieval() {
+      // Same logic as api.ts and ChatBox.svelte
+      function getApiKeyFromStorage() {
+        try {
+          const settings = localStorage.getItem('itinerizer_settings');
+          if (settings) {
+            const parsed = JSON.parse(settings);
+            if (parsed.openRouterKey) return parsed.openRouterKey;
+          }
+
+          return localStorage.getItem('itinerizer_api_key');
+        } catch {
+          return null;
+        }
+      }
+
+      const apiKey = getApiKeyFromStorage();
+      const resultDiv = document.getElementById('retrievalResult');
+
+      if (apiKey && apiKey.trim() !== '') {
+        resultDiv.className = 'result success';
+        resultDiv.innerHTML = `
+          <strong>✅ API Key Retrieved!</strong><br>
+          <pre>Key: ${apiKey}
+Length: ${apiKey.length}
+Valid: ${apiKey.trim() !== ''}</pre>
+        `;
+      } else {
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = '<strong>❌ No API key retrieved</strong> or key is empty';
+      }
+    }
+
+    function goToApp() {
+      window.location.href = '/';
+    }
+
+    // Auto-check on page load
+    window.addEventListener('load', () => {
+      checkLocalStorage();
+      testApiKeyRetrieval();
+    });
+  </script>
+</body>
+</html>

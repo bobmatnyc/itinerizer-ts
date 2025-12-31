@@ -149,3 +149,5 @@ wheels/
 
 # Added by Claude MPM /mpm-init
 kuzu-memories/
+# pdf-parse workaround (library bug)
+test/data/05-versions-space.pdf

@@ -21,3 +21,5 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+# pdf-parse workaround (library bug)
+test/data/05-versions-space.pdf

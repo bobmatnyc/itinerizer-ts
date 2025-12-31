@@ -1,0 +1,17 @@
+{
+  "id": "7d141d8c-0817-4a26-b166-04272e08f791",
+  "version": 5,
+  "createdAt": "2025-12-23T06:00:20.540Z",
+  "updatedAt": "2025-12-23T06:00:43.431Z",
+  "title": "Orlando Family Theme Park Vacation",
+  "description": "Family vacation with theme parks, suitable for children ages 6 and 9",
+  "status": "DRAFT",
+  "startDate": "2025-06-15T00:00:00.000Z",
+  "endDate": "2025-06-22T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}

@@ -6,6 +6,7 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { itineraryCreateSchema } from '$domain/schemas/itinerary.schema.js';
 
 /**
  * GET /api/v1/itineraries
@@ -40,7 +41,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 /**
  * POST /api/v1/itineraries
  * Create blank itinerary with user ownership
- * Body: { title, description?, startDate, endDate, draft? }
+ * Body: { title, description?, startDate?, endDate?, tripType?, origin?, destinations?, tags? }
  */
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const { collectionService } = locals.services;
@@ -54,19 +55,27 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	const body = await request.json();
-	const { title, description, startDate, endDate, draft } = body;
 
-	if (!title || !startDate || !endDate) {
+	// Validate using Zod schema
+	const validation = itineraryCreateSchema.safeParse(body);
+	if (!validation.success) {
+		const errorMessages = validation.error.errors
+			.map((e) => `${e.path.join('.')}: ${e.message}`)
+			.join('; ');
 		throw error(400, {
-			message: 'Missing required fields: title, startDate, and endDate are required'
+			message: `Invalid itinerary data: ${errorMessages}`
 		});
 	}
 
+	// Use validated data
+	const { title, description, startDate, endDate, draft, ...rest } = body;
+
+	// Dates are optional for new trips - trip designer will ask about them
 	const result = await collectionService.createItinerary({
-		title,
+		...validation.data,
 		description: description || '',
-		startDate: new Date(startDate),
-		endDate: new Date(endDate),
+		startDate: startDate ? new Date(startDate) : undefined,
+		endDate: endDate ? new Date(endDate) : undefined,
 		draft: draft === true,
 		createdBy: userEmail
 	});

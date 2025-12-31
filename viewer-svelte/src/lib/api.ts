@@ -83,6 +83,7 @@ function getAIHeaders(): HeadersInit {
 // API v1 route constants
 const API_V1 = {
   BASE: '/api/v1',
+  HEALTH: '/api/v1/health',
   ITINERARIES: '/api/v1/itineraries',
   DESIGNER: {
     SESSIONS: '/api/v1/designer/sessions',
@@ -112,6 +113,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const apiClient = {
+  // Health check
+  async checkHealth(): Promise<{ status: string; timestamp: string; service: string }> {
+    const response = await fetch(`${API_BASE_URL}${API_V1.HEALTH}`, {
+      cache: 'no-store',
+    });
+    return handleResponse(response);
+  },
+
   // Get all itineraries
   async getItineraries(): Promise<ItineraryListItem[]> {
     const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}`, {
@@ -296,6 +305,16 @@ export const apiClient = {
       headers: getAIHeaders(),
     });
     return handleResponse(response);
+  },
+
+  async deleteChatSession(sessionId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}${API_V1.DESIGNER.SESSIONS}/${sessionId}`, {
+      method: 'DELETE',
+      headers: getAIHeaders(),
+    });
+    if (!response.ok && response.status !== 204) {
+      throw new Error(`Failed to delete session: ${response.status} ${response.statusText}`);
+    }
   },
 
   async *sendChatMessageStream(sessionId: string, message: string): AsyncGenerator<ChatStreamEvent> {

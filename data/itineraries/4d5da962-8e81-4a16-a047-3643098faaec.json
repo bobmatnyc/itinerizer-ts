@@ -1,0 +1,42 @@
+{
+  "id": "4d5da962-8e81-4a16-a047-3643098faaec",
+  "version": 6,
+  "createdAt": "2025-12-23T05:53:38.342Z",
+  "updatedAt": "2025-12-23T05:54:37.409Z",
+  "title": "San Francisco Tech Conference Trip",
+  "description": "Tech conference with client networking, premium business accommodations",
+  "status": "DRAFT",
+  "startDate": "2025-04-10T00:00:00.000Z",
+  "endDate": "2025-04-13T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "type": "MEETING",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-04-11T13:00:00.000Z",
+      "endDatetime": "2025-04-11T22:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T05:54:37.408Z"
+      },
+      "title": "Tech Conference",
+      "location": {
+        "name": "Moscone Center",
+        "city": "San Francisco",
+        "country": "United States",
+        "type": "OTHER"
+      },
+      "attendees": [],
+      "agenda": "Technology industry conference, networking opportunities",
+      "notes": "Two-day technology conference, full day sessions",
+      "metadata": {},
+      "id": "cd956925-ef6b-4d7f-baed-364992ffe543"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

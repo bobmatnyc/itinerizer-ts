@@ -1,0 +1,17 @@
+{
+  "id": "bb7da53d-1b2e-4be8-8bbd-fb6be42c719b",
+  "version": 5,
+  "createdAt": "2025-12-23T06:11:43.714Z",
+  "updatedAt": "2025-12-23T06:12:02.874Z",
+  "title": "San Francisco Tech Conference Trip",
+  "description": "Tech conference with client dinners and networking, staying near Moscone Center",
+  "status": "DRAFT",
+  "startDate": "2025-04-10T00:00:00.000Z",
+  "endDate": "2025-04-13T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}

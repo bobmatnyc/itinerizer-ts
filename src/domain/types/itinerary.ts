@@ -28,10 +28,10 @@ export interface Itinerary {
   description?: string;
   /** Itinerary status */
   status: ItineraryStatus;
-  /** Trip start date */
-  startDate: Date;
-  /** Trip end date */
-  endDate: Date;
+  /** Trip start date - optional, collected by trip designer */
+  startDate?: Date;
+  /** Trip end date - optional, collected by trip designer */
+  endDate?: Date;
   /** Origin location */
   origin?: Location;
   /** Destination locations */

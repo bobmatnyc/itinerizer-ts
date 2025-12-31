@@ -1,0 +1,53 @@
+{
+  "id": "9fd9b55e-1c36-49d1-bc9d-afa822f19055",
+  "version": 6,
+  "createdAt": "2025-12-23T04:45:37.264Z",
+  "updatedAt": "2025-12-23T04:46:24.021Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo trip exploring authentic Japanese culture, focusing on Tokyo, Kyoto, and Takayama. Interests include temples, traditional gardens, and local dining experiences.",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "type": "FLIGHT",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T19:00:00.000Z",
+      "endDatetime": "2025-03-16T05:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T04:46:24.021Z"
+      },
+      "airline": {
+        "name": "All Nippon Airways",
+        "code": "NH"
+      },
+      "flightNumber": "NH1169",
+      "origin": {
+        "name": "San Francisco International Airport",
+        "code": "SFO",
+        "city": "San Francisco",
+        "country": "United States",
+        "type": "AIRPORT"
+      },
+      "destination": {
+        "name": "Narita International Airport",
+        "code": "NRT",
+        "city": "Tokyo",
+        "country": "Japan",
+        "type": "AIRPORT"
+      },
+      "cabinClass": "ECONOMY",
+      "notes": "Long-haul international flight, crossing international date line. Recommended to rest and adjust to time zone upon arrival.",
+      "metadata": {},
+      "id": "7dfc812f-1fd8-48d7-ad01-07f3a1215722"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

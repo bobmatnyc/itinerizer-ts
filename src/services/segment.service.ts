@@ -43,18 +43,20 @@ export class SegmentService {
       id: segment.id ?? generateSegmentId(),
     } as Segment;
 
-    // Validate segment dates are within itinerary date range
-    if (
-      segmentWithId.startDatetime < existing.startDate ||
-      segmentWithId.endDatetime > existing.endDate
-    ) {
-      return err(
-        createValidationError(
-          'CONSTRAINT_VIOLATION',
-          'Segment dates must be within itinerary date range',
-          'startDatetime'
-        )
-      );
+    // Validate segment dates are within itinerary date range (if itinerary has dates)
+    if (existing.startDate && existing.endDate) {
+      if (
+        segmentWithId.startDatetime < existing.startDate ||
+        segmentWithId.endDatetime > existing.endDate
+      ) {
+        return err(
+          createValidationError(
+            'CONSTRAINT_VIOLATION',
+            'Segment dates must be within itinerary date range',
+            'startDatetime'
+          )
+        );
+      }
     }
 
     // Validate start is before end
@@ -129,19 +131,21 @@ export class SegmentService {
       id: segmentId, // Prevent ID change
     } as Segment;
 
-    // Validate segment dates if changed
+    // Validate segment dates if changed (and itinerary has dates)
     if (updates.startDatetime || updates.endDatetime) {
-      if (
-        updatedSegment.startDatetime < existing.startDate ||
-        updatedSegment.endDatetime > existing.endDate
-      ) {
-        return err(
-          createValidationError(
-            'CONSTRAINT_VIOLATION',
-            'Segment dates must be within itinerary date range',
-            'startDatetime'
-          )
-        );
+      if (existing.startDate && existing.endDate) {
+        if (
+          updatedSegment.startDatetime < existing.startDate ||
+          updatedSegment.endDatetime > existing.endDate
+        ) {
+          return err(
+            createValidationError(
+              'CONSTRAINT_VIOLATION',
+              'Segment dates must be within itinerary date range',
+              'startDatetime'
+            )
+          );
+        }
       }
 
       if (updatedSegment.startDatetime >= updatedSegment.endDatetime) {

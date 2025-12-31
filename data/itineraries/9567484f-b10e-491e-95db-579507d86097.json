@@ -1,0 +1,53 @@
+{
+  "id": "9567484f-b10e-491e-95db-579507d86097",
+  "version": 6,
+  "createdAt": "2025-12-23T04:42:49.639Z",
+  "updatedAt": "2025-12-23T04:43:40.753Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo cultural trip exploring Tokyo, Kyoto, and Takayama. Focus on temples, traditional gardens, and local dining experiences.",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "type": "FLIGHT",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T15:00:00.000Z",
+      "endDatetime": "2025-03-16T18:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T04:43:40.753Z"
+      },
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "UA837",
+      "origin": {
+        "name": "San Francisco International Airport",
+        "code": "SFO",
+        "city": "San Francisco",
+        "country": "United States",
+        "type": "AIRPORT"
+      },
+      "destination": {
+        "name": "Narita International Airport",
+        "code": "NRT",
+        "city": "Tokyo",
+        "country": "Japan",
+        "type": "AIRPORT"
+      },
+      "cabinClass": "ECONOMY",
+      "notes": "Long-haul flight from San Francisco to Tokyo. Crosses international date line.",
+      "metadata": {},
+      "id": "4a6a6f8b-ac7d-4adb-ba8f-09517f786beb"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

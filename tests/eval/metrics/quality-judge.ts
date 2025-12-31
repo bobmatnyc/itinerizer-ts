@@ -151,11 +151,11 @@ export async function batchEvaluateQuality(
 ): Promise<QualityScore[]> {
   const results: QualityScore[] = [];
 
-  for (const eval of evaluations) {
+  for (const evaluation of evaluations) {
     const score = await evaluateResponseQuality(
-      eval.prompt,
-      eval.response,
-      eval.expectedBehavior,
+      evaluation.prompt,
+      evaluation.response,
+      evaluation.expectedBehavior,
       apiKey
     );
     results.push(score);

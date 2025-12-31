@@ -15,6 +15,7 @@ export interface CreateSessionResponse {
 export interface TestClientConfig {
   baseUrl?: string;
   apiKey?: string;
+  userEmail?: string;
 }
 
 /**
@@ -23,13 +24,42 @@ export interface TestClientConfig {
 export class TestClient {
   private readonly baseUrl: string;
   private readonly apiKey: string;
+  private readonly userEmail: string;
+  private sessionCookie: string | null = null;
 
   constructor(config: TestClientConfig = {}) {
     this.baseUrl = config.baseUrl || process.env.VITE_API_URL || 'http://localhost:5176';
     this.apiKey = config.apiKey || process.env.ITINERIZER_TEST_API_KEY || '';
+    this.userEmail = config.userEmail || process.env.ITINERIZER_TEST_USER_EMAIL || 'qa@test.com';
 
     if (!this.apiKey) {
       throw new Error('ITINERIZER_TEST_API_KEY environment variable is required');
+    }
+  }
+
+  /**
+   * Authenticate with the server (required before making API calls)
+   */
+  async authenticate(): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: this.userEmail }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(`Authentication failed: ${error.error || response.statusText}`);
+    }
+
+    // Extract session cookie from Set-Cookie header
+    const setCookie = response.headers.get('set-cookie');
+    if (setCookie) {
+      // Parse the itinerizer_session cookie value
+      const match = setCookie.match(/itinerizer_session=([^;]+)/);
+      if (match) {
+        this.sessionCookie = `itinerizer_session=${match[1]}; itinerizer_user_email=${this.userEmail}`;
+      }
     }
   }
 
@@ -41,9 +71,9 @@ export class TestClient {
       'Content-Type': 'application/json',
     };
 
-    // Add test user email for scoping
-    if (process.env.ITINERIZER_TEST_USER_EMAIL) {
-      headers['X-User-Email'] = process.env.ITINERIZER_TEST_USER_EMAIL;
+    // Add session cookie for authentication
+    if (this.sessionCookie) {
+      headers['Cookie'] = this.sessionCookie;
     }
 
     // Add OpenRouter API key for AI-powered endpoints
@@ -123,17 +153,26 @@ export class TestClient {
   }
 
   /**
-   * Send a message and get non-streaming response
+   * Send a message and get streaming response
    */
   async sendMessage(sessionId: string, message: string): Promise<Response> {
-    const response = await fetch(`${this.baseUrl}/api/v1/designer/sessions/${sessionId}/messages`, {
+    const response = await fetch(`${this.baseUrl}/api/v1/designer/sessions/${sessionId}/messages/stream`, {
       method: 'POST',
       headers: this.getHeaders(true),
       body: JSON.stringify({ message }),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to send message: ${response.status} ${response.statusText}`);
+      let errorMessage = `${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+      } catch {
+        // Use status text if JSON parsing fails
+      }
+      throw new Error(`Stream error: ${errorMessage}`);
     }
 
     return response;

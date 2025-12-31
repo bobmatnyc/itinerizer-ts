@@ -1,0 +1,94 @@
+{
+  "id": "aa4366b8-aed9-4aa8-8cd1-d178bbec36ee",
+  "version": 6,
+  "createdAt": "2025-12-31T00:00:42.959Z",
+  "updatedAt": "2025-12-31T00:01:33.131Z",
+  "title": "New York to St. Martin Winter Getaway",
+  "status": "DRAFT",
+  "startDate": "2026-01-08T17:00:00.000Z",
+  "endDate": "2026-01-15T17:00:00.000Z",
+  "destinations": [],
+  "travelers": [
+    {
+      "id": "1164815b-e401-4dd6-86fe-54f8affd9b8d",
+      "type": "ADULT",
+      "firstName": "Joanie",
+      "lastName": "",
+      "loyaltyPrograms": [],
+      "specialRequests": [],
+      "metadata": {
+        "relationship": "partner",
+        "isPrimary": false
+      }
+    }
+  ],
+  "createdBy": "masa@matsuoka.com",
+  "segments": [
+    {
+      "id": "b496f943-dcc9-4d4f-ab5c-2e680cb18326",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-08T16:18:00.000Z",
+      "endDatetime": "2026-01-08T21:21:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "confirmationNumber": "KDNZEJ",
+      "bookingReference": "B6887",
+      "provider": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "notes": "Seat 2C",
+      "metadata": {},
+      "inferred": false,
+      "type": "FLIGHT",
+      "airline": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "flightNumber": "B6887",
+      "origin": {
+        "name": "New York, NY (JFK)",
+        "code": "JFK"
+      },
+      "destination": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM"
+      },
+      "cabinClass": "ECONOMY"
+    },
+    {
+      "id": "721fe187-23a3-4f65-a1b2-ce5f353a7760",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-15T20:43:00.000Z",
+      "endDatetime": "2026-01-16T00:18:00.000Z",
+      "travelerIds": [],
+      "source": "import",
+      "confirmationNumber": "KDNZEJ",
+      "bookingReference": "B6788",
+      "provider": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "notes": "Seat 11A",
+      "metadata": {},
+      "inferred": false,
+      "type": "FLIGHT",
+      "airline": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "flightNumber": "B6788",
+      "origin": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM"
+      },
+      "destination": {
+        "name": "New York, NY (JFK)",
+        "code": "JFK"
+      },
+      "cabinClass": "ECONOMY"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

@@ -1,0 +1,17 @@
+{
+  "id": "40a2f40b-a414-423d-876f-56f831956a06",
+  "version": 5,
+  "createdAt": "2025-12-23T06:13:33.770Z",
+  "updatedAt": "2025-12-23T06:13:54.306Z",
+  "title": "Costa Rica Adventure: Manuel Antonio and Arenal",
+  "description": "10-day adventure trip for 6 friends, focusing on outdoor activities including beaches, volcano hiking, zip-lining, white water rafting, and snorkeling",
+  "status": "DRAFT",
+  "startDate": "2025-07-20T00:00:00.000Z",
+  "endDate": "2025-07-30T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}

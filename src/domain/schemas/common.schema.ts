@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { safeDateSchema as importedSafeDateSchema } from '../../utils/date-parser.js';
 
 // ===========================
 // Primitive schemas
@@ -16,8 +17,26 @@ export const uuidSchema = z.string().uuid();
 
 /**
  * Date schema - coerces string/number to Date
+ * @deprecated Use safeDateSchema instead to avoid timezone rollover bugs
  */
 export const dateSchema = z.coerce.date();
+
+/**
+ * Safe date schema - parses dates using local noon for date-only strings.
+ * This prevents timezone rollover bugs where midnight UTC becomes the previous day.
+ *
+ * Handles:
+ * - Date objects (returned as-is)
+ * - ISO date strings (YYYY-MM-DD) - parsed as local noon
+ * - ISO datetime strings (YYYY-MM-DDTHH:MM:SS) - preserves time
+ * - undefined/null - returns undefined
+ *
+ * @example
+ * safeDateSchema.parse('2025-12-25') // Date at 2025-12-25T12:00:00 local
+ * safeDateSchema.parse('2025-12-25T10:30:00') // Date at specified time
+ * safeDateSchema.parse(undefined) // undefined
+ */
+export const safeDateSchema = importedSafeDateSchema;
 
 /**
  * ISO date schema - validates YYYY-MM-DD format only

@@ -142,6 +142,21 @@ export interface ItineraryListItem {
   updatedAt: string;
 }
 
+// Import types
+export interface ExtractedSegment extends Omit<Segment, 'id' | 'metadata' | 'travelerIds'> {
+  confidence: number;
+  source?: SegmentSource;
+}
+
+export interface TripMatch {
+  itineraryId: string;
+  itineraryName: string;
+  destination: string;
+  dateRange: { start: string; end: string };
+  matchScore: number;
+  matchReasons: string[];
+}
+
 export interface ModelConfig {
   name: string;
   maxTokens: number;

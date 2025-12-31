@@ -1,0 +1,57 @@
+{
+  "id": "fef0c0cf-3070-491e-abd0-bd4943c69a9b",
+  "version": 6,
+  "createdAt": "2025-12-23T05:49:52.090Z",
+  "updatedAt": "2025-12-23T05:50:41.980Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo cultural exploration of Japan, focusing on authentic experiences and local cuisine",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "type": "FLIGHT",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T15:00:00.000Z",
+      "endDatetime": "2025-03-16T18:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T05:50:41.980Z"
+      },
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "UA837",
+      "origin": {
+        "name": "San Francisco International Airport",
+        "code": "SFO",
+        "city": "San Francisco",
+        "country": "United States",
+        "type": "AIRPORT"
+      },
+      "destination": {
+        "name": "Narita International Airport",
+        "code": "NRT",
+        "city": "Tokyo",
+        "country": "Japan",
+        "type": "AIRPORT"
+      },
+      "cabinClass": "ECONOMY",
+      "price": {
+        "amount": 1200,
+        "currency": "USD"
+      },
+      "notes": "Long-haul flight crossing international date line. Arrive next day in Tokyo.",
+      "metadata": {},
+      "id": "7dfa852a-894a-4e8a-b164-20feced1fb39"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

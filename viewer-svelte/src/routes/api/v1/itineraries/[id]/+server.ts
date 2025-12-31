@@ -18,19 +18,31 @@ async function verifyOwnership(
 	userEmail: string | null,
 	storage: any
 ): Promise<boolean> {
+	console.log('[verifyOwnership] Checking ownership:', { id, userEmail });
+
 	if (!userEmail) {
+		console.log('[verifyOwnership] No userEmail provided');
 		return false;
 	}
 
 	const loadResult = await storage.load(id);
 	if (!loadResult.success) {
+		console.log('[verifyOwnership] Failed to load itinerary:', loadResult.error?.message);
 		return false;
 	}
 
 	const itinerary = loadResult.value;
-	return (
-		itinerary.createdBy?.toLowerCase().trim() === userEmail.toLowerCase().trim()
-	);
+	const createdBy = itinerary.createdBy?.toLowerCase().trim();
+	const reqUser = userEmail.toLowerCase().trim();
+	const isOwner = createdBy === reqUser;
+
+	console.log('[verifyOwnership] Comparison:', {
+		createdBy,
+		reqUser,
+		isOwner
+	});
+
+	return isOwner;
 }
 
 /**
@@ -112,7 +124,7 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
  * Delete itinerary (ownership verified)
  */
 export const DELETE: RequestHandler = async ({ params, locals }) => {
-	const { collectionService, storage } = locals.services;
+	const { collectionService, storage, tripDesignerService } = locals.services;
 	const { userEmail } = locals;
 	const id = params.id as ItineraryId;
 
@@ -130,6 +142,11 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 		throw error(404, {
 			message: 'Itinerary not found: ' + result.error.message
 		});
+	}
+
+	// Clean up any associated chat sessions to prevent orphaned sessions with stale context
+	if (tripDesignerService) {
+		tripDesignerService.deleteSessionsByItineraryId(id);
 	}
 
 	return new Response(null, { status: 204 });

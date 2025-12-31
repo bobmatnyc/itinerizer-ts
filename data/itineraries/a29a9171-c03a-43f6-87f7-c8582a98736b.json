@@ -1,0 +1,17 @@
+{
+  "id": "a29a9171-c03a-43f6-87f7-c8582a98736b",
+  "version": 5,
+  "createdAt": "2025-12-23T05:10:56.115Z",
+  "updatedAt": "2025-12-23T05:11:17.570Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo trip exploring Tokyo, Kyoto, and Takayama, focusing on temples, traditional gardens, and local izakaya dining experiences",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}

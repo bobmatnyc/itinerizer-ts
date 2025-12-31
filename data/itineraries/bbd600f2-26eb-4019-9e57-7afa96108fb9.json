@@ -1,0 +1,42 @@
+{
+  "id": "bbd600f2-26eb-4019-9e57-7afa96108fb9",
+  "version": 8,
+  "createdAt": "2025-12-23T06:09:49.545Z",
+  "updatedAt": "2025-12-23T06:11:08.353Z",
+  "title": "Orlando Family Disney Vacation",
+  "description": "Family vacation with two children (ages 6 and 9), focusing on Disney World and Universal Studios. Vegetarian-friendly accommodations needed.",
+  "status": "DRAFT",
+  "startDate": "2025-06-15T00:00:00.000Z",
+  "endDate": "2025-06-22T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "type": "ACTIVITY",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-06-16T12:00:00.000Z",
+      "endDatetime": "2025-06-17T02:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T06:11:08.353Z"
+      },
+      "name": "Disney Magic Kingdom Full Day",
+      "description": "Full day at Magic Kingdom. Recommended strategy: Arrive early, prioritize popular rides like Space Mountain and Seven Dwarfs Mine Train. Consider FastPass/Genie+ for key attractions. Plan for vegetarian meal options.",
+      "location": {
+        "name": "Magic Kingdom",
+        "city": "Orlando",
+        "country": "United States",
+        "type": "ATTRACTION"
+      },
+      "category": "theme_park",
+      "notes": "Vegetarian dining available at locations like Columbia Harbour House and Cosmic Ray's Starlight Cafe. Bring snacks for 6 and 9-year-old children.",
+      "metadata": {},
+      "id": "c52db68f-0779-4692-949a-81bc7f6d3261"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

@@ -14,6 +14,27 @@ These tests verify the Trip Designer's behavior with actual OpenRouter API calls
 
 ## Test Files
 
+### `persona-itinerary-creation.e2e.test.ts`
+**NEW**: Complete itinerary creation using realistic traveler personas:
+
+1. **Solo Traveler** (Alex Chen) - 2 weeks in Japan
+   - Cultural immersion, local food, off-beaten-path
+   - Budget: $150-200/day
+
+2. **Family Vacation** (Johnson Family) - 7 days Orlando, FL
+   - Theme parks, kid-friendly activities with 2 kids (ages 6 & 9)
+   - Budget: Moderate, family packages
+
+3. **Business Trip** (Marcus Williams) - 3 days San Francisco
+   - Tech conference, premium hotels, efficiency-focused
+   - Budget: Company expense, premium preferred
+
+4. **Group Adventure** (6 Friends) - 10 days Costa Rica
+   - Outdoor adventures, shared accommodations, budget-conscious
+   - Budget: Group discounts, hostels
+
+All itineraries saved with `userId: "qa@test.com"` for verification.
+
 ### `trip-designer.e2e.test.ts`
 Full Trip Designer flows with real LLM calls:
 - New trip discovery (one question at a time)
@@ -75,14 +96,17 @@ npm run test:e2e
 ### Run Specific Test File
 
 ```bash
+# Persona itinerary creation tests
+npm run test:e2e -- persona-itinerary-creation
+
 # Trip Designer tests only
-npx vitest run tests/e2e/trip-designer.e2e.test.ts
+npm run test:e2e -- trip-designer
 
 # Help Agent tests only
-npx vitest run tests/e2e/help-agent.e2e.test.ts
+npm run test:e2e -- help-agent
 
 # Visualization tests only
-npx vitest run tests/e2e/visualization.e2e.test.ts
+npm run test:e2e -- visualization
 ```
 
 ### Run in Watch Mode (NOT RECOMMENDED)
@@ -93,10 +117,17 @@ npx vitest run tests/e2e/visualization.e2e.test.ts
 npx vitest tests/e2e/trip-designer.e2e.test.ts
 ```
 
-### Run Single Test
+### Run Single Test or Persona
 
 ```bash
-npx vitest run tests/e2e/trip-designer.e2e.test.ts -t "asks ONE structured question"
+# Run specific persona test
+npm run test:e2e -- -t "Solo Traveler"
+npm run test:e2e -- -t "Family Vacation"
+npm run test:e2e -- -t "Business Trip"
+npm run test:e2e -- -t "Group Adventure"
+
+# Run other single tests
+npm run test:e2e -- -t "asks ONE structured question"
 ```
 
 ## Configuration
@@ -190,6 +221,36 @@ Available fixtures:
 - `partial-segments`: Has some flights/hotels
 - `complete-trip`: Fully planned trip
 - `past-trip`: Completed trip in the past
+
+**Personas** (in `tests/fixtures/personas/`):
+- `solo-traveler.json`: Alex Chen - Solo travel, flexible budget
+- `family-vacation.json`: Johnson Family - 4 people with kids
+- `business-trip.json`: Marcus Williams - Business travel, premium
+- `group-adventure.json`: Adventure Friends - 6 people, budget-conscious
+
+### Verifying Created Itineraries
+
+After running `persona-itinerary-creation.e2e.test.ts`, itineraries are saved with `userId: "qa@test.com"`:
+
+```bash
+# View test output for created IDs
+npm run test:e2e -- persona-itinerary-creation
+
+# Output shows:
+# ✅ Created itineraries for qa@test.com:
+#    - 08d10489-69bc-41e0-aeff-59abd3491e31
+#    - 1096bf81-ce50-4df9-98d1-331dcbb36a0d
+#    ...
+```
+
+Check via API or UI:
+```bash
+# Via API
+curl http://localhost:5176/api/v1/itineraries | jq '.[] | select(.userId == "qa@test.com")'
+
+# Via UI (if logged in as qa@test.com)
+open http://localhost:5176
+```
 
 ## Writing New E2E Tests
 

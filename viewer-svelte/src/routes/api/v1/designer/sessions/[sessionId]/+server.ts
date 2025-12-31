@@ -46,7 +46,8 @@ export const GET: RequestHandler = async ({ params, request, locals }) => {
 
 /**
  * DELETE /api/v1/designer/sessions/:sessionId
- * End a chat session
+ * Delete a chat session
+ * Used to clean up sessions when switching itineraries or removing orphaned sessions
  */
 export const DELETE: RequestHandler = async ({ params, request, locals }) => {
 	// Get API key from header or use cached service
@@ -66,16 +67,19 @@ export const DELETE: RequestHandler = async ({ params, request, locals }) => {
 
 	const sessionId = params.sessionId as SessionId;
 
-	// Get session to verify it exists
-	const sessionResult = await tripDesignerService.getSession(sessionId);
+	// Delete the session
+	const deleteResult = await tripDesignerService.deleteSession(sessionId);
 
-	if (!sessionResult.success) {
-		throw error(404, {
-			message: `Session not found: No session found with id: ${sessionId}`
+	if (!deleteResult.success) {
+		// If session not found, still return success (idempotent delete)
+		if (deleteResult.error.code === 'NOT_FOUND') {
+			return new Response(null, { status: 204 });
+		}
+
+		throw error(500, {
+			message: `Failed to delete session: ${deleteResult.error.message}`
 		});
 	}
 
-	// TODO: Add endSession method to TripDesignerService
-	// For now, just return success
 	return new Response(null, { status: 204 });
 };

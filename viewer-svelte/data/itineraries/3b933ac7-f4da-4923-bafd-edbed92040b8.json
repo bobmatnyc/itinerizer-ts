@@ -1,0 +1,52 @@
+{
+  "id": "3b933ac7-f4da-4923-bafd-edbed92040b8",
+  "version": 2,
+  "createdAt": "2025-12-29T14:46:21.915Z",
+  "updatedAt": "2025-12-29T14:46:21.916Z",
+  "title": "St. Maarten Vacation",
+  "status": "DRAFT",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "masa@matsuoka.com",
+  "segments": [
+    {
+      "type": "FLIGHT",
+      "status": "CONFIRMED",
+      "startDatetime": "2026-01-08T16:18:00.000Z",
+      "endDatetime": "2026-01-16T00:18:00.000Z",
+      "confirmationNumber": "KDNZEJ",
+      "bookingReference": "KDNZEJ",
+      "provider": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "airline": {
+        "name": "JetBlue Airways",
+        "code": "B6"
+      },
+      "origin": {
+        "name": "New York, NY (JFK)",
+        "code": "JFK",
+        "city": "New York",
+        "country": "United States"
+      },
+      "destination": {
+        "name": "St. Maarten (SXM)",
+        "code": "SXM",
+        "city": "St. Maarten",
+        "country": "Sint Maarten"
+      },
+      "flightNumber": "B6887/B6788",
+      "cabinClass": "ECONOMY",
+      "notes": "Roundtrip flight for 2 adults",
+      "inferred": false,
+      "confidence": 0.8,
+      "source": "import",
+      "metadata": {},
+      "travelerIds": [],
+      "id": "ffa7727f-d6d1-460d-8d98-4a774762b55b"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

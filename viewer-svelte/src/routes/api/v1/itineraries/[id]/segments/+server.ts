@@ -7,6 +7,7 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { ItineraryId } from '$domain/types/branded.js';
+import { segmentSchema } from '$domain/schemas/segment.schema.js';
 
 /**
  * GET /api/v1/itineraries/:id/segments
@@ -30,7 +31,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 /**
  * POST /api/v1/itineraries/:id/segments
  * Add a new segment to an itinerary
- * Body: Partial<Segment> (without id, or with explicit id)
+ * Body: Segment (validated by segmentSchema)
  */
 export const POST: RequestHandler = async ({ params, request, locals }) => {
 	const { segmentService } = locals.services;
@@ -38,17 +39,23 @@ export const POST: RequestHandler = async ({ params, request, locals }) => {
 
 	const segmentData = await request.json();
 
-	if (!segmentData.startDatetime || !segmentData.endDatetime || !segmentData.type) {
+	// Validate using Zod schema
+	const validation = segmentSchema.safeParse(segmentData);
+	if (!validation.success) {
+		const errorMessages = validation.error.errors
+			.map((e) => `${e.path.join('.')}: ${e.message}`)
+			.join('; ');
 		throw error(400, {
-			message: 'Missing required fields: startDatetime, endDatetime, and type are required'
+			message: `Invalid segment data: ${errorMessages}`
 		});
 	}
 
-	// Convert date strings to Date objects
+	// Use validated data (already has proper types and defaults)
 	const segment = {
-		...segmentData,
-		startDatetime: new Date(segmentData.startDatetime),
-		endDatetime: new Date(segmentData.endDatetime)
+		...validation.data,
+		// Ensure dates are Date objects (Zod dateSchema handles conversion)
+		startDatetime: new Date(validation.data.startDatetime),
+		endDatetime: new Date(validation.data.endDatetime)
 	};
 
 	const result = await segmentService.add(itineraryId, segment);

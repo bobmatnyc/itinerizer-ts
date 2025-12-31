@@ -1,0 +1,17 @@
+{
+  "id": "a7f960d0-cf67-407b-b7f8-5b0ae05e8051",
+  "version": 3,
+  "createdAt": "2025-12-23T04:28:12.375Z",
+  "updatedAt": "2025-12-23T04:28:18.603Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo cultural exploration of Japan, focusing on authentic experiences and local cuisine",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}

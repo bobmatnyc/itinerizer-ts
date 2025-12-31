@@ -11,6 +11,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { EVAL_MODELS } from '../config/models';
 import type { EvalResult, EvalSample, EvalConfig } from './types';
 import { TEST_SUITES, getTestPromptsForAgent } from './test-prompts';
@@ -32,6 +33,8 @@ import {
   generateRecommendationsFile,
 } from './report-generator';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const RESULTS_DIR = path.join(__dirname, 'results');
 const DEFAULT_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -145,31 +148,43 @@ async function callModel(
 }
 
 /**
- * Get system prompt for agent
+ * Get system prompt for agent from file
  */
-function getSystemPromptForAgent(agent: string): string {
-  // Simplified system prompts for evaluation
-  const prompts: Record<string, string> = {
-    'trip-designer': `You are a trip planning assistant. Help users plan their travel itineraries.
-Use structured questions format:
-{
-  "discovery": ["ONE question here"] OR
-  "refinement": ["ONE question here"] OR
-  "confirmation": ["ONE question here"]
-}
-
-CRITICAL: Ask exactly ONE question at a time.`,
-
-    help: `You are a helpful assistant that explains how to use the Itinerizer app.
-Provide clear, concise answers to user questions.
-If the user wants to plan a trip or search for travel options, suggest they use the appropriate agent.`,
-
-    'travel-agent': `You are a travel search assistant. Help users find flights, hotels, restaurants, and activities.
-When you need more information, ask ONE clarifying question.
-Use search tools when you have enough information.`,
+async function getSystemPromptForAgent(agent: string): Promise<string> {
+  // Map agent names to their system prompt files
+  const promptFiles: Record<string, string> = {
+    'trip-designer': path.join(
+      __dirname,
+      '../../src/prompts/trip-designer/system.md'
+    ),
+    help: path.join(__dirname, '../../src/prompts/help/system.md'),
+    'travel-agent': path.join(
+      __dirname,
+      '../../src/prompts/travel-agent/system.md'
+    ),
   };
 
-  return prompts[agent] || prompts.help;
+  const promptFile = promptFiles[agent];
+  if (!promptFile) {
+    throw new Error(`No system prompt file configured for agent: ${agent}`);
+  }
+
+  try {
+    const content = await fs.readFile(promptFile, 'utf-8');
+    return content;
+  } catch (error) {
+    console.warn(
+      `Warning: Could not read system prompt from ${promptFile}, using fallback`
+    );
+    // Fallback prompts
+    const fallbacks: Record<string, string> = {
+      'trip-designer': `You are a trip planning assistant. Help users plan their travel itineraries.
+CRITICAL: Ask exactly ONE question at a time using structured JSON format.`,
+      help: `You are a helpful assistant that explains how to use the Itinerizer app.`,
+      'travel-agent': `You are a travel search assistant. Help users find flights, hotels, restaurants, and activities.`,
+    };
+    return fallbacks[agent] || fallbacks.help;
+  }
 }
 
 /**
@@ -184,7 +199,7 @@ async function runAgentEval(
   console.log(`  Running ${model} for ${agent}...`);
 
   const prompts = getTestPromptsForAgent(agent);
-  const systemPrompt = getSystemPromptForAgent(agent);
+  const systemPrompt = await getSystemPromptForAgent(agent);
   const samples: EvalSample[] = [];
 
   for (const testPrompt of prompts.slice(0, config.samplesPerAgent)) {
@@ -418,7 +433,7 @@ async function runEvaluation() {
 }
 
 // Run if executed directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   runEvaluation().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);

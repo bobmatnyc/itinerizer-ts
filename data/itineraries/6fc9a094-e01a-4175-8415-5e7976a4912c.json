@@ -1,0 +1,78 @@
+{
+  "id": "6fc9a094-e01a-4175-8415-5e7976a4912c",
+  "version": 5,
+  "createdAt": "2025-12-23T05:25:24.557Z",
+  "updatedAt": "2025-12-23T05:27:35.363Z",
+  "title": "Japan Cultural Adventure - Solo",
+  "description": "Solo cultural trip exploring Tokyo, Kyoto, and Takayama during cherry blossom season, focusing on temples, gardens, and local dining experiences",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "id": "a4e0bdfd-6006-4334-912c-3d1cc6769aa5",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T15:00:00.000Z",
+      "endDatetime": "2025-03-16T18:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T05:26:40.336Z"
+      },
+      "price": {
+        "amount": 1200,
+        "currency": "USD"
+      },
+      "metadata": {},
+      "type": "FLIGHT",
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "UA837",
+      "origin": {
+        "name": "San Francisco International Airport",
+        "code": "SFO"
+      },
+      "destination": {
+        "name": "Narita International Airport",
+        "code": "NRT"
+      },
+      "cabinClass": "ECONOMY"
+    },
+    {
+      "type": "ACTIVITY",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-16T18:00:00.000Z",
+      "endDatetime": "2025-03-16T21:00:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T05:27:35.363Z"
+      },
+      "name": "teamLab Borderless Digital Art Museum",
+      "description": "Immersive digital art museum featuring interactive light and sound installations",
+      "location": {
+        "name": "teamLab Borderless, Odaiba",
+        "city": "Tokyo",
+        "country": "Japan",
+        "type": "ATTRACTION"
+      },
+      "category": "museum",
+      "price": {
+        "amount": 3200,
+        "currency": "JPY"
+      },
+      "notes": "Wear comfortable walking shoes. Photography allowed. Advanced ticket purchase recommended.",
+      "metadata": {},
+      "id": "b7603369-ca20-4eee-a25b-4372342b5a00"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

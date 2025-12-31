@@ -19,10 +19,39 @@ import type { ItineraryStorage, ItinerarySummary } from './storage.interface.js'
  */
 export class JsonItineraryStorage implements ItineraryStorage {
   /**
+   * Per-itinerary write locks to prevent concurrent writes
+   */
+  private readonly writeLocks = new Map<string, Promise<void>>();
+
+  /**
    * Creates a new JSON storage instance
    * @param basePath - Base directory for storing itinerary files (default: ./data/itineraries)
    */
   constructor(private readonly basePath: string = './data/itineraries') {}
+
+  /**
+   * Acquire a write lock for an itinerary
+   * Ensures writes are serialized to prevent file corruption
+   */
+  private async acquireLock(id: ItineraryId): Promise<() => void> {
+    // Wait for any existing lock on this ID
+    const existingLock = this.writeLocks.get(id);
+    if (existingLock) {
+      await existingLock;
+    }
+
+    // Create a new lock with a resolver
+    let releaseLock: () => void;
+    const lockPromise = new Promise<void>((resolve) => {
+      releaseLock = resolve;
+    });
+    this.writeLocks.set(id, lockPromise);
+
+    return () => {
+      this.writeLocks.delete(id);
+      releaseLock!();
+    };
+  }
 
   /**
    * Get the file path for an itinerary
@@ -81,8 +110,12 @@ export class JsonItineraryStorage implements ItineraryStorage {
   /**
    * Save an itinerary (create or update)
    * Uses atomic write (write to .tmp file, then rename)
+   * Protected by per-itinerary lock to prevent concurrent write corruption
    */
   async save(itinerary: Itinerary): Promise<Result<Itinerary, StorageError>> {
+    // Acquire lock to prevent concurrent writes to the same file
+    const releaseLock = await this.acquireLock(itinerary.id);
+
     try {
       // Ensure directory exists
       await mkdir(dirname(this.getPath(itinerary.id)), { recursive: true });
@@ -110,6 +143,9 @@ export class JsonItineraryStorage implements ItineraryStorage {
           error: error instanceof Error ? error.message : String(error),
         })
       );
+    } finally {
+      // Always release the lock
+      releaseLock();
     }
   }
 
@@ -135,6 +171,7 @@ export class JsonItineraryStorage implements ItineraryStorage {
       const result = itinerarySchema.safeParse(parsed);
 
       if (!result.success) {
+        console.error('[json-storage] Validation failed for', id, JSON.stringify(result.error.errors, null, 2));
         return err(
           createStorageError('VALIDATION_ERROR', `Invalid itinerary data for ${id}`, {
             errors: result.error.errors,

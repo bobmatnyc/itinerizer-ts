@@ -87,6 +87,18 @@ export class InMemorySessionStorage implements SessionStorage {
     return ok(undefined);
   }
 
+  /**
+   * Delete all sessions associated with an itinerary
+   * Used for cleanup when an itinerary is deleted
+   */
+  deleteByItineraryId(itineraryId: ItineraryId): void {
+    for (const [sessionId, session] of this.sessions) {
+      if (session.itineraryId === itineraryId) {
+        this.sessions.delete(sessionId);
+      }
+    }
+  }
+
   /** Clear all sessions (for testing) */
   clear(): void {
     this.sessions.clear();
@@ -259,6 +271,24 @@ export class SessionManager {
 
     // Delete from storage
     return this.storage.delete(sessionId);
+  }
+
+  /**
+   * Delete all sessions for an itinerary
+   * Used when an itinerary is deleted to clean up orphaned sessions
+   */
+  deleteByItineraryId(itineraryId: ItineraryId): void {
+    // Remove from active sessions
+    for (const [sessionId, session] of this.activeSessions.entries()) {
+      if (session.itineraryId === itineraryId) {
+        this.activeSessions.delete(sessionId);
+      }
+    }
+
+    // Delete from storage (if it supports deleteByItineraryId)
+    if ('deleteByItineraryId' in this.storage) {
+      (this.storage as InMemorySessionStorage).deleteByItineraryId(itineraryId);
+    }
   }
 
   /**

@@ -8,8 +8,9 @@
  * - dream: Creative, imprecise - for gap filling, can invent plausible times/routes
  * - plan: Precise, real schedules - uses actual flight schedules, real hotel availability
  * - book: Actual bookable tickets - real-time availability, actual prices, booking links (TBD)
+ * - chat: Interactive trip designer chat mode - for conversational trip planning
  */
-export type AgentMode = 'dream' | 'plan' | 'book';
+export type AgentMode = 'dream' | 'plan' | 'book' | 'chat';
 
 /**
  * Configuration for agent mode behavior

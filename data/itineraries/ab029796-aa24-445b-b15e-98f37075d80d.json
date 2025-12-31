@@ -1,0 +1,52 @@
+{
+  "id": "ab029796-aa24-445b-b15e-98f37075d80d",
+  "version": 6,
+  "createdAt": "2025-12-23T04:36:41.347Z",
+  "updatedAt": "2025-12-23T04:37:30.735Z",
+  "title": "Japan Cultural Adventure",
+  "description": "Solo cultural trip exploring Tokyo, Kyoto, and Takayama. Focus on temples, traditional gardens, and authentic dining experiences.",
+  "status": "DRAFT",
+  "startDate": "2025-03-15T00:00:00.000Z",
+  "endDate": "2025-03-29T00:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "createdBy": "qa@test.com",
+  "segments": [
+    {
+      "type": "FLIGHT",
+      "status": "CONFIRMED",
+      "startDatetime": "2025-03-15T15:00:00.000Z",
+      "endDatetime": "2025-03-16T18:30:00.000Z",
+      "travelerIds": [],
+      "source": "agent",
+      "sourceDetails": {
+        "mode": "chat",
+        "timestamp": "2025-12-23T04:37:30.734Z"
+      },
+      "airline": {
+        "name": "United Airlines",
+        "code": "UA"
+      },
+      "flightNumber": "UA837",
+      "origin": {
+        "name": "San Francisco International Airport",
+        "code": "SFO",
+        "city": "San Francisco",
+        "country": "United States",
+        "type": "AIRPORT"
+      },
+      "destination": {
+        "name": "Narita International Airport",
+        "code": "NRT",
+        "city": "Tokyo",
+        "country": "Japan",
+        "type": "AIRPORT"
+      },
+      "cabinClass": "ECONOMY",
+      "metadata": {},
+      "id": "218ce14c-7c20-4882-9880-bebfe8434d6a"
+    }
+  ],
+  "tags": [],
+  "metadata": {}
+}

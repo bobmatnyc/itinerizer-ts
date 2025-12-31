@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import { settingsStore } from '$lib/stores/settings.svelte';
   import { authStore } from '$lib/stores/auth.svelte';
-  import { resetChat } from '$lib/stores/chat';
+  import { resetChat } from '$lib/stores/chat.svelte';
 
   let email = $state('');
   let password = $state('');

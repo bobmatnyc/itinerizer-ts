@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Destination Slideshow Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafafa;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      color: #1f2937;
+    }
+
+    .test-box {
+      position: relative;
+      height: 500px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .slideshow-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 300px;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 2s ease-in-out;
+    }
+
+    .slide.active {
+      opacity: 0.15;
+    }
+
+    .background-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(250, 250, 250, 0.5) 50%,
+        rgba(250, 250, 250, 1) 100%
+      );
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      padding: 2rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .slideshow-indicators {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+      z-index: 2;
+    }
+
+    .indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+
+    .indicator:hover {
+      background-color: rgba(255, 255, 255, 0.8);
+      transform: scale(1.2);
+    }
+
+    .indicator.active {
+      background-color: rgba(255, 255, 255, 0.9);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .controls {
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Destination Background Slideshow Test</h1>
+
+    <div class="controls">
+      <label for="destination">Destination:</label>
+      <select id="destination">
+        <option value="Paris">Paris</option>
+        <option value="Tokyo">Tokyo</option>
+        <option value="New York">New York</option>
+        <option value="Croatia">Croatia</option>
+        <option value="Santorini">Santorini</option>
+        <option value="Iceland">Iceland</option>
+        <option value="Bali">Bali</option>
+        <option value="Swiss Alps">Swiss Alps</option>
+      </select>
+
+      <label for="imageCount">Number of Images:</label>
+      <input type="number" id="imageCount" value="5" min="1" max="10">
+
+      <label for="interval">Rotation Interval (ms):</label>
+      <input type="number" id="interval" value="8000" min="1000" max="30000" step="1000">
+
+      <button onclick="loadSlideshow()">Load Slideshow</button>
+    </div>
+
+    <div class="test-box">
+      <div id="slideshow" class="slideshow-container">
+        <!-- Slideshow will be injected here -->
+      </div>
+
+      <div class="content">
+        <div class="card">
+          <h2>Itinerary Title</h2>
+          <p style="color: #6b7280;">This is sample content that appears above the background slideshow.</p>
+        </div>
+        <div class="card">
+          <h3>Day 1</h3>
+          <p>Sample itinerary segment with readable text over the background.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: white; padding: 1rem; border-radius: 8px;">
+      <h3>Test Checklist:</h3>
+      <ul style="margin-left: 1.5rem; margin-top: 0.5rem; line-height: 1.8;">
+        <li>✅ Images load from Unsplash Source</li>
+        <li>✅ Slideshow rotates automatically</li>
+        <li>✅ Fade transitions are smooth (2 seconds)</li>
+        <li>✅ Indicators show current position</li>
+        <li>✅ Clicking indicators changes image</li>
+        <li>✅ Text remains readable over images</li>
+        <li>✅ Gradient overlay is visible</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    let currentIndex = 0;
+    let images = [];
+    let intervalId = null;
+
+    function loadSlideshow() {
+      const destination = document.getElementById('destination').value;
+      const imageCount = parseInt(document.getElementById('imageCount').value);
+      const interval = parseInt(document.getElementById('interval').value);
+
+      // Clear existing slideshow
+      clearInterval(intervalId);
+      const container = document.getElementById('slideshow');
+      container.innerHTML = '';
+
+      // Generate image URLs
+      images = Array.from({ length: imageCount }, (_, i) => ({
+        url: `https://source.unsplash.com/1600x900/?${encodeURIComponent(destination)},travel,city&sig=${i}`,
+        alt: `${destination} travel image ${i + 1}`
+      }));
+
+      // Create slides
+      images.forEach((img, index) => {
+        const slide = document.createElement('div');
+        slide.className = 'slide' + (index === 0 ? ' active' : '');
+        slide.style.backgroundImage = `url(${img.url})`;
+        container.appendChild(slide);
+      });
+
+      // Create overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'background-overlay';
+      container.appendChild(overlay);
+
+      // Create indicators
+      const indicators = document.createElement('div');
+      indicators.className = 'slideshow-indicators';
+
+      images.forEach((_, index) => {
+        const indicator = document.createElement('button');
+        indicator.className = 'indicator' + (index === 0 ? ' active' : '');
+        indicator.onclick = () => goToSlide(index);
+        indicator.setAttribute('aria-label', `Go to image ${index + 1}`);
+        indicators.appendChild(indicator);
+      });
+
+      container.appendChild(indicators);
+
+      // Start auto-rotation
+      currentIndex = 0;
+      intervalId = setInterval(() => {
+        currentIndex = (currentIndex + 1) % images.length;
+        updateSlide();
+      }, interval);
+    }
+
+    function goToSlide(index) {
+      currentIndex = index;
+      updateSlide();
+    }
+
+    function updateSlide() {
+      const slides = document.querySelectorAll('.slide');
+      const indicators = document.querySelectorAll('.indicator');
+
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentIndex);
+      });
+
+      indicators.forEach((indicator, i) => {
+        indicator.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    // Load default slideshow on page load
+    window.onload = () => {
+      loadSlideshow();
+    };
+  </script>
+</body>
+</html>

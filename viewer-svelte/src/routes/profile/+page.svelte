@@ -15,8 +15,9 @@
   let saveError = $state('');
   let isOnboarding = $state(false);
   let airportError = $state('');
+  let isDemoKey = $state(false);
 
-  onMount(() => {
+  onMount(async () => {
     // Check authentication
     if (!authStore.isAuthenticated) {
       goto('/login');
@@ -33,6 +34,22 @@
     nickname = settingsStore.nickname;
     apiKey = settingsStore.getApiKey();
     homeAirport = settingsStore.homeAirport;
+
+    // Auto-fill demo key if user doesn't have one
+    if (!apiKey || apiKey.trim() === '') {
+      try {
+        const response = await fetch('/api/auth/demo-key');
+        const data = await response.json();
+        if (data.key) {
+          apiKey = data.key;
+          isDemoKey = true;
+          // Auto-save the demo key
+          settingsStore.updateApiKey(data.key);
+        }
+      } catch (error) {
+        console.error('Failed to fetch demo key:', error);
+      }
+    }
   });
 
   function validateHomeAirport(airport: string): boolean {
@@ -253,6 +270,9 @@
           <div class="current-key">
             <span class="label">Current key:</span>
             <span class="key-value">{maskedKey()}</span>
+            {#if isDemoKey}
+              <span class="demo-badge">Demo key provided</span>
+            {/if}
           </div>
         {/if}
 
@@ -490,6 +510,15 @@
   .current-key .key-value {
     color: #1f2937;
     font-family: monospace;
+  }
+
+  .demo-badge {
+    padding: 0.25rem 0.5rem;
+    background-color: #dbeafe;
+    color: #1e40af;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
   }
 
   .form-group {

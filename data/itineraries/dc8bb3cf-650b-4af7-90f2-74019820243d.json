@@ -1,13 +1,13 @@
 {
   "id": "dc8bb3cf-650b-4af7-90f2-74019820243d",
-  "version": 1,
+  "version": 2,
   "createdAt": "2025-12-18T14:24:23.309Z",
-  "updatedAt": "2025-12-18T22:23:15.437Z",
+  "updatedAt": "2025-12-21T20:02:11.300Z",
   "title": "Family Adventure in New York City",
   "description": "Explore the iconic sights and vibrant culture of New York City, from the Statue of Liberty to the bright lights of Times Square, while staying at the luxurious St. Regis hotel.",
   "status": "DRAFT",
-  "startDate": "2025-12-03T23:59:00.000Z",
-  "endDate": "2025-12-08T22:44:00.000Z",
+  "startDate": "2026-12-03T23:59:00.000Z",
+  "endDate": "2026-12-08T22:44:00.000Z",
   "destinations": [
     {
       "name": "Phoenix Sky Harbor International Airport"
@@ -411,5 +411,6 @@
     "dining",
     "entertainment"
   ],
-  "metadata": {}
+  "metadata": {},
+  "createdBy": "bob@matsuoka.com"
 }

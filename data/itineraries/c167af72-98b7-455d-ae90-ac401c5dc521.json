@@ -119,5 +119,6 @@
   ],
   "tripType": "BUSINESS",
   "tags": [],
-  "metadata": {}
+  "metadata": {},
+  "createdBy": "bob@matsuoka.com"
 }

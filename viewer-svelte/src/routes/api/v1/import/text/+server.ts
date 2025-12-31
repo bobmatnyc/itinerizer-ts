@@ -7,8 +7,8 @@
 
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { ImportService } from '../../../../../src/services/import/index.js';
-import { generateSegmentId } from '../../../../../src/domain/types/branded.js';
+import { ImportService } from '$services/import/index.js';
+import { generateSegmentId } from '$domain/types/branded.js';
 
 /**
  * Text import request body

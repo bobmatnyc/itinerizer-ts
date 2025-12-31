@@ -1,0 +1,15 @@
+{
+  "id": "7d10101f-8ce0-407b-8cdd-3f39867b36c7",
+  "version": 2,
+  "createdAt": "2025-12-23T23:55:04.305Z",
+  "updatedAt": "2025-12-23T23:55:04.306Z",
+  "title": "Test Trip",
+  "status": "DRAFT",
+  "startDate": "2026-06-15T16:00:00.000Z",
+  "endDate": "2026-06-25T16:00:00.000Z",
+  "destinations": [],
+  "travelers": [],
+  "segments": [],
+  "tags": [],
+  "metadata": {}
+}
