@@ -1,0 +1,11 @@
+{
+  "id": "3486be45-31d8-46d7-b439-90d66b4cd110",
+  "title": "Test Trip",
+  "userId": "test-user",
+  "startDate": "2025-12-31T14:25:41.249Z",
+  "endDate": "2025-12-31T14:25:41.249Z",
+  "segments": [],
+  "travelers": [],
+  "createdAt": "2025-12-31T14:25:41.249Z",
+  "updatedAt": "2025-12-31T14:25:41.249Z"
+}
