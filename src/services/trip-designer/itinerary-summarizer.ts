@@ -311,9 +311,12 @@ export function detectTitleDestinationMismatch(itinerary: Itinerary): TitleDesti
   }
 
   // Sort flights by date to find first/last
-  const sortedFlights = [...flightSegments].sort(
-    (a, b) => a.startDatetime.getTime() - b.startDatetime.getTime()
-  );
+  // Note: startDatetime may be a string (from JSON) or Date object
+  const sortedFlights = [...flightSegments].sort((a, b) => {
+    const dateA = a.startDatetime instanceof Date ? a.startDatetime : new Date(a.startDatetime);
+    const dateB = b.startDatetime instanceof Date ? b.startDatetime : new Date(b.startDatetime);
+    return dateA.getTime() - dateB.getTime();
+  });
 
   const firstFlight = sortedFlights[0];
   const lastFlight = sortedFlights[sortedFlights.length - 1];
@@ -431,6 +434,8 @@ export function summarizeItinerary(itinerary: Itinerary): string {
 
   // Check for title/destination mismatch FIRST
   const mismatch = detectTitleDestinationMismatch(itinerary);
+  console.log('[summarizeItinerary] Title:', itinerary.title);
+  console.log('[summarizeItinerary] Mismatch result:', JSON.stringify(mismatch, null, 2));
 
   if (mismatch?.hasMismatch) {
     lines.push('⚠️ **TITLE/DESTINATION MISMATCH DETECTED**');
