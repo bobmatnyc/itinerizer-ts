@@ -101,6 +101,19 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
         })
       );
 
+      // Ensure result is a proper ImportResultWithMatching object
+      if (!result || typeof result !== 'object') {
+        console.error('[Upload API] Invalid matching result type:', typeof result);
+        return json({
+          success: false,
+          format: 'unknown',
+          segments: [],
+          confidence: 0,
+          errors: ['Internal error: Invalid import result'],
+          action: 'pending_selection' as const,
+        });
+      }
+
       // Return matches first, then all other itineraries
       return json({
         ...result,
@@ -115,9 +128,31 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
       file.type
     );
 
+    // Ensure result is a proper ImportResult object
+    if (!result || typeof result !== 'object') {
+      console.error('[Upload API] Invalid result type:', typeof result);
+      return json({
+        success: false,
+        format: 'unknown',
+        segments: [],
+        confidence: 0,
+        errors: ['Internal error: Invalid import result'],
+      });
+    }
+
     return json(result);
   } catch (err) {
     console.error('Upload import error:', err);
-    return error(500, err instanceof Error ? err.message : 'Failed to process upload');
+    // Always return JSON, never plain text
+    return json(
+      {
+        success: false,
+        format: 'unknown',
+        segments: [],
+        confidence: 0,
+        errors: [err instanceof Error ? err.message : 'Failed to process upload'],
+      },
+      { status: 500 }
+    );
   }
 };

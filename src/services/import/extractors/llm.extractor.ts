@@ -167,9 +167,28 @@ export class LLMExtractor {
         };
       }
 
-      console.log('[LLMExtractor] Raw LLM response:', result);
+      console.log('[LLMExtractor] Raw LLM response:', result.substring(0, 200));
 
-      const parsed = JSON.parse(result);
+      // Validate that response is valid JSON before parsing
+      let parsed;
+      try {
+        parsed = JSON.parse(result);
+      } catch (jsonError) {
+        console.error('[LLMExtractor] Failed to parse LLM response as JSON:', jsonError);
+        console.error('[LLMExtractor] Response was:', result.substring(0, 500));
+        return {
+          success: false,
+          format,
+          segments: [],
+          confidence: 0,
+          errors: [
+            'LLM returned invalid JSON. This may be a model configuration issue.',
+            `Parse error: ${jsonError instanceof Error ? jsonError.message : 'Unknown error'}`,
+          ],
+          rawText: result.substring(0, 1000),
+        };
+      }
+
       console.log('[LLMExtractor] Parsed response:', {
         hasSegments: !!parsed.segments,
         segmentCount: parsed.segments?.length || 0,
