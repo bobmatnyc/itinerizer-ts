@@ -175,9 +175,8 @@
       {#if navigationStore.editMode === 'ai'}
         <!-- AI Mode: Show Chat Panel -->
         <ChatPanel
-          mode={agentConfig.mode}
-          placeholderText={agentConfig.placeholderText}
-          showTokenStats={agentConfig.showTokenStats}
+          bind:agent={agentConfig}
+          itineraryId={itineraryId}
         />
       {:else}
         <!-- Manual Mode: Show Itinerary List -->
