@@ -222,7 +222,7 @@ export const ADD_ACTIVITY_TOOL: ToolDefinition = {
   type: 'function',
   function: {
     name: 'add_activity',
-    description: 'Add an activity, tour, or experience to the itinerary',
+    description: 'REQUIRED CALL when user mentions ANY dining/activity (restaurant, tour, museum, show, etc.) OR when you recommend one. Add an activity, tour, dining experience, or attraction to the itinerary. You MUST call this tool immediately when mentioning restaurants or activities - verbal discussion alone will NOT save the data. Example: User says "Dinner at Le Tastevin" OR you recommend "Ocean 82 has great seafood" → You MUST call this tool with activity details BEFORE/DURING your response.',
     parameters: {
       type: 'object',
       properties: {
