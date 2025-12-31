@@ -404,17 +404,21 @@
   // Reload itinerary when updated (trip-designer only)
   $effect(() => {
     if (agent.mode === 'trip-designer' && $itineraryUpdated && itineraryId) {
-      showUpdatingIndicator = true;
-      loadItinerary(itineraryId);
-      itineraryUpdated.set(false);
+      // Use IIFE to handle async operation in $effect
+      (async () => {
+        showUpdatingIndicator = true;
+        // CRITICAL: Await the reload to ensure data is fetched before hiding indicator
+        await loadItinerary(itineraryId);
+        itineraryUpdated.set(false);
 
-      setTimeout(() => {
-        showUpdatingIndicator = false;
-        showUpdateSuccess = true;
         setTimeout(() => {
-          showUpdateSuccess = false;
-        }, 2000);
-      }, 1000);
+          showUpdatingIndicator = false;
+          showUpdateSuccess = true;
+          setTimeout(() => {
+            showUpdateSuccess = false;
+          }, 2000);
+        }, 1000);
+      })();
     }
   });
 
