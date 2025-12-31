@@ -228,13 +228,20 @@ export class ToolExecutor {
           };
       }
 
+      // Extract segmentId from result if present (for tracking modified segments)
+      const metadata: Record<string, unknown> = {
+        executionTimeMs: Date.now() - startTime,
+      };
+
+      if (result && typeof result === 'object' && 'segmentId' in result) {
+        metadata.segmentId = result.segmentId;
+      }
+
       return {
         toolCallId: toolCall.id,
         success: true,
         result,
-        metadata: {
-          executionTimeMs: Date.now() - startTime,
-        },
+        metadata,
       };
     } catch (error) {
       return {
