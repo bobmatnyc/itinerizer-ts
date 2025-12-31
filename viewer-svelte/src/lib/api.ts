@@ -227,6 +227,67 @@ export const apiClient = {
     return handleResponse<import('./types').Itinerary>(response);
   },
 
+  // Add traveler
+  async addTraveler(
+    itineraryId: string,
+    travelerData: {
+      firstName: string;
+      lastName: string;
+      type?: string;
+      email?: string;
+      phone?: string;
+    }
+  ): Promise<import('./types').Itinerary> {
+    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${itineraryId}/travelers`, {
+      method: 'POST',
+      headers: getBaseHeaders(),
+      body: JSON.stringify(travelerData),
+    });
+    return handleResponse<import('./types').Itinerary>(response);
+  },
+
+  // Update traveler
+  async updateTraveler(
+    itineraryId: string,
+    travelerId: string,
+    travelerData: {
+      firstName?: string;
+      lastName?: string;
+      type?: string;
+      email?: string;
+      phone?: string;
+    }
+  ): Promise<import('./types').Itinerary> {
+    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${itineraryId}/travelers/${travelerId}`, {
+      method: 'PATCH',
+      headers: getBaseHeaders(),
+      body: JSON.stringify(travelerData),
+    });
+    return handleResponse<import('./types').Itinerary>(response);
+  },
+
+  // Delete traveler
+  async deleteTraveler(itineraryId: string, travelerId: string): Promise<import('./types').Itinerary> {
+    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${itineraryId}/travelers/${travelerId}`, {
+      method: 'DELETE',
+      headers: getBaseHeaders(),
+    });
+    return handleResponse<import('./types').Itinerary>(response);
+  },
+
+  // Update trip preferences
+  async updateTripPreferences(
+    itineraryId: string,
+    preferences: Record<string, unknown>
+  ): Promise<import('./types').Itinerary> {
+    const response = await fetch(`${API_BASE_URL}${API_V1.ITINERARIES}/${itineraryId}/preferences`, {
+      method: 'PATCH',
+      headers: getBaseHeaders(),
+      body: JSON.stringify(preferences),
+    });
+    return handleResponse<import('./types').Itinerary>(response);
+  },
+
   // Get available models
   async getModels(): Promise<ModelConfig[]> {
     const response = await fetch(`${API_BASE_URL}${API_V1.AGENT.MODELS}`, {

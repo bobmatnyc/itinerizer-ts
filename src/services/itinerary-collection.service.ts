@@ -257,6 +257,55 @@ export class ItineraryCollectionService {
   }
 
   /**
+   * Update a traveler on an itinerary
+   * @param id - Itinerary ID
+   * @param travelerId - Traveler ID to update
+   * @param updates - Partial traveler updates
+   * @returns Result with updated itinerary or storage error
+   */
+  async updateTraveler(
+    id: ItineraryId,
+    travelerId: TravelerId,
+    updates: Partial<Traveler>
+  ): Promise<Result<Itinerary, StorageError>> {
+    // Load existing itinerary
+    const loadResult = await this.storage.load(id);
+    if (!loadResult.success) {
+      return loadResult;
+    }
+
+    const existing = loadResult.value;
+
+    // Find traveler index
+    const travelerIndex = existing.travelers.findIndex((t) => t.id === travelerId);
+    if (travelerIndex === -1) {
+      return err(
+        createStorageError('NOT_FOUND', `Traveler ${travelerId} not found`, {
+          travelerId,
+        })
+      );
+    }
+
+    // Update traveler
+    const updatedTravelers = [...existing.travelers];
+    updatedTravelers[travelerIndex] = {
+      ...updatedTravelers[travelerIndex],
+      ...updates,
+      id: travelerId, // Preserve original ID
+    };
+
+    const updated: Itinerary = {
+      ...existing,
+      travelers: updatedTravelers,
+      version: existing.version + 1,
+      updatedAt: new Date(),
+    };
+
+    // Save updated itinerary
+    return this.storage.save(updated);
+  }
+
+  /**
    * Remove a traveler from an itinerary
    * @param id - Itinerary ID
    * @param travelerId - Traveler ID to remove
@@ -295,6 +344,39 @@ export class ItineraryCollectionService {
       ...baseItinerary,
       ...(shouldClearPrimary ? {} : { primaryTravelerId: existing.primaryTravelerId }),
       travelers: filteredTravelers,
+      version: existing.version + 1,
+      updatedAt: new Date(),
+    };
+
+    // Save updated itinerary
+    return this.storage.save(updated);
+  }
+
+  /**
+   * Update trip preferences on an itinerary
+   * @param id - Itinerary ID
+   * @param preferences - Trip preferences to update
+   * @returns Result with updated itinerary or storage error
+   */
+  async updateTripPreferences(
+    id: ItineraryId,
+    preferences: Partial<Itinerary['tripPreferences']>
+  ): Promise<Result<Itinerary, StorageError>> {
+    // Load existing itinerary
+    const loadResult = await this.storage.load(id);
+    if (!loadResult.success) {
+      return loadResult;
+    }
+
+    const existing = loadResult.value;
+
+    // Merge preferences
+    const updated: Itinerary = {
+      ...existing,
+      tripPreferences: {
+        ...existing.tripPreferences,
+        ...preferences,
+      },
       version: existing.version + 1,
       updatedAt: new Date(),
     };

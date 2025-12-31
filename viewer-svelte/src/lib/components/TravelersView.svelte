@@ -1,13 +1,62 @@
 <script lang="ts">
-  import type { Itinerary } from '../types';
+  import type { Itinerary, Traveler } from '../types';
+  import type { TripTravelerPreferences } from '$domain/types/traveler.js';
+  import { apiClient } from '../api';
+  import TravelerFormDialog from './TravelerFormDialog.svelte';
+  import PreferencesFormDialog from './PreferencesFormDialog.svelte';
 
-  let { itinerary }: { itinerary: Itinerary } = $props();
+  let { itinerary = $bindable() }: { itinerary: Itinerary } = $props();
 
   // Type guard to check if travelers exist
   const travelers = $derived(itinerary.travelers || []);
   const tripPreferences = $derived(itinerary.tripPreferences || {});
   const hasTravelers = $derived(travelers.length > 0);
   const hasTripPreferences = $derived(Object.keys(tripPreferences).length > 0);
+
+  // Dialog state
+  let travelerDialogOpen = $state(false);
+  let preferencesDialogOpen = $state(false);
+  let editingTraveler = $state<Traveler | undefined>(undefined);
+
+  // Open dialogs
+  function openAddTraveler() {
+    editingTraveler = undefined;
+    travelerDialogOpen = true;
+  }
+
+  function openEditTraveler(traveler: Traveler) {
+    editingTraveler = traveler;
+    travelerDialogOpen = true;
+  }
+
+  function openEditPreferences() {
+    preferencesDialogOpen = true;
+  }
+
+  // Save handlers
+  async function handleSaveTraveler(data: Partial<Traveler>) {
+    if (editingTraveler) {
+      // Update existing traveler
+      const updated = await apiClient.updateTraveler(itinerary.id, editingTraveler.id, data);
+      itinerary = updated;
+    } else {
+      // Add new traveler
+      const updated = await apiClient.addTraveler(itinerary.id, data);
+      itinerary = updated;
+    }
+  }
+
+  async function handleRemoveTraveler(travelerId: string) {
+    if (!confirm('Are you sure you want to remove this traveler?')) return;
+
+    const updated = await apiClient.deleteTraveler(itinerary.id, travelerId);
+    itinerary = updated;
+  }
+
+  async function handleSavePreferences(data: Partial<TripTravelerPreferences>) {
+    const updated = await apiClient.updateTripPreferences(itinerary.id, data);
+    itinerary = updated;
+  }
 
   function getTravelerTypeLabel(type: string): string {
     const labels: Record<string, string> = {
@@ -44,7 +93,12 @@
   <div class="travelers-content">
     <!-- Travelers Section -->
     <div class="section">
-      <h2 class="section-title">Travelers</h2>
+      <div class="section-header">
+        <h2 class="section-title">Travelers</h2>
+        <button class="btn-add" onclick={openAddTraveler}>
+          + Add Traveler
+        </button>
+      </div>
       {#if hasTravelers}
         <div class="travelers-list">
           {#each travelers as traveler}
@@ -54,7 +108,15 @@
                   {traveler.firstName}
                   {traveler.lastName}
                 </h3>
-                <span class="traveler-type">{getTravelerTypeLabel(traveler.type)}</span>
+                <div class="traveler-actions">
+                  <span class="traveler-type">{getTravelerTypeLabel(traveler.type)}</span>
+                  <button class="btn-icon" onclick={() => openEditTraveler(traveler)} title="Edit">
+                    ✏️
+                  </button>
+                  <button class="btn-icon" onclick={() => handleRemoveTraveler(traveler.id)} title="Remove">
+                    🗑️
+                  </button>
+                </div>
               </div>
               {#if traveler.email}
                 <p class="traveler-detail">
@@ -78,7 +140,12 @@
 
     <!-- Trip Preferences Section -->
     <div class="section">
-      <h2 class="section-title">Trip Preferences</h2>
+      <div class="section-header">
+        <h2 class="section-title">Trip Preferences</h2>
+        <button class="btn-add" onclick={openEditPreferences}>
+          {hasTripPreferences ? 'Edit Preferences' : '+ Add Preferences'}
+        </button>
+      </div>
       {#if hasTripPreferences}
         <div class="preferences-grid">
           {#if tripPreferences.origin}
@@ -155,6 +222,21 @@
   </div>
 </div>
 
+<!-- Dialogs -->
+<TravelerFormDialog
+  bind:open={travelerDialogOpen}
+  traveler={editingTraveler}
+  onSave={handleSaveTraveler}
+  onCancel={() => {}}
+/>
+
+<PreferencesFormDialog
+  bind:open={preferencesDialogOpen}
+  preferences={tripPreferences}
+  onSave={handleSavePreferences}
+  onCancel={() => {}}
+/>
+
 <style>
   .travelers-view {
     height: 100%;
@@ -176,13 +258,36 @@
     border: 1px solid #e5e7eb;
   }
 
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+
   .section-title {
     font-size: 1.25rem;
     font-weight: 600;
     color: #1f2937;
-    margin: 0 0 1rem 0;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid #e5e7eb;
+    margin: 0;
+  }
+
+  .btn-add {
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+
+  .btn-add:hover {
+    background-color: #2563eb;
   }
 
   .travelers-list {
@@ -212,6 +317,12 @@
     margin: 0;
   }
 
+  .traveler-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .traveler-type {
     font-size: 0.75rem;
     font-weight: 500;
@@ -220,6 +331,20 @@
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     text-transform: uppercase;
+  }
+
+  .btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 1rem;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+  }
+
+  .btn-icon:hover {
+    opacity: 1;
   }
 
   .traveler-detail {
