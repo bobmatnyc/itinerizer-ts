@@ -31,7 +31,7 @@ import type { KnowledgeService } from '../knowledge.service.js';
 import type { WeaviateKnowledgeService } from '../weaviate-knowledge.service.js';
 import type { TravelAgentFacade } from '../travel-agent-facade.service.js';
 import { isWeaviateKnowledgeService } from '../knowledge-factory.js';
-import { summarizeItineraryMinimal, summarizeItinerary } from './itinerary-summarizer.js';
+import { summarizeItineraryMinimal, summarizeItinerary, generateMismatchWarning } from './itinerary-summarizer.js';
 
 /**
  * Default model for Trip Designer
@@ -201,6 +201,9 @@ export class TripDesignerService {
           (itinerary.tripPreferences && Object.keys(itinerary.tripPreferences).length > 0);
 
         if (hasContent) {
+          // Check for title/destination mismatch FIRST - this gets top priority
+          const mismatchWarning = generateMismatchWarning(itinerary);
+
           // Use Travel Agent facade for summary if available, otherwise fallback to direct summarizer
           let summary: string;
           if (this.travelAgentFacade) {
@@ -216,14 +219,32 @@ export class TripDesignerService {
             summary = summarizeItinerary(itinerary);
           }
 
-          // Inject itinerary context as initial system message
-          const contextMessage = `The user is working on an existing itinerary. Here's the current state:
+          // Build context message with mismatch warning appearing FIRST if present
+          let contextMessage = '';
+
+          if (mismatchWarning) {
+            // CRITICAL: Mismatch warning goes at the very top for maximum visibility
+            contextMessage = `${mismatchWarning}
+
+---
+
+The user is working on an existing itinerary. Here's the current state:
 
 ${summary}
 
 Important: Since the itinerary already has content, skip any questions about information that's already provided in the summary above. Instead, acknowledge what's already planned and offer to help refine, modify, or extend the itinerary.
 
 CRITICAL: If the summary shows "⚠️ EXISTING BOOKINGS" with luxury/premium properties or cabin classes, DO NOT ask about travel style or budget - infer the luxury/premium preference from the bookings and proceed accordingly. The existing bookings define the expected quality level.`;
+          } else {
+            // No mismatch - use standard context message
+            contextMessage = `The user is working on an existing itinerary. Here's the current state:
+
+${summary}
+
+Important: Since the itinerary already has content, skip any questions about information that's already provided in the summary above. Instead, acknowledge what's already planned and offer to help refine, modify, or extend the itinerary.
+
+CRITICAL: If the summary shows "⚠️ EXISTING BOOKINGS" with luxury/premium properties or cabin classes, DO NOT ask about travel style or budget - infer the luxury/premium preference from the bookings and proceed accordingly. The existing bookings define the expected quality level.`;
+          }
 
           await this.sessionManager.addMessage(session.id, {
             role: 'system',
@@ -1412,6 +1433,11 @@ IMPORTANT: All suggested dates MUST be in the future. Do not suggest dates that 
         if (itinerary.segments.length > 0 || itinerary.title !== 'New Itinerary') {
           hasItineraryContent = true;
           const summary = summarizeItinerary(itinerary);
+
+          console.log('[Trip Designer] Building context for itinerary:', itinerary.id);
+          console.log('[Trip Designer] Title:', itinerary.title);
+          console.log('[Trip Designer] Summary length:', summary.length);
+          console.log('[Trip Designer] Summary preview:', summary.substring(0, 300));
 
           systemPrompt = `${TRIP_DESIGNER_SYSTEM_PROMPT}
 

@@ -228,37 +228,8 @@
       </div>
     </div>
 
-    <!-- Right Pane: Workspace (contains chat sidebar + detail content) -->
-    <div class="workspace-pane">
-      <!-- Chat Sidebar (inside workspace, hidden in manual edit mode) -->
-      {#if showChatSidebar}
-      <div class="chat-sidebar" style="width: {leftPaneWidth}px;">
-        <div class="chat-pane-content">
-          {#if $selectedItinerary}
-            <ChatPanel agent={agentConfig} itineraryId={$selectedItinerary.id} />
-          {:else}
-            <div class="chat-no-itinerary">
-              <div class="chat-no-itinerary-icon">💬</div>
-              <p class="chat-no-itinerary-text">Loading itinerary...</p>
-            </div>
-          {/if}
-        </div>
-      </div>
-
-      <!-- Resize Handle (hidden in manual edit mode) -->
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <div
-        class="resize-handle"
-        class:resizing={isResizing}
-        onmousedown={startResize}
-        role="separator"
-        aria-orientation="vertical"
-        aria-label="Resize sidebar"
-        tabindex="0"
-      ></div>
-      {/if}
-
+    <!-- Right Pane: Detail View -->
+    <div class="detail-pane">
       <!-- Detail Content + Visualization -->
       <div class="detail-wrapper">
         <!-- Main Content Area -->
@@ -412,74 +383,12 @@
     margin-bottom: 0.5rem;
   }
 
-  /* Right Pane: Workspace Container */
-  .workspace-pane {
+  /* Right Pane: Detail View */
+  .detail-pane {
     flex: 1;
     display: flex;
     overflow: hidden;
     background-color: #fafafa;
-  }
-
-  /* Chat Sidebar (inside workspace) */
-  .chat-sidebar {
-    flex-shrink: 0;
-    background-color: #ffffff;
-    border-right: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .chat-pane-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .chat-no-itinerary {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .chat-no-itinerary-icon {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .chat-no-itinerary-text {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-  }
-
-  .resize-handle {
-    width: 5px;
-    cursor: col-resize;
-    background-color: transparent;
-    transition: background-color 0.2s;
-    position: relative;
-  }
-
-  .resize-handle:hover,
-  .resize-handle.resizing {
-    background-color: #3b82f6;
-  }
-
-  .resize-handle::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -3px;
-    right: -3px;
   }
 
   /* Detail Wrapper (contains detail content + visualization) */
@@ -570,19 +479,8 @@
       max-height: 30%;
     }
 
-    .workspace-pane {
+    .detail-pane {
       flex-direction: column;
-    }
-
-    .chat-sidebar {
-      width: 100% !important;
-      border-right: none;
-      border-bottom: 1px solid #e5e7eb;
-      max-height: 40%;
-    }
-
-    .resize-handle {
-      display: none;
     }
 
     .detail-wrapper {

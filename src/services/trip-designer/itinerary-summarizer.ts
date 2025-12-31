@@ -449,35 +449,67 @@ export function detectTitleDestinationMismatch(itinerary: Itinerary): TitleDesti
 }
 
 /**
+ * Generate a CRITICAL mismatch warning that demands LLM attention
+ * This appears as a separate, top-level section BEFORE the itinerary summary
+ *
+ * @param itinerary - The itinerary to check for mismatches
+ * @returns Prominent warning text, or null if no mismatch detected
+ */
+export function generateMismatchWarning(itinerary: Itinerary): string | null {
+  const mismatch = detectTitleDestinationMismatch(itinerary);
+  console.log('[generateMismatchWarning] Title:', itinerary.title);
+  console.log('[generateMismatchWarning] Mismatch result:', JSON.stringify(mismatch, null, 2));
+
+  if (!mismatch?.hasMismatch) {
+    console.log('[generateMismatchWarning] ✓ No mismatch - returning null');
+    return null;
+  }
+
+  console.log('[generateMismatchWarning] ⚠️ MISMATCH DETECTED - generating prominent warning');
+
+  const lines: string[] = [];
+
+  lines.push('## 🚨🚨🚨 STOP - CRITICAL DATA CONFLICT DETECTED 🚨🚨🚨');
+  lines.push('');
+  lines.push('**YOU MUST ADDRESS THIS ISSUE BEFORE ANYTHING ELSE**');
+  lines.push('');
+  lines.push('**PROBLEM**: The itinerary title does NOT match the actual travel destination.');
+  lines.push('');
+  lines.push(`**Current Title**: "${itinerary.title}"`);
+  lines.push(`**Title Mentions**: "${mismatch.titleMentions}" ← This is the DEPARTURE city`);
+  lines.push(`**Actual Destination**: "${mismatch.actualDestination}" ← This is where they're GOING`);
+  lines.push('');
+  lines.push('**WHY THIS HAPPENED**: This commonly occurs when importing confirmation emails that were sent from the departure city.');
+  lines.push('');
+  lines.push(`**SUGGESTED FIX**: Update the title to "${mismatch.suggestedTitle}"`);
+  lines.push('');
+  lines.push('**MANDATORY ACTION - YOU MUST DO THIS IN YOUR FIRST RESPONSE**:');
+  lines.push('1. ⚠️ Point out this title/destination mismatch to the user');
+  lines.push('2. ⚠️ Explain that the title mentions their departure city, not their destination');
+  lines.push(`3. ⚠️ Ask if they want to update the title to "${mismatch.suggestedTitle}"`);
+  lines.push('4. ⚠️ DO NOT proceed with trip suggestions until this is acknowledged');
+  lines.push('');
+  lines.push('**DO NOT IGNORE THIS WARNING** - The user needs to know their trip title is incorrect.');
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+/**
  * Generate a concise summary of the itinerary for context injection
  *
  * This summary is used in the Trip Designer system prompt when editing
  * existing itineraries, providing the agent with key context about the
  * current state of the trip.
  *
+ * NOTE: Title/destination mismatch warnings are now handled separately
+ * by generateMismatchWarning() and should be injected BEFORE this summary.
+ *
  * @param itinerary - The itinerary to summarize
  * @returns Formatted markdown summary
  */
 export function summarizeItinerary(itinerary: Itinerary): string {
   const lines: string[] = [];
-
-  // Check for title/destination mismatch FIRST
-  const mismatch = detectTitleDestinationMismatch(itinerary);
-  console.log('[summarizeItinerary] Title:', itinerary.title);
-  console.log('[summarizeItinerary] Mismatch result:', JSON.stringify(mismatch, null, 2));
-
-  if (mismatch?.hasMismatch) {
-    lines.push('⚠️ **TITLE/DESTINATION MISMATCH DETECTED**');
-    lines.push(`- Current title: "${itinerary.title}"`);
-    lines.push(`- Title mentions: "${mismatch.titleMentions}" (departure city)`);
-    lines.push(`- Actual destination: "${mismatch.actualDestination}"`);
-    lines.push(`- Suggested title: "${mismatch.suggestedTitle}"`);
-    lines.push('');
-    lines.push(`**Explanation**: ${mismatch.explanation}`);
-    lines.push('');
-    lines.push('**ACTION REQUIRED**: You should acknowledge this mismatch and offer to update the title to correctly reflect the destination.');
-    lines.push('');
-  }
 
   // Header with title and dates
   lines.push(`**Trip**: ${itinerary.title}`);
