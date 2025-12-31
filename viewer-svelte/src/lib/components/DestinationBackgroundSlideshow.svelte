@@ -48,15 +48,16 @@
 
     try {
       if (!UNSPLASH_ACCESS_KEY) {
-        // Fallback to Unsplash Source API (no auth required)
-        // Generate multiple random URLs
+        // Fallback to Lorem Picsum (no auth required)
+        // Note: Does not provide destination-specific images, but provides working placeholders
+        const timestamp = Date.now();
         images = Array.from({ length: imageCount }, (_, i) => ({
-          id: `source-${i}`,
+          id: `picsum-${i}`,
           urls: {
-            regular: `https://source.unsplash.com/1600x900/?${encodeURIComponent(dest)},travel,city&sig=${i}`,
-            small: `https://source.unsplash.com/800x450/?${encodeURIComponent(dest)},travel,city&sig=${i}`
+            regular: `https://picsum.photos/1600/900?random=${timestamp + i}`,
+            small: `https://picsum.photos/800/450?random=${timestamp + i}`
           },
-          alt_description: `${dest} travel`
+          alt_description: `${dest} travel destination`
         }));
         loading = false;
         return;
@@ -84,14 +85,15 @@
       error = e instanceof Error ? e.message : 'Unknown error';
       loading = false;
 
-      // Fallback to Source API
+      // Fallback to Lorem Picsum
+      const timestamp = Date.now();
       images = [{
         id: 'fallback',
         urls: {
-          regular: `https://source.unsplash.com/1600x900/?${encodeURIComponent(dest)},travel,city`,
-          small: `https://source.unsplash.com/800x450/?${encodeURIComponent(dest)},travel,city`
+          regular: `https://picsum.photos/1600/900?random=${timestamp}`,
+          small: `https://picsum.photos/800/450?random=${timestamp}`
         },
-        alt_description: `${dest} travel`
+        alt_description: `${dest} travel destination`
       }];
     }
   }
