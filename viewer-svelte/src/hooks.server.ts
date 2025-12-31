@@ -264,7 +264,7 @@ const SESSION_SECRET = 'authenticated';
 const USER_EMAIL_COOKIE_NAME = 'itinerizer_user_email';
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ['/login', '/api/auth'];
+const PUBLIC_ROUTES = ['/login', '/api/auth', '/api/health', '/api/v1/health'];
 
 /**
  * SvelteKit handle hook - Authentication + Services
@@ -283,9 +283,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const sessionCookie = event.cookies.get(SESSION_COOKIE_NAME);
 		event.locals.isAuthenticated = sessionCookie === SESSION_SECRET;
 
-		// Get user email from cookie (null if not set)
-		event.locals.userEmail = event.cookies.get(USER_EMAIL_COOKIE_NAME) || null;
-		console.log('[hooks] userEmail from cookie:', event.locals.userEmail);
+		// Try cookie first, fallback to X-User-Email header for compatibility
+		// This handles cases where the cookie expires but localStorage still has the email
+		let userEmail = event.cookies.get(USER_EMAIL_COOKIE_NAME);
+		if (!userEmail) {
+			userEmail = event.request.headers.get('X-User-Email');
+			if (userEmail) {
+				console.log('[hooks] Using X-User-Email header:', userEmail);
+			}
+		}
+		event.locals.userEmail = userEmail || null;
+		console.log('[hooks] userEmail:', event.locals.userEmail);
 
 		// Check if route requires authentication
 		const isPublicRoute = PUBLIC_ROUTES.some(route => event.url.pathname.startsWith(route));
